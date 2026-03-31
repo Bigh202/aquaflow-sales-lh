@@ -1,0 +1,903 @@
+bash
+
+cat /home/claude/aquaflow-netlify/index.html
+Output
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>AquaFlow Sales OS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surf:#111318;--surf2:#181c24;--surf3:#1e232e;--bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);--txt:#e8eaf0;--txt2:#8b919e;--txt3:#555b66;--accent:#00d4aa;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);pointer-events:none;z-index:9999}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--bdr);background:var(--surf);position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--blue));display:flex;align-items:center;justify-content:center;font-size:15px}
+.logo-txt{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;letter-spacing:-0.02em}
+.logo-txt span{color:var(--accent)}
+.hdr-meta{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;box-shadow:0 0 6px var(--green)}
+.nav{display:flex;padding:0 20px;border-bottom:1px solid var(--bdr);background:var(--surf);overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.tab{padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--txt2);white-space:nowrap;font-family:'Syne',sans-serif;transition:color 0.15s}
+.tab:hover{color:var(--txt)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.main{padding:20px;max-width:1400px;margin:0 auto}
+.pane{display:none}.pane.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.stat{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:14px}
+.stat .v{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:3px}
+.stat .l{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em}
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:18px;margin-bottom:14px}
+.ctitle{font-size:11px;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px;font-family:'DM Mono',monospace}
+.fr{display:grid;gap:10px;margin-bottom:10px}
+.fr.c2{grid-template-columns:1fr 1fr}
+.fr.c3{grid-template-columns:1fr 1fr 1fr}
+.fr.c4{grid-template-columns:1fr 1fr 1fr 1fr}
+.fld label{display:block;font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;font-family:'DM Mono',monospace}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--surf2);border:1px solid var(--bdr2);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--txt);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;-webkit-appearance:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--accent)}
+.fld select option{background:var(--surf2)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 15px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--bdr2);background:transparent;color:var(--txt);transition:all 0.15s;font-family:'DM Sans',sans-serif;white-space:nowrap;text-decoration:none}
+.btn:hover{background:var(--surf2)}
+.btn:active{transform:scale(0.97)}
+.btn-a{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+.btn-a:hover{background:#00bfa0}
+.btn-b{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-call{background:rgba(34,197,94,0.12);color:var(--green);border-color:rgba(34,197,94,0.35)}
+.btn-call:hover{background:rgba(34,197,94,0.22)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.brow{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.bdg{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;font-family:'DM Mono',monospace}
+.bdg-g{background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.25)}
+.bdg-b{background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.25)}
+.bdg-am{background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.25)}
+.bdg-r{background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.25)}
+.bdg-gr{background:rgba(255,255,255,0.06);color:var(--txt2);border:1px solid var(--bdr)}
+.bdg-a{background:rgba(0,212,170,0.12);color:var(--accent);border:1px solid rgba(0,212,170,0.25)}
+.bdg-p{background:rgba(168,85,247,0.12);color:#c084fc;border:1px solid rgba(168,85,247,0.25)}
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.cat{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--bdr);color:var(--txt2);transition:all 0.15s;font-family:'DM Mono',monospace}
+.cat.on{background:rgba(0,212,170,0.1);color:var(--accent);border-color:rgba(0,212,170,0.35)}
+.setup-bar{background:var(--surf2);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:14px;margin-bottom:18px}
+.setup-title{font-size:11px;font-family:'DM Mono',monospace;color:var(--amber);margin-bottom:10px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--txt3);font-family:'DM Mono',monospace;padding:8px 12px;text-align:left;border-bottom:1px solid var(--bdr);font-weight:500}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--bdr);font-size:13px;vertical-align:middle}
+.tbl tr:hover td{background:var(--surf2)}
+.drow{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:13px 15px;display:grid;grid-template-columns:2fr 1.4fr 1.1fr 0.9fr 1fr;gap:10px;align-items:center;margin-bottom:8px;transition:border-color 0.15s}
+.drow:hover{border-color:var(--bdr2)}
+.drow.sel{border-color:var(--accent);background:rgba(0,212,170,0.03)}
+.tt{background:rgba(0,212,170,0.05);border:1px solid rgba(0,212,170,0.2);border-radius:8px;padding:13px;margin-bottom:14px}
+.tt-title{font-size:10px;font-family:'DM Mono',monospace;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:7px}
+.tt-text{font-size:13px;line-height:1.75;color:var(--txt)}
+.tt-text em{color:var(--accent);font-style:normal;font-weight:500}
+.eprev{background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;padding:18px}
+.esubj{font-family:'DM Mono',monospace;font-size:12px;color:var(--txt2);border-bottom:1px solid var(--bdr);padding-bottom:10px;margin-bottom:13px}
+.ebody{font-size:13px;line-height:1.85;color:var(--txt);white-space:pre-wrap}
+.ai-spin{display:inline-flex;align-items:center;gap:6px;color:var(--txt2);font-size:12px;font-family:'DM Mono',monospace}
+.ai-spin .d{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite}
+.ai-spin .d:nth-child(2){animation-delay:.2s}.ai-spin .d:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+.pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.pcol{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:11px;min-height:260px}
+.pch{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--bdr)}
+.pct{font-size:11px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.07em;color:var(--txt2);font-weight:500}
+.pcc{font-family:'DM Mono',monospace;font-size:11px;background:var(--surf2);border:1px solid var(--bdr);border-radius:4px;padding:2px 5px}
+.pc{background:var(--surf2);border:1px solid var(--bdr);border-radius:7px;padding:9px;margin-bottom:7px;cursor:pointer;transition:all 0.15s}
+.pc:hover{border-color:var(--bdr2)}.pc.sel{border-color:var(--accent)}
+.pcn{font-size:12px;font-weight:500;margin-bottom:2px}
+.pcd{font-size:11px;color:var(--txt2);margin-bottom:3px}
+.pcb{font-family:'DM Mono',monospace;font-size:11px;color:var(--green)}
+.pcs{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent)}
+.tip{background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px 13px;font-size:12px;color:#93c5fd;line-height:1.6;margin-bottom:13px}
+.clp{background:var(--surf2);border:1px solid var(--bdr2);border-radius:12px;padding:18px;margin-top:14px}
+.pvbar{display:flex;gap:18px;margin-bottom:14px;padding:13px 18px;background:var(--surf);border:1px solid var(--bdr);border-radius:10px;flex-wrap:wrap;align-items:center}
+.flash{position:fixed;bottom:20px;right:20px;background:var(--surf);border:1px solid var(--accent);border-radius:8px;padding:11px 16px;font-size:13px;color:var(--txt);z-index:1000;transform:translateY(70px);opacity:0;transition:all 0.3s;max-width:300px}
+.flash.show{transform:translateY(0);opacity:1}
+#scr-load{display:none;text-align:center;padding:36px}
+.big-spin{width:30px;height:30px;border:3px solid var(--surf3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#prog{height:3px;background:var(--surf3);border-radius:2px;overflow:hidden;margin-top:8px;display:none}
+#prog-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--blue));width:0;transition:width .4s}
+.empty{text-align:center;padding:44px;color:var(--txt3)}
+.set-sec{margin-bottom:22px}
+.set-sec h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid var(--bdr)}
+.seq-step{display:flex;gap:11px;margin-bottom:12px;align-items:flex-start}
+.seq-num{width:22px;height:22px;border-radius:50%;background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.25);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;color:var(--accent);flex-shrink:0}
+@media(max-width:768px){.stats{grid-template-columns:repeat(2,1fr)}.fr.c4,.fr.c3{grid-template-columns:1fr 1fr}.pipe{grid-template-columns:repeat(2,1fr)}.drow{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.fr.c2,.fr.c3,.fr.c4{grid-template-columns:1fr}.main{padding:12px}.pipe{grid-template-columns:1fr}}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">
+    <div class="logo-mark">💧</div>
+    <div class="logo-txt">AquaFlow <span>Sales OS</span></div>
+  </div>
+  <div class="hdr-meta">
+    <span><span class="dot"></span><span id="rep-name">Lauren Hatwan</span> — Long Beach</span>
+    <span id="hdr-count" style="color:var(--accent)">0 leads</span>
+    <span id="clock" style="color:var(--txt3);font-size:11px"></span>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="tab active" onclick="go('scraper',this)">Lead Scraper</div>
+  <div class="tab" onclick="go('email',this)">Email Composer</div>
+  <div class="tab" onclick="go('dialer',this)">Dialer</div>
+  <div class="tab" onclick="go('pipeline',this)">Pipeline</div>
+  <div class="tab" onclick="go('sequences',this)">Sequences</div>
+  <div class="tab" onclick="go('settings',this)">Settings</div>
+</div>
+
+<div class="main">
+
+<!-- SCRAPER -->
+<div id="pane-scraper" class="pane active">
+  <div class="stats">
+    <div class="stat"><div class="v" style="color:var(--accent)" id="s-tot">0</div><div class="l">Total Leads</div></div>
+    <div class="stat"><div class="v" style="color:var(--green)" id="s-dm">0</div><div class="l">Decision Makers</div></div>
+    <div class="stat"><div class="v" style="color:var(--blue)" id="s-em">0</div><div class="l">Emails Found</div></div>
+    <div class="stat"><div class="v" style="color:var(--amber)" id="s-ab">$0</div><div class="l">Avg Water Bill</div></div>
+    <div class="stat"><div class="v" style="color:var(--green)" id="s-as">$0</div><div class="l">Avg 30% Savings</div></div>
+  </div>
+
+  <div class="setup-bar">
+    <div class="setup-title">✅ API keys are stored securely in Netlify — no setup needed here. To update keys go to Netlify → Site Settings → Environment Variables.</div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Search Parameters</div>
+    <div class="fr c4">
+      <div class="fld"><label>Base Location</label><input id="loc" value="Long Beach, CA" placeholder="Long Beach, Torrance, Irvine, LA..."></div>
+      <div class="fld"><label>Radius</label>
+        <select id="rad">
+          <option value="16000">10 miles</option>
+          <option value="40000" selected>25 miles</option>
+          <option value="80000">50 miles</option>
+        </select>
+      </div>
+      <div class="fld"><label>Results Per Category</label>
+        <select id="rcount">
+          <option value="5">5 per category</option>
+          <option value="10" selected>10 per category</option>
+          <option value="20">20 per category</option>
+        </select>
+      </div>
+      <div class="fld"><label>Sort By</label>
+        <select id="sort">
+          <option>Est. water bill ↓</option>
+          <option>Business name</option>
+        </select>
+      </div>
+    </div>
+    <div class="ctitle">Target Categories</div>
+    <div class="cats" id="cats">
+      <div class="cat on" data-v="golf course">⛳ Golf Courses</div>
+      <div class="cat on" data-v="hotel">🏨 Hotels</div>
+      <div class="cat on" data-v="restaurant">🍽 Restaurants</div>
+      <div class="cat on" data-v="commercial real estate">🏢 Commercial Real Estate</div>
+      <div class="cat" data-v="car wash">🚗 Car Washes</div>
+      <div class="cat" data-v="laundromat">👕 Laundromats</div>
+      <div class="cat" data-v="manufacturing plant">🏭 Manufacturing</div>
+      <div class="cat" data-v="hospital">🏥 Hospitals</div>
+      <div class="cat" data-v="university">🎓 Universities</div>
+      <div class="cat" data-v="stadium arena">🏟 Sports Facilities</div>
+      <div class="cat" data-v="grocery store supermarket">🛒 Grocery Chains</div>
+      <div class="cat" data-v="apartment complex">🏘 Apartments</div>
+    </div>
+    <div id="prog"><div id="prog-fill"></div></div>
+    <div class="brow">
+      <button class="btn btn-a" onclick="scrape()">🔍 Search Leads</button>
+      <button class="btn" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn" onclick="goById('dialer')">📞 Dialer</button>
+      <button class="btn" onclick="clearLeads()" style="color:var(--txt3)">Clear</button>
+      <span id="scr-status" style="font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace;align-self:center"></span>
+    </div>
+  </div>
+
+  <div id="scr-load"><div class="big-spin"></div><div style="color:var(--txt2);font-size:13px;font-family:'DM Mono',monospace" id="scr-msg">Searching...</div></div>
+  <div id="leads-wrap"></div>
+</div>
+
+<!-- EMAIL -->
+<div id="pane-email" class="pane">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Email Composer</div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:2px">AI-personalized cold outreach per lead</div>
+    </div>
+    <button class="btn btn-sm" onclick="showQueue()">📋 Send Queue (<span id="qhdr">0</span>)</button>
+  </div>
+  <div class="tip"><strong>Best angle:</strong> Free water audit, no commitment. AquaFlow 6-month money-back + lifetime warranty closes the trust gap. Golf: irrigation. Hotels: HVAC + laundry. Hospitals: cooling + sterilization. CRE: NOI improvement.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <div>
+      <div class="card">
+        <div class="ctitle">Contact Details</div>
+        <div class="fr c2">
+          <div class="fld"><label>Name</label><input id="en" placeholder="Mike Torres"></div>
+          <div class="fld"><label>Title</label><input id="et" placeholder="Director of Facilities"></div>
+        </div>
+        <div class="fr c2">
+          <div class="fld"><label>Business</label><input id="eb" placeholder="Torrance Golf Club"></div>
+          <div class="fld"><label>Type</label>
+            <select id="ety">
+              <option>Golf course</option><option>Hotel</option><option>Restaurant / chain</option>
+              <option>Commercial real estate</option><option>Car wash</option>
+              <option>Hospital / medical center</option><option>Manufacturing / processing plant</option>
+              <option>School / university</option><option>Apartment complex</option>
+              <option>Sports facility</option><option>Grocery / supermarket chain</option>
+            </select>
+          </div>
+        </div>
+        <div class="fr c2">
+          <div class="fld"><label>Monthly Water Bill</label><input id="ebi" placeholder="$4,000/mo"></div>
+          <div class="fld"><label>Email</label><input id="ee" placeholder="contact@business.com"></div>
+        </div>
+        <div class="fr c2">
+          <div class="fld"><label>Tone</label>
+            <select id="eto">
+              <option>Professional & direct</option><option>Consultative / value-focused</option>
+              <option>Brief & executive-level</option><option>ROI-forward</option><option>Friendly & casual</option>
+            </select>
+          </div>
+          <div class="fld"><label>Email Type</label>
+            <select id="est">
+              <option value="cold">Cold outreach #1</option>
+              <option value="fu1">Follow-up #1 (day 4)</option>
+              <option value="fu2">Follow-up #2 (day 9)</option>
+              <option value="bp">Break-up (day 14)</option>
+              <option value="audit">Audit confirmation</option>
+            </select>
+          </div>
+        </div>
+        <div class="fld" style="margin-bottom:10px"><label>Notes / Context</label><textarea id="enotes" rows="2" placeholder="Referral from John, mentioned high summer bills, met at trade show..."></textarea></div>
+        <div class="brow">
+          <button class="btn btn-a" onclick="genEmail()">✨ Generate Email</button>
+          <button class="btn" onclick="clearEForm()">Clear</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" id="eout" style="display:none">
+        <div class="ctitle">Generated Email</div>
+        <div id="e-gen" style="display:none"><div class="ai-spin"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:4px">Writing your email...</span></div></div>
+        <div id="e-content" style="display:none">
+          <div class="eprev">
+            <div class="esubj" id="esubj"></div>
+            <div class="ebody" id="ebody"></div>
+          </div>
+          <div class="brow">
+            <button class="btn btn-a btn-sm" onclick="copyEmail()">Copy</button>
+            <button class="btn btn-sm btn-b" onclick="addQueue()">+ Queue</button>
+            <button class="btn btn-sm" onclick="openGmail()">Gmail ↗</button>
+            <button class="btn btn-sm" onclick="markContacted()">Mark Contacted</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="qcard" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="ctitle" style="margin:0">Send Queue (<span id="qcount">0</span>)</div>
+          <button class="btn btn-sm" onclick="exportQueue()">Export</button>
+        </div>
+        <div id="qlist"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIALER -->
+<div id="pane-dialer" class="pane">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Dialer Queue</div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:2px">Tap to call — log outcome instantly</div>
+    </div>
+    <div style="display:flex;gap:7px">
+      <button class="btn btn-sm btn-a" onclick="genTT()">✨ AI Talk Track</button>
+      <button class="btn btn-sm" onclick="exportCalls()">Export Log</button>
+    </div>
+  </div>
+  <div class="tt" id="tt-box">
+    <div class="tt-title">📞 Opening Script</div>
+    <div class="tt-text" id="tt-text"><em>"Hi, is this [Name]? — Great, I'm [your name] calling from AquaFlow out of Long Beach. Quick question — do you handle utilities or facilities for [Business]? ... Perfect. We've been helping [business type]s in the area cut their water and sewer bills by up to 30%. We'd do a free water analysis — 10 minutes, zero commitment. Worth a look?"</em></div>
+  </div>
+  <div id="dialer-list"></div>
+  <div class="clp" id="clp" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700" id="cl-title">Call Log</div>
+        <div id="cl-sub" style="font-size:12px;color:var(--txt2);margin-top:1px"></div>
+      </div>
+      <button class="btn btn-sm" onclick="document.getElementById('clp').style.display='none'">✕</button>
+    </div>
+    <div class="fr c2">
+      <div class="fld"><label>Outcome</label>
+        <select id="c-out">
+          <option value="">— Select —</option>
+          <option value="contacted">Reached — Interested</option>
+          <option value="callback">Call back later</option>
+          <option value="voicemail">Left voicemail</option>
+          <option value="no_answer">No answer</option>
+          <option value="not_interested">Not interested</option>
+          <option value="wrong_contact">Wrong contact</option>
+          <option value="audit">Booked audit! 🎉</option>
+        </select>
+      </div>
+      <div class="fld"><label>Callback Date/Time</label><input type="datetime-local" id="c-cb"></div>
+    </div>
+    <div class="fld" style="margin-bottom:10px"><label>Notes</label><textarea id="c-notes" rows="3" placeholder="Spoke with GM, very interested, wants audit next week..."></textarea></div>
+    <div class="brow">
+      <button class="btn btn-a" onclick="saveCall()">Save Log</button>
+      <button class="btn btn-b btn-sm" onclick="emailFromCall()">✉ Write Follow-up</button>
+    </div>
+  </div>
+</div>
+
+<!-- PIPELINE -->
+<div id="pane-pipeline" class="pane">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">CRM Pipeline</div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:2px">Cold → Contacted → Interested → Audit → Closed</div>
+    </div>
+    <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace">Move selected →</span>
+      <select id="mv-stage" style="background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);padding:6px 10px;border-radius:6px;font-size:12px">
+        <option value="cold">Cold</option><option value="contacted">Contacted</option>
+        <option value="interested">Interested</option><option value="audit">Audit Booked</option><option value="closed">Closed ✓</option>
+      </select>
+      <button class="btn btn-sm btn-a" onclick="moveLead()">Move</button>
+      <button class="btn btn-sm" onclick="exportPipe()">Export</button>
+    </div>
+  </div>
+  <div class="pvbar">
+    <span style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace">PIPELINE</span>
+    <span style="font-family:'DM Mono',monospace;font-size:13px">All: <span id="pv-all" style="color:var(--green)">$0/mo</span></span>
+    <span style="font-family:'DM Mono',monospace;font-size:13px">Interested: <span id="pv-int" style="color:var(--accent)">$0/mo</span></span>
+    <span style="font-family:'DM Mono',monospace;font-size:13px">Audit: <span id="pv-aud" style="color:var(--amber)">$0/mo</span></span>
+    <span style="font-family:'DM Mono',monospace;font-size:13px">Closed: <span id="pv-cls" style="color:var(--green);font-weight:600">$0/mo</span></span>
+  </div>
+  <div class="pipe" id="pipe-board"></div>
+</div>
+
+<!-- SEQUENCES -->
+<div id="pane-sequences" class="pane">
+  <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px">Email Sequences</div>
+  <div style="font-size:12px;color:var(--txt2);margin-bottom:14px">5-touch cadences — 14-day window per lead</div>
+  <div class="tip"><strong>Key stat:</strong> Average B2B deal closes on touch 5–8. Most reps quit after 1–2. Your biggest competitive edge is just following through.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" id="seq-grid"></div>
+</div>
+
+<!-- SETTINGS -->
+<div id="pane-settings" class="pane">
+  <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:18px">Settings</div>
+  <div class="set-sec">
+    <h3>Your Info</h3>
+    <div class="fr c3">
+      <div class="fld"><label>Your Name</label><input id="cfg-name" value="Lauren Hatwan"></div>
+      <div class="fld"><label>Your Phone</label><input id="cfg-phone" value="(562) 555-0194"></div>
+      <div class="fld"><label>Your Email</label><input id="cfg-email" value="lauren@aquaflowsales.com"></div>
+    </div>
+    <div class="fr c2">
+      <div class="fld"><label>Territory</label><input id="cfg-terr" value="Long Beach / LA South Bay"></div>
+      <div class="fld"><label>Company</label><input id="cfg-co" value="AquaFlow Technologies"></div>
+    </div>
+  </div>
+  <div class="set-sec">
+    <h3>API Keys</h3>
+    <div class="fr c2">
+      <div class="fld"><label>Google Maps API Key</label><input id="cfg-gkey" type="password" placeholder="AIza..."></div>
+      <div class="fld"><label>Anthropic API Key</label><input id="cfg-akey" type="password" placeholder="sk-ant-..."></div>
+    </div>
+  </div>
+  <div class="set-sec">
+    <h3>Data</h3>
+    <div class="brow">
+      <button class="btn" onclick="exportCSV()">Export Leads CSV</button>
+      <button class="btn" onclick="exportCalls()">Export Call Log</button>
+      <button class="btn" onclick="importLeads()">Import CSV</button>
+      <button class="btn" style="color:var(--red)" onclick="nukeData()">Clear All Data</button>
+    </div>
+  </div>
+  <div class="brow"><button class="btn btn-a" onclick="saveSettings()">Save All Settings</button></div>
+</div>
+
+</div><!-- /main -->
+<div class="flash" id="flash"></div>
+
+<script>
+const DEMO=[
+  {id:1,biz:"Torrance Golf Club",type:"Golf course",contact:"Jim Hartley",title:"General Manager",phone:"(310) 540-8000",email:"jim.hartley@torrancegolf.com",source:"Demo",city:"Torrance, CA",size:6200,status:"cold",notes:"",callLog:[]},
+  {id:2,biz:"Marriott Long Beach",type:"Hotel",contact:"Sandra Ruiz",title:"Director of Facilities",phone:"(562) 435-8511",email:"s.ruiz@marriott-lb.com",source:"Demo",city:"Long Beach, CA",size:11400,status:"cold",notes:"",callLog:[]},
+  {id:3,biz:"El Torito Restaurants HQ",type:"Restaurant chain",contact:"David Park",title:"VP Operations",phone:"(714) 255-3400",email:"dpark@eltoritocorp.com",source:"Demo",city:"Irvine, CA",size:8800,status:"cold",notes:"",callLog:[]},
+  {id:4,biz:"Harbor Associates CRE",type:"Commercial RE",contact:"Lori Chen",title:"Property Manager",phone:"(562) 981-0100",email:"lori.chen@harborassoc.com",source:"Demo",city:"Long Beach, CA",size:14200,status:"cold",notes:"",callLog:[]},
+  {id:5,biz:"Pacific Car Wash Network",type:"Car wash",contact:"Robert Finn",title:"Owner",phone:"(310) 830-4400",email:"rfinn@pacificcarwash.net",source:"Demo",city:"Wilmington, CA",size:3900,status:"cold",notes:"",callLog:[]},
+  {id:6,biz:"Dignity Health St. Mary",type:"Hospital",contact:"Angela Torres",title:"Facilities Director",phone:"(562) 491-9000",email:"atorres@dignityhealth.org",source:"Demo",city:"Long Beach, CA",size:22100,status:"cold",notes:"",callLog:[]},
+  {id:7,biz:"CSULB Facilities",type:"University",contact:"Mark Liu",title:"Assoc VP Facilities",phone:"(562) 985-4111",email:"mark.liu@csulb.edu",source:"Demo",city:"Long Beach, CA",size:18400,status:"cold",notes:"",callLog:[]},
+  {id:8,biz:"Del Monte Foods Carson",type:"Manufacturing",contact:"Paul Vega",title:"Plant Manager",phone:"(310) 217-8000",email:"pvega@delmonte.com",source:"Demo",city:"Carson, CA",size:31000,status:"cold",notes:"",callLog:[]},
+  {id:9,biz:"South Bay Golf Center",type:"Golf course",contact:"Tracy Kim",title:"Owner",phone:"(310) 371-8800",email:"tracy@southbaygolf.com",source:"Demo",city:"Torrance, CA",size:4100,status:"cold",notes:"",callLog:[]},
+  {id:10,biz:"DoubleTree by Hilton LAX",type:"Hotel",contact:"Frank Morales",title:"Chief Engineer",phone:"(310) 670-9000",email:"fmorales@doubletree-lax.com",source:"Demo",city:"El Segundo, CA",size:9700,status:"cold",notes:"",callLog:[]},
+  {id:11,biz:"Los Coyotes Country Club",type:"Golf course",contact:"Brian Walsh",title:"Club Manager",phone:"(714) 521-7662",email:"bwalsh@loscoyotescc.com",source:"Demo",city:"Buena Park, CA",size:7300,status:"cold",notes:"",callLog:[]},
+  {id:12,biz:"Hyatt Regency Long Beach",type:"Hotel",contact:"Claire Bennett",title:"Dir. of Engineering",phone:"(562) 491-1234",email:"cbennett@hyattlb.com",source:"Demo",city:"Long Beach, CA",size:12600,status:"cold",notes:"",callLog:[]},
+  {id:13,biz:"Sprouts Farmers Market",type:"Grocery chain",contact:"Tom Nguyen",title:"VP Facilities",phone:"(480) 814-8016",email:"tnguyen@sprouts.com",source:"Demo",city:"LA Region",size:19800,status:"cold",notes:"",callLog:[]},
+  {id:14,biz:"Palos Verdes Golf Club",type:"Golf course",contact:"Susan Hart",title:"Operations Director",phone:"(310) 375-2759",email:"shart@pvgc.com",source:"Demo",city:"Palos Verdes, CA",size:5800,status:"cold",notes:"",callLog:[]},
+  {id:15,biz:"Dignity Health — St. Mary",type:"Hospital",contact:"Kevin Brooks",title:"Facilities Manager",phone:"(562) 491-9100",email:"kbrooks@dignityhealth.org",source:"Demo",city:"Long Beach, CA",size:17600,status:"cold",notes:"",callLog:[]},
+];
+
+let leads=JSON.parse(localStorage.getItem('af_leads')||'null')||DEMO;
+let queue=JSON.parse(localStorage.getItem('af_q')||'[]');
+let cfg=JSON.parse(localStorage.getItem('af_cfg')||'{}');
+let selCallId=null,selPipeId=null,curEmailId=null;
+
+function save(){localStorage.setItem('af_leads',JSON.stringify(leads));localStorage.setItem('af_q',JSON.stringify(queue));}
+function saveCfg(){localStorage.setItem('af_cfg',JSON.stringify(cfg));}
+
+// Keys stored locally
+function saveKeys(){
+  cfg.gkey=document.getElementById('gkey').value;
+  cfg.akey=document.getElementById('akey').value;
+  saveCfg();
+  document.getElementById('key-status').textContent='✓ Keys saved';
+  flash('API keys saved');
+}
+
+// Clock
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});},1000);
+
+// Tabs
+function go(id,el){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  if(id==='pipeline')renderPipe();
+  if(id==='dialer')renderDialer();
+  if(id==='sequences')renderSeq();
+}
+function goById(id){
+  const tabs=['scraper','email','dialer','pipeline','sequences','settings'];
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
+  document.getElementById('pane-'+id).classList.add('active');
+  if(id==='pipeline')renderPipe();
+  if(id==='dialer')renderDialer();
+}
+
+function flash(msg){
+  const el=document.getElementById('flash');
+  el.innerHTML='<span style="color:var(--accent);margin-right:5px">✓</span>'+msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+function stats(){
+  document.getElementById('s-tot').textContent=leads.length;
+  document.getElementById('s-dm').textContent=leads.filter(l=>l.contact&&l.contact!=='Owner / Manager').length;
+  document.getElementById('s-em').textContent=leads.filter(l=>l.email).length;
+  document.getElementById('hdr-count').textContent=leads.length+' leads';
+  if(leads.length){
+    const avg=Math.round(leads.reduce((a,l)=>a+l.size,0)/leads.length);
+    document.getElementById('s-ab').textContent='$'+avg.toLocaleString();
+    document.getElementById('s-as').textContent='$'+Math.round(avg*.3).toLocaleString();
+  }
+}
+
+document.querySelectorAll('.cat').forEach(c=>c.onclick=()=>c.classList.toggle('on'));
+
+// SCRAPER — calls Google Maps directly from browser
+async function scrape(){
+  // Keys are stored server-side in Netlify environment variables
+  const cats=Array.from(document.querySelectorAll('.cat.on')).map(c=>c.dataset.v);
+  if(!cats.length){flash('Select at least one category');return;}
+
+  document.getElementById('scr-load').style.display='block';
+  document.getElementById('leads-wrap').innerHTML='';
+  document.getElementById('prog').style.display='block';
+  document.getElementById('prog-fill').style.width='0%';
+
+  const loc=document.getElementById('loc').value;
+  const radius=document.getElementById('rad').value;
+  const maxPer=parseInt(document.getElementById('rcount').value);
+
+  try{
+    document.getElementById('scr-msg').textContent='Finding '+loc+'...';
+    // Preset coordinates for common LA/SoCal locations to avoid CORS geocoding
+    const COORDS={
+      'long beach':      {lat:33.7701,lng:-118.1937},
+      'long beach, ca':  {lat:33.7701,lng:-118.1937},
+      'los angeles':     {lat:34.0522,lng:-118.2437},
+      'los angeles, ca': {lat:34.0522,lng:-118.2437},
+      'torrance':        {lat:33.8358,lng:-118.3406},
+      'torrance, ca':    {lat:33.8358,lng:-118.3406},
+      'compton':         {lat:33.8958,lng:-118.2201},
+      'carson':          {lat:33.8317,lng:-118.2820},
+      'carson, ca':      {lat:33.8317,lng:-118.2820},
+      'irvine':          {lat:33.6846,lng:-117.8265},
+      'irvine, ca':      {lat:33.6846,lng:-117.8265},
+      'anaheim':         {lat:33.8366,lng:-117.9143},
+      'anaheim, ca':     {lat:33.8366,lng:-117.9143},
+      'santa ana':       {lat:33.7455,lng:-117.8677},
+      'el segundo':      {lat:33.9192,lng:-118.4165},
+      'hawthorne':       {lat:33.9164,lng:-118.3526},
+      'inglewood':       {lat:33.9617,lng:-118.3531},
+      'gardena':         {lat:33.8883,lng:-118.3089},
+      'lakewood':        {lat:33.8536,lng:-118.1338},
+      'downey':          {lat:33.9401,lng:-118.1331},
+      'cerritos':        {lat:33.8584,lng:-118.0650},
+      'fullerton':       {lat:33.8704,lng:-117.9242},
+      'orange':          {lat:33.7879,lng:-117.8531},
+      'pasadena':        {lat:34.1478,lng:-118.1445},
+      'burbank':         {lat:34.1808,lng:-118.3090},
+      'glendale':        {lat:34.1425,lng:-118.2551},
+      'pomona':          {lat:34.0553,lng:-117.7500},
+      'ontario':         {lat:34.0633,lng:-117.6509},
+      'san bernardino':  {lat:34.1083,lng:-117.2898},
+      'riverside':       {lat:33.9806,lng:-117.3755},
+      'san diego':       {lat:32.7157,lng:-117.1611},
+      'san diego, ca':   {lat:32.7157,lng:-117.1611},
+    };
+    const locKey = loc.toLowerCase().trim();
+    let lat, lng;
+    if(COORDS[locKey]){
+      ({lat,lng} = COORDS[locKey]);
+    } else {
+      // Try to parse if user typed raw coordinates like "33.77, -118.19"
+      const coordMatch = loc.match(/([-\d.]+)\s*,\s*([-\d.]+)/);
+      if(coordMatch){
+        lat = parseFloat(coordMatch[1]);
+        lng = parseFloat(coordMatch[2]);
+      } else {
+        // Fall back to Long Beach if unknown
+        lat = 33.7701; lng = -118.1937;
+        flash('Location "'+loc+'" not in preset list — using Long Beach coordinates. You can type a city from the list or enter coords like "33.77, -118.19"');
+      }
+    }
+
+    let newLeads=[];
+    for(let i=0;i<cats.length;i++){
+      const cat=cats[i];
+      document.getElementById('scr-msg').textContent=`Searching: ${cat}... (${i+1}/${cats.length})`;
+      document.getElementById('prog-fill').style.width=Math.round((i/cats.length)*100)+'%';
+      const data=await fetch(`/.netlify/functions/places?action=nearby&lat=${lat}&lng=${lng}&radius=${radius}&type=${encodeURIComponent(cat)}`).then(r=>r.json());
+      if(data.results){
+        for(const place of data.results.slice(0,maxPer)){
+          let phone='Search on Google';
+          try{
+            const det=await fetch(`/.netlify/functions/places?action=details&query=${place.place_id}`).then(r=>r.json());
+            if(det.result&&det.result.formatted_phone_number)phone=det.result.formatted_phone_number;
+          }catch(e){}
+          newLeads.push({id:Date.now()+Math.random(),biz:place.name,type:cat,contact:'Owner / Manager',title:'Decision Maker',phone,email:'',source:'Google Maps',city:place.vicinity||loc,size:estBill(cat),status:'cold',notes:'',callLog:[],rating:place.rating||null});
+        }
+      }
+      await sleep(200);
+    }
+    document.getElementById('prog-fill').style.width='100%';
+    const existing=new Set(leads.map(l=>l.biz.toLowerCase()));
+    const fresh=newLeads.filter(l=>!existing.has(l.biz.toLowerCase()));
+    leads=[...leads,...fresh];
+    save();
+    flash('Found '+fresh.length+' new leads!');
+    document.getElementById('scr-status').textContent=fresh.length+' new · '+leads.length+' total';
+  }catch(err){
+    flash('Error: '+err.message);
+  }
+  document.getElementById('scr-load').style.display='none';
+  document.getElementById('prog').style.display='none';
+  stats();renderLeads();
+}
+
+function estBill(t){
+  const m={'golf':5500,'hotel':10000,'resort':10000,'restaurant':4500,'commercial':12000,'car wash':3500,'laundromat':2800,'manufacturing':25000,'plant':25000,'hospital':18000,'university':15000,'stadium':8000,'grocery':7000,'apartment':9000};
+  t=t.toLowerCase();
+  for(const[k,v]of Object.entries(m)){if(t.includes(k))return Math.round(v*(0.7+Math.random()*.6));}
+  return Math.round(4000*(0.7+Math.random()*.6));
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function renderLeads(){
+  const c=document.getElementById('leads-wrap');
+  if(!leads.length){c.innerHTML='<div class="empty"><p>No leads yet. Hit Search Leads to start.</p></div>';return;}
+  const sorted=[...leads].sort((a,b)=>b.size-a.size);
+  c.innerHTML=`<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table class="tbl">
+    <thead><tr><th>Business</th><th>Decision Maker</th><th>Phone / Email</th><th>Water Bill</th><th>30% Savings</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${sorted.map(l=>`<tr>
+      <td><div style="font-weight:500">${l.biz}</div><div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">${l.city} · ${l.type}${l.rating?' · ⭐'+l.rating:''}</div></td>
+      <td>
+        <div style="font-weight:500">${l.contact}</div>
+        <div style="font-size:11px;color:var(--txt2)">${l.title}</div>
+        <a href="https://www.google.com/search?q=${encodeURIComponent(l.biz+' '+l.type+' facilities manager OR property manager OR owner site:linkedin.com')}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">🔗 Find on LinkedIn</a>
+      </td>
+      <td>
+        <div style="font-family:'DM Mono',monospace;font-size:12px">${l.phone}</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>
+      </td>
+      <td><div style="font-family:'DM Mono',monospace;font-weight:500;color:var(--green)">$${l.size.toLocaleString()}/mo</div></td>
+      <td>
+        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">$${Math.round(l.size*.3).toLocaleString()}/mo</div>
+        <div style="font-size:10px;color:var(--txt3)">$${Math.round(l.size*.3*12).toLocaleString()}/yr</div>
+      </td>
+      <td>${sbadge(l.status)}</td>
+      <td><div style="display:flex;gap:5px;flex-wrap:wrap">
+        <a href="tel:${l.phone.replace(/\D/g,'')}" class="btn btn-call btn-sm" onclick="openCL(${l.id})">📞</a>
+        <button class="btn btn-sm" onclick="prefillEmail(${l.id})">✉</button>
+        <button class="btn btn-sm" onclick="editContact(${l.id})" style="color:var(--txt2)">✏</button>
+        <button class="btn btn-sm" onclick="rmLead(${l.id})" style="color:var(--txt3)">✕</button>
+      </div></td>
+    </tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function rmLead(id){leads=leads.filter(l=>l.id!==id);save();stats();renderLeads();}
+function clearLeads(){if(confirm('Clear all leads?')){leads=[];save();stats();renderLeads();}}
+function editContact(id){
+  const l=leads.find(x=>x.id===id);
+  const name=prompt('Contact name:',l.contact);if(name)l.contact=name;
+  const title=prompt('Title:',l.title);if(title)l.title=title;
+  const email=prompt('Email:',l.email);if(email!==null)l.email=email;
+  const phone=prompt('Phone:',l.phone);if(phone)l.phone=phone;
+  save();renderLeads();flash('Contact updated');
+}
+
+function sbadge(s){
+  const m={cold:['bdg-gr','Cold'],contacted:['bdg-b','Contacted'],interested:['bdg-g','Interested'],
+    callback:['bdg-am','Callback'],not_interested:['bdg-r','Not Interested'],
+    voicemail:['bdg-gr','Voicemail'],no_answer:['bdg-gr','No Answer'],
+    wrong_contact:['bdg-gr','Wrong Contact'],audit:['bdg-p','Audit Booked'],closed:['bdg-g','Closed ✓']};
+  const[cls,lbl]=m[s]||m.cold;
+  return`<span class="bdg ${cls}">${lbl}</span>`;
+}
+
+// EMAIL — calls Anthropic directly
+function prefillEmail(id){
+  const l=leads.find(x=>x.id===id);curEmailId=id;
+  document.getElementById('en').value=l.contact;
+  document.getElementById('et').value=l.title;
+  document.getElementById('eb').value=l.biz;
+  document.getElementById('ee').value=l.email||'';
+  document.getElementById('ebi').value='$'+l.size.toLocaleString()+'/mo';
+  goById('email');
+}
+
+async function genEmail(){
+  // Anthropic key stored server-side in Netlify
+  const name=document.getElementById('en').value||'there';
+  const title=document.getElementById('et').value||'Facilities Manager';
+  const biz=document.getElementById('eb').value||'your company';
+  const type=document.getElementById('ety').value;
+  const tone=document.getElementById('eto').value;
+  const bill=document.getElementById('ebi').value;
+  const notes=document.getElementById('enotes').value;
+  const seq=document.getElementById('est').value;
+  const rn=cfg.name||'Lauren Hatwan';
+  const rp=cfg.phone||'(562) 555-0194';
+  const re=cfg.email||'lauren@aquaflowsales.com';
+  const seqMap={cold:'a first-touch cold outreach email (under 175 words)',fu1:'follow-up #1 (2nd touch day 4, reference not hearing back, under 90 words)',fu2:'follow-up #2 (3rd touch day 9, add industry water insight, under 90 words)',bp:'friendly break-up email (day 14, keep door open, under 70 words)',audit:'confirmation email for scheduled free water audit'};
+  const prompt=`You are a B2B sales rep for AquaFlow (aquaflow.com) — a patented water-saving valve saving businesses 10-30% on water+sewer bills by compressing trapped air before the meter. USA-made, NSF/ANSI certified, installs under 1 hour, no disruption, no maintenance, lifetime warranty, 6-month money-back guarantee.\n\nWrite ${seqMap[seq]} to ${name}, ${title} at ${biz} (a ${type}).${bill?' Monthly water bill: '+bill+'.':''}${notes?' Context: '+notes:''}\n\nTone: ${tone}.\nRules:\n- No hollow openers\n- Sharp hook relevant to their industry\n- CTA = free water audit or 10-min call\n- Sign off: ${rn} | AquaFlow — Long Beach/LA | ${rp} | ${re}\n\nFormat:\nSubject: [subject]\n\n[body]`;
+
+  document.getElementById('eout').style.display='block';
+  document.getElementById('e-gen').style.display='block';
+  document.getElementById('e-content').style.display='none';
+
+  try{
+    const resp=await fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}]})});
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    const text=data.content.map(i=>i.text||'').join('\n');
+    const sm=text.match(/Subject:\s*(.+)/i);
+    const body=text.replace(/Subject:\s*.+\n?/i,'').trim();
+    document.getElementById('esubj').textContent=sm?'Subject: '+sm[1]:'';
+    document.getElementById('ebody').textContent=body;
+    document.getElementById('e-gen').style.display='none';
+    document.getElementById('e-content').style.display='block';
+  }catch(e){
+    document.getElementById('e-gen').innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>';
+  }
+}
+
+function copyEmail(){navigator.clipboard.writeText(document.getElementById('esubj').textContent+'\n\n'+document.getElementById('ebody').textContent).then(()=>flash('Copied!'));}
+function openGmail(){
+  const s=document.getElementById('esubj').textContent.replace('Subject: ','');
+  const b=document.getElementById('ebody').textContent;
+  const to=document.getElementById('ee').value||'';
+  window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(to)}&su=${encodeURIComponent(s)}&body=${encodeURIComponent(b)}`,'_blank');
+}
+function addQueue(){
+  queue.push({id:Date.now(),biz:document.getElementById('eb').value||'Unknown',name:document.getElementById('en').value,email:document.getElementById('ee').value,subject:document.getElementById('esubj').textContent.replace('Subject: ',''),body:document.getElementById('ebody').textContent,type:document.getElementById('est').value,status:'queued',date:new Date().toLocaleDateString()});
+  save();document.getElementById('qcard').style.display='block';renderQueue();flash('Added to queue');
+}
+function showQueue(){document.getElementById('qcard').style.display='block';renderQueue();}
+function renderQueue(){
+  document.getElementById('qcount').textContent=queue.length;
+  document.getElementById('qhdr').textContent=queue.length;
+  const c=document.getElementById('qlist');
+  if(!queue.length){c.innerHTML='<div style="color:var(--txt3);text-align:center;padding:16px;font-size:12px">Queue empty</div>';return;}
+  c.innerHTML=queue.map((q,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--bdr);gap:10px">
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:500;font-size:13px">${q.biz} — ${q.name}</div>
+      <div style="font-size:11px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.subject}</div>
+    </div>
+    <div style="display:flex;gap:5px;flex-shrink:0">
+      ${q.status==='sent'?'<span class="bdg bdg-g">Sent</span>':'<span class="bdg bdg-am">Queued</span>'}
+      <button class="btn btn-sm btn-a" onclick="openGmailQ(${i})">Gmail ↗</button>
+      <button class="btn btn-sm" onclick="sentQ(${i})">✓</button>
+      <button class="btn btn-sm" onclick="rmQ(${i})" style="color:var(--txt3)">✕</button>
+    </div>
+  </div>`).join('');
+}
+function openGmailQ(i){const q=queue[i];window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(q.email||'')}&su=${encodeURIComponent(q.subject)}&body=${encodeURIComponent(q.body)}`,'_blank');}
+function sentQ(i){queue[i].status='sent';save();renderQueue();}
+function rmQ(i){queue.splice(i,1);save();renderQueue();}
+function exportQueue(){const rows=[['Business','Contact','Email','Subject','Status','Date']];queue.forEach(q=>rows.push([q.biz,q.name,q.email,q.subject,q.status,q.date]));dlCSV(rows,'email_queue.csv');}
+function clearEForm(){['en','et','eb','ee','ebi','enotes'].forEach(id=>document.getElementById(id).value='');curEmailId=null;}
+function markContacted(){if(curEmailId){const l=leads.find(x=>x.id===curEmailId);if(l){l.status='contacted';save();flash('Marked contacted');}}}
+
+// DIALER
+function renderDialer(){
+  const c=document.getElementById('dialer-list');
+  if(!leads.length){c.innerHTML='<div class="empty"><p>No leads loaded.</p></div>';return;}
+  c.innerHTML=[...leads].sort((a,b)=>b.size-a.size).map(l=>`<div class="drow ${selCallId===l.id?'sel':''}" id="dr-${l.id}">
+    <div><div style="font-weight:500">${l.biz}</div><div style="font-size:11px;color:var(--txt3)">${l.city} · ${l.type}</div><div style="font-size:11px;color:var(--accent)">${'$'+Math.round(l.size*.3).toLocaleString()}/mo savings</div></div>
+    <div><div style="font-weight:500">${l.contact}</div><div style="font-size:11px;color:var(--txt2)">${l.title}</div></div>
+    <div style="font-family:'DM Mono',monospace;font-size:12px">${l.phone}</div>
+    <div>${sbadge(l.status)}</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <a href="tel:${l.phone.replace(/\D/g,'')}" class="btn btn-call btn-sm" onclick="openCL(${l.id})">📞 Call</a>
+      <button class="btn btn-sm" onclick="prefillEmail(${l.id})">✉</button>
+      <button class="btn btn-sm" onclick="openCL(${l.id})" style="color:var(--txt2)">📝</button>
+    </div>
+  </div>`).join('');
+}
+
+function openCL(id){
+  selCallId=id;
+  const l=leads.find(x=>x.id===id);
+  document.getElementById('cl-title').textContent='Call Log — '+l.biz;
+  document.getElementById('cl-sub').textContent=l.contact+' · '+l.title+' · '+l.phone;
+  document.getElementById('c-notes').value=l.notes||'';
+  document.getElementById('c-out').value='';
+  document.getElementById('clp').style.display='block';
+  document.querySelectorAll('.drow').forEach(r=>r.classList.remove('sel'));
+  const dr=document.getElementById('dr-'+id);if(dr){dr.classList.add('sel');dr.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  document.getElementById('tt-text').innerHTML=`<em>"Hi, is this ${l.contact}? — Great, this is [your name] from AquaFlow out of Long Beach. Quick question — do you handle facilities or utilities for ${l.biz}? ... Perfect. We've been helping ${l.type.toLowerCase()}s in ${l.city.split(',')[0]} cut water and sewer bills by up to 30% — you could be looking at <strong style='color:var(--green)'>$${Math.round(l.size*.3).toLocaleString()}/month in savings</strong>. We do a free water analysis — 10 minutes, zero commitment. Worth a look?"</em>`;
+}
+
+async function genTT(){
+  if(!selCallId){flash('Select a lead first');return;}
+  // Anthropic key stored server-side in Netlify
+  const l=leads.find(x=>x.id===selCallId);
+  document.getElementById('tt-text').innerHTML='<span class="ai-spin"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:4px">Generating talk track...</span></span>';
+  try{
+    const resp=await fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:`Write a 60-second cold call script for selling AquaFlow water-saving valves (saves 10-30% on water/sewer bills, installs in 1hr, 6-month money-back, lifetime warranty). Calling ${l.contact}, ${l.title} at ${l.biz} (${l.type}, ${l.city}). Monthly water bill ~$${l.size.toLocaleString()}. Potential savings: $${Math.round(l.size*.3).toLocaleString()}/mo. Include opener, value prop, one objection handle, soft close (free audit). Conversational tone. Bold the savings figure.`}]}));
+    const data=await resp.json();
+    const text=data.content.map(i=>i.text||'').join('');
+    document.getElementById('tt-text').innerHTML='<em>'+text.replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--green)">$1</strong>')+'</em>';
+  }catch(e){openCL(selCallId);}
+}
+
+function saveCall(){
+  if(!selCallId)return;
+  const l=leads.find(x=>x.id===selCallId);
+  const outcome=document.getElementById('c-out').value;
+  l.notes=document.getElementById('c-notes').value;
+  if(outcome)l.status=outcome;
+  if(!l.callLog)l.callLog=[];
+  l.callLog.push({date:new Date().toLocaleDateString(),outcome,notes:l.notes,cb:document.getElementById('c-cb').value});
+  save();renderDialer();renderPipe();flash('Call logged');
+}
+function emailFromCall(){if(selCallId)prefillEmail(selCallId);}
+
+// PIPELINE
+const STAGES=[{k:'cold',l:'Cold',c:'var(--txt3)'},{k:'contacted',l:'Contacted',c:'var(--blue)'},{k:'interested',l:'Interested',c:'var(--green)'},{k:'audit',l:'Audit Booked',c:'var(--amber)'},{k:'closed',l:'Closed ✓',c:'var(--accent)'}];
+function renderPipe(){
+  document.getElementById('pipe-board').innerHTML=STAGES.map(st=>{
+    const grp=leads.filter(l=>{
+      if(st.k==='cold')return['cold','voicemail','no_answer','wrong_contact'].includes(l.status)||!l.status;
+      if(st.k==='contacted')return['contacted','callback','not_interested'].includes(l.status);
+      return l.status===st.k;
+    });
+    return`<div class="pcol"><div class="pch"><span class="pct" style="color:${st.c}">${st.l}</span><span class="pcc">${grp.length}</span></div>
+    ${grp.map(l=>`<div class="pc ${selPipeId===l.id?'sel':''}" onclick="selPipe(${l.id},this)"><div class="pcn">${l.biz}</div><div class="pcd">${l.contact}</div><div class="pcb">$${l.size.toLocaleString()}/mo</div><div class="pcs">→ $${Math.round(l.size*.3).toLocaleString()}/mo saved</div></div>`).join('')}</div>`;
+  }).join('');
+  const sv=arr=>arr.reduce((s,l)=>s+Math.round(l.size*.3),0);
+  document.getElementById('pv-all').textContent='$'+sv(leads).toLocaleString()+'/mo';
+  document.getElementById('pv-int').textContent='$'+sv(leads.filter(l=>l.status==='interested')).toLocaleString()+'/mo';
+  document.getElementById('pv-aud').textContent='$'+sv(leads.filter(l=>l.status==='audit')).toLocaleString()+'/mo';
+  document.getElementById('pv-cls').textContent='$'+sv(leads.filter(l=>l.status==='closed')).toLocaleString()+'/mo';
+}
+function selPipe(id,el){document.querySelectorAll('.pc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');selPipeId=id;}
+function moveLead(){
+  if(!selPipeId){flash('Click a lead card first');return;}
+  leads.find(x=>x.id===selPipeId).status=document.getElementById('mv-stage').value;
+  save();renderPipe();flash('Lead moved');
+}
+function exportPipe(){
+  const rows=[['Business','Contact','Title','City','Type','Water Bill','30% Savings','Status','Notes']];
+  leads.forEach(l=>rows.push([l.biz,l.contact,l.title,l.city,l.type,'$'+l.size,'$'+Math.round(l.size*.3),l.status,l.notes||'']));
+  dlCSV(rows,'pipeline.csv');
+}
+
+// SEQUENCES
+const SEQS={'Golf courses':['Day 1 — Cold: Irrigation cost angle. Avg course uses 50M+ gal/yr.','Day 4 — Follow-up: Upcoming dry season / LADWP rate hike angle.','Day 9 — Follow-up 2: "A course similar to yours saved $X/mo."','Day 12 — Value add: Free water audit checklist.','Day 16 — Break-up: Keep door open before summer irrigation season.'],'Hotels':['Day 1 — Cold: HVAC + laundry + pool angle. Hotels are top 10 CA water users.','Day 4 — Follow-up: Peak season occupancy driving water spend.','Day 9 — Follow-up 2: ROI calc — bill × 30% × 12 months.','Day 12 — Value add: ESG/sustainability angle for corporate guests.','Day 16 — Break-up: Offer post-peak-season review.'],'Restaurants':['Day 1 — Cold: Kitchen + dishwasher + ice machines. CA surcharges.','Day 4 — Follow-up: Multi-location savings multiplier.','Day 9 — Follow-up 2: NSF certified — health dept approved.','Day 12 — Value add: CA drought surcharge summer forecast.','Day 16 — Break-up: Short, no pressure.'],'CRE / Property Mgmt':['Day 1 — Cold: Reduce OpEx, improve NOI, lower CAM charges.','Day 4 — Follow-up: Easy sell to ownership — you look like a hero.','Day 9 — Follow-up 2: LEED points + green building angle.','Day 12 — Value add: Portfolio audit offer.','Day 16 — Break-up: Free portfolio water analysis report.'],'Hospitals':['Day 1 — Cold: 570 gal/day per staffed bed. Cooling + sterilization.','Day 4 — Follow-up: Sustainability + compliance reporting.','Day 9 — Follow-up 2: Similar hospital case study.','Day 12 — Value add: NSF/ANSI potable water certified — patient safe.','Day 16 — Break-up: Loop in Facilities Director if no response.']};
+function renderSeq(){
+  document.getElementById('seq-grid').innerHTML=Object.entries(SEQS).map(([type,steps])=>`
+    <div class="card"><div class="ctitle">${type}</div>
+    ${steps.map((s,i)=>`<div class="seq-step"><div class="seq-num">${i+1}</div><div style="font-size:12px;line-height:1.6;color:var(--txt2)">${s}</div></div>`).join('')}
+    <button class="btn btn-sm btn-a" onclick="quickSeq('${type.split('/')[0].trim()}')">Generate All 5 Emails ↗</button></div>`).join('');
+}
+function quickSeq(type){
+  const map={'Golf courses':'Golf course','Hotels':'Hotel','Restaurants':'Restaurant / chain','CRE':'Commercial real estate','Hospitals':'Hospital / medical center'};
+  document.getElementById('ety').value=map[type]||'Golf course';
+  goById('email');flash('Type set — fill in contact and generate!');
+}
+
+// SETTINGS
+function saveSettings(){
+  cfg.name=document.getElementById('cfg-name').value;
+  cfg.phone=document.getElementById('cfg-phone').value;
+  cfg.email=document.getElementById('cfg-email').value;
+  cfg.terr=document.getElementById('cfg-terr').value;
+  cfg.co=document.getElementById('cfg-co').value;
+  const gk=document.getElementById('cfg-gkey').value;
+  const ak=document.getElementById('cfg-akey').value;
+  if(gk)cfg.gkey=gk;
+  if(ak)cfg.akey=ak;
+  saveCfg();
+  document.getElementById('rep-name').textContent=cfg.name||'Lauren Hatwan';
+  flash('Settings saved');
+}
+
+// CSV
+function exportCSV(){
+  const rows=[['Business','Type','Contact','Title','Phone','Email','City','Water Bill','30% Savings/Mo','Annual Savings','Status','Notes']];
+  leads.forEach(l=>rows.push([l.biz,l.type,l.contact,l.title,l.phone,l.email||'',l.city,'$'+l.size,'$'+Math.round(l.size*.3),'$'+Math.round(l.size*.3*12),l.status,l.notes||'']));
+  dlCSV(rows,'aquaflow_leads.csv');
+}
+function exportCalls(){
+  const rows=[['Business','Contact','Date','Outcome','Notes','Callback']];
+  leads.forEach(l=>(l.callLog||[]).forEach(c=>rows.push([l.biz,l.contact,c.date,c.outcome,c.notes||'',c.cb||''])));
+  dlCSV(rows,'call_log.csv');
+}
+function dlCSV(rows,name){
+  const csv=rows.map(r=>r.map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:name});
+  a.click();flash('Downloaded: '+name);
+}
+function importLeads(){
+  const inp=Object.assign(document.createElement('input'),{type:'file',accept:'.csv'});
+  inp.onchange=e=>{
+    const r=new FileReader();
+    r.onload=ev=>{
+      const lines=ev.target.result.split('\n').slice(1);let n=0;
+      lines.forEach(line=>{
+        const c=line.split(',').map(v=>v.replace(/^"|"$/g,'').trim());
+        if(c[0]){leads.push({id:Date.now()+n,biz:c[0],type:c[1]||'',contact:c[2]||'',title:c[3]||'',phone:c[4]||'',email:c[5]||'',city:c[6]||'',size:parseInt((c[7]||'0').replace(/[^0-9]/g,''))||3000,status:'cold',notes:'',callLog:[],source:'Import'});n++;}
+      });
+      save();stats();renderLeads();flash('Imported '+n+' leads');
+    };
+    r.readAsText(e.target.files[0]);
+  };
+  inp.click();
+}
+function nukeData(){if(confirm('Delete ALL data?')){leads=[];queue=[];save();stats();renderLeads();flash('Cleared');}}
+
+// INIT
+stats();renderLeads();renderQueue();
+if(cfg.name){document.getElementById('cfg-name').value=cfg.name;document.getElementById('rep-name').textContent=cfg.name;}
+if(cfg.phone)document.getElementById('cfg-phone').value=cfg.phone;
+if(cfg.email)document.getElementById('cfg-email').value=cfg.email;
+if(cfg.terr)document.getElementById('cfg-terr').value=cfg.terr;
+if(cfg.co)document.getElementById('cfg-co').value=cfg.co;
+if(cfg.gkey)document.getElementById('key-status').textContent='✓ Keys loaded';
+</script>
+</body>
+</html>
