@@ -87,7 +87,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .ai-spin .d:nth-child(2){animation-delay:.2s}.ai-spin .d:nth-child(3){animation-delay:.4s}
 @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
 .pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.pcol{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:11px;min-height:260px}
+.pcol{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:11px;min-height:260px}.pcol.drag-over{border-color:var(--accent);background:rgba(0,212,170,0.05)}.pc{cursor:grab}.pc:active{cursor:grabbing}
 .pch{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--bdr)}
 .pct{font-size:11px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.07em;color:var(--txt2);font-weight:500}
 .pcc{font-family:'DM Mono',monospace;font-size:11px;background:var(--surf2);border:1px solid var(--bdr);border-radius:4px;padding:2px 5px}
@@ -805,8 +805,14 @@ function renderPipe(){
       if(st.k==='contacted')return['contacted','callback','not_interested'].includes(l.status);
       return l.status===st.k;
     });
-    return`<div class="pcol"><div class="pch"><span class="pct" style="color:${st.c}">${st.l}</span><span class="pcc">${grp.length}</span></div>
-    ${grp.map(l=>`<div class="pc ${selPipeId===l.id?'sel':''}" onclick="selPipe(${l.id},this)"><div class="pcn">${l.biz}</div><div class="pcd">${l.contact}</div><div class="pcb">$${l.size.toLocaleString()}/mo</div><div class="pcs">→ $${Math.round(l.size*.3).toLocaleString()}/mo saved</div></div>`).join('')}</div>`;
+    return`<div class="pcol" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'${st.k}')">
+      <div class="pch"><span class="pct" style="color:${st.c}">${st.l}</span><span class="pcc">${grp.length}</span></div>
+      ${grp.map(l=>`<div class="pc ${selPipeId===l.id?'sel':''}" draggable="true" ondragstart="onDragStart(event,${l.id})" ondragend="onDragEnd(event)" onclick="selPipe(${l.id},this)">
+        <div class="pcn">${l.biz}</div><div class="pcd">${l.contact}</div>
+        <div class="pcb">$${l.size.toLocaleString()}/mo</div>
+        <div class="pcs">→ $${Math.round(l.size*.3).toLocaleString()}/mo saved</div>
+      </div>`).join('')}
+    </div>`;
   }).join('');
   const sv=arr=>arr.reduce((s,l)=>s+Math.round(l.size*.3),0);
   document.getElementById('pv-all').textContent='$'+sv(leads).toLocaleString()+'/mo';
@@ -819,6 +825,28 @@ function moveLead(){
   if(!selPipeId){flash('Click a lead card first');return;}
   leads.find(x=>x.id===selPipeId).status=document.getElementById('mv-stage').value;
   save();renderPipe();flash('Lead moved');
+}
+function onDragStart(e,id){
+  e.dataTransfer.setData('leadId',String(id));
+  setTimeout(()=>e.target.style.opacity='0.4',0);
+}
+function onDragEnd(e){
+  e.target.style.opacity='1';
+  document.querySelectorAll('.pcol').forEach(c=>c.classList.remove('drag-over'));
+}
+function onDragOver(e){
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+function onDragLeave(e){
+  e.currentTarget.classList.remove('drag-over');
+}
+function onDrop(e,stage){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const id=parseFloat(e.dataTransfer.getData('leadId'));
+  const lead=leads.find(x=>x.id===id);
+  if(lead){lead.status=stage;save();renderPipe();flash('Moved to: '+stage);}
 }
 function exportPipe(){
   const rows=[['Business','Contact','Title','City','Type','Water Bill','30% Savings','Status','Notes']];
