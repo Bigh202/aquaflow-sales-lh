@@ -206,6 +206,39 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     </div>
   </div>
 
+  <div class="card" id="auto-email-card">
+    <div class="ctitle">Auto-Email Campaign</div>
+    <div class="tip"><strong>How it works:</strong> Filters leads by your criteria, generates a personalized AI email for each, and sends from your professional email address. Only sends to leads with a known email address and "Cold" status.</div>
+    <div class="fr c4">
+      <div class="fld"><label>Min Water Bill</label>
+        <select id="ae-minbill">
+          <option value="3000">$3,000+/mo</option>
+          <option value="5000" selected>$5,000+/mo</option>
+          <option value="10000">$10,000+/mo</option>
+          <option value="20000">$20,000+/mo</option>
+        </select>
+      </div>
+      <div class="fld"><label>Daily Send Limit</label>
+        <select id="ae-limit">
+          <option value="10">10 emails/day</option>
+          <option value="20" selected>20 emails/day</option>
+          <option value="30">30 emails/day (max)</option>
+        </select>
+      </div>
+      <div class="fld"><label>From Email</label><input id="ae-from" placeholder="lauren@yourdomain.com"></div>
+      <div class="fld"><label>Status</label><div id="ae-status" style="font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace;padding:8px 0">Ready</div></div>
+    </div>
+    <div id="ae-preview" style="display:none;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace;margin-bottom:6px">Qualifying leads preview:</div>
+      <div id="ae-preview-list" style="font-size:12px;color:var(--txt);line-height:1.8"></div>
+    </div>
+    <div class="brow">
+      <button class="btn btn-sm" onclick="previewAutoEmail()">Preview Qualifying Leads</button>
+      <button class="btn btn-a" onclick="runAutoEmail()">🚀 Send Auto-Campaign</button>
+      <div id="ae-result" style="font-size:12px;font-family:'DM Mono',monospace;align-self:center;color:var(--green)"></div>
+    </div>
+  </div>
+
   <div id="scr-load"><div class="big-spin"></div><div style="color:var(--txt2);font-size:13px;font-family:'DM Mono',monospace" id="scr-msg">Searching...</div></div>
   <div id="leads-wrap"></div>
 </div>
@@ -279,7 +312,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
           </div>
           <div class="brow">
             <button class="btn btn-a btn-sm" onclick="copyEmail()">Copy</button>
-            <button class="btn btn-sm btn-b" onclick="addQueue()">+ Queue</button>
+            <button class="btn btn-sm btn-b" onclick="sendEmailNow()">📨 Send Now</button>
+            <button class="btn btn-sm" onclick="addQueue()">+ Queue</button>
             <button class="btn btn-sm" onclick="openGmail()">Gmail ↗</button>
             <button class="btn btn-sm" onclick="markContacted()">Mark Contacted</button>
           </div>
@@ -512,57 +546,12 @@ async function scrape(){
 
   try{
     document.getElementById('scr-msg').textContent='Finding '+loc+'...';
-    // Preset coordinates for common LA/SoCal locations to avoid CORS geocoding
-    const COORDS={
-      'long beach':      {lat:33.7701,lng:-118.1937},
-      'long beach, ca':  {lat:33.7701,lng:-118.1937},
-      'los angeles':     {lat:34.0522,lng:-118.2437},
-      'los angeles, ca': {lat:34.0522,lng:-118.2437},
-      'torrance':        {lat:33.8358,lng:-118.3406},
-      'torrance, ca':    {lat:33.8358,lng:-118.3406},
-      'compton':         {lat:33.8958,lng:-118.2201},
-      'carson':          {lat:33.8317,lng:-118.2820},
-      'carson, ca':      {lat:33.8317,lng:-118.2820},
-      'irvine':          {lat:33.6846,lng:-117.8265},
-      'irvine, ca':      {lat:33.6846,lng:-117.8265},
-      'anaheim':         {lat:33.8366,lng:-117.9143},
-      'anaheim, ca':     {lat:33.8366,lng:-117.9143},
-      'santa ana':       {lat:33.7455,lng:-117.8677},
-      'el segundo':      {lat:33.9192,lng:-118.4165},
-      'hawthorne':       {lat:33.9164,lng:-118.3526},
-      'inglewood':       {lat:33.9617,lng:-118.3531},
-      'gardena':         {lat:33.8883,lng:-118.3089},
-      'lakewood':        {lat:33.8536,lng:-118.1338},
-      'downey':          {lat:33.9401,lng:-118.1331},
-      'cerritos':        {lat:33.8584,lng:-118.0650},
-      'fullerton':       {lat:33.8704,lng:-117.9242},
-      'orange':          {lat:33.7879,lng:-117.8531},
-      'pasadena':        {lat:34.1478,lng:-118.1445},
-      'burbank':         {lat:34.1808,lng:-118.3090},
-      'glendale':        {lat:34.1425,lng:-118.2551},
-      'pomona':          {lat:34.0553,lng:-117.7500},
-      'ontario':         {lat:34.0633,lng:-117.6509},
-      'san bernardino':  {lat:34.1083,lng:-117.2898},
-      'riverside':       {lat:33.9806,lng:-117.3755},
-      'san diego':       {lat:32.7157,lng:-117.1611},
-      'san diego, ca':   {lat:32.7157,lng:-117.1611},
-    };
-    const locKey = loc.toLowerCase().trim();
-    let lat, lng;
-    if(COORDS[locKey]){
-      ({lat,lng} = COORDS[locKey]);
-    } else {
-      // Try to parse if user typed raw coordinates like "33.77, -118.19"
-      const coordMatch = loc.match(/([-\d.]+)\s*,\s*([-\d.]+)/);
-      if(coordMatch){
-        lat = parseFloat(coordMatch[1]);
-        lng = parseFloat(coordMatch[2]);
-      } else {
-        // Fall back to Long Beach if unknown
-        lat = 33.7701; lng = -118.1937;
-        flash('Location "'+loc+'" not in preset list — using Long Beach coordinates. You can type a city from the list or enter coords like "33.77, -118.19"');
-      }
-    }
+    // Geocode through Netlify proxy — works for any city worldwide
+    const geoResp=await fetch('/.netlify/functions/places?action=geocode&query='+encodeURIComponent(loc));
+    const geoData=await geoResp.json();
+    if(!geoData.results||!geoData.results[0])throw new Error('Location not found — try something like "Torrance, CA" or "Miami, FL"');
+    const{lat,lng}=geoData.results[0].geometry.location;
+    document.getElementById('scr-msg').textContent='Found: '+geoData.results[0].formatted_address;
 
     let newLeads=[];
     for(let i=0;i<cats.length;i++){
@@ -917,6 +906,86 @@ function importLeads(){
   inp.click();
 }
 function nukeData(){if(confirm('Delete ALL data?')){leads=[];queue=[];save();stats();renderLeads();flash('Cleared');}}
+
+// SEND EMAIL NOW (single email from composer)
+async function sendEmailNow(){
+  const to=document.getElementById('ee').value;
+  if(!to||!to.includes('@')){flash('Add an email address first');return;}
+  const subject=document.getElementById('esubj').textContent.replace('Subject: ','');
+  const body=document.getElementById('ebody').textContent;
+  if(!subject||!body){flash('Generate an email first');return;}
+  const btn=event.target;
+  btn.textContent='Sending...';btn.disabled=true;
+  try{
+    const resp=await fetch('/.netlify/functions/sendemail',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({to,subject,body,leadId:curEmailId,leadBiz:document.getElementById('eb').value})});
+    const data=await resp.json();
+    if(data.success){
+      flash('Email sent to '+to+' ✓');
+      if(curEmailId){const l=leads.find(x=>x.id===curEmailId);if(l){l.status='contacted';save();}}
+      btn.textContent='✓ Sent';
+    } else {
+      flash('Send failed: '+(data.error||'Unknown error'));
+      btn.textContent='📨 Send Now';btn.disabled=false;
+    }
+  }catch(e){flash('Error: '+e.message);btn.textContent='📨 Send Now';btn.disabled=false;}
+}
+
+// AUTO-EMAIL CAMPAIGN
+function previewAutoEmail(){
+  const minBill=parseInt(document.getElementById('ae-minbill').value);
+  const limit=parseInt(document.getElementById('ae-limit').value);
+  const qualified=leads.filter(l=>l.email&&l.email.includes('@')&&l.size>=minBill&&l.status==='cold').slice(0,limit);
+  const preview=document.getElementById('ae-preview');
+  const list=document.getElementById('ae-preview-list');
+  if(!qualified.length){
+    list.innerHTML='<span style="color:var(--red)">No qualifying leads found. Leads need: email address, Cold status, and bill above $'+minBill.toLocaleString()+'/mo.</span>';
+  } else {
+    list.innerHTML=qualified.map(l=>`✓ ${l.biz} — ${l.email} — $${l.size.toLocaleString()}/mo`).join('<br>');
+  }
+  preview.style.display='block';
+  flash(qualified.length+' leads qualify for auto-email');
+}
+
+async function runAutoEmail(){
+  const minBill=parseInt(document.getElementById('ae-minbill').value);
+  const limit=parseInt(document.getElementById('ae-limit').value);
+  const fromEmail=document.getElementById('ae-from').value;
+  const qualified=leads.filter(l=>l.email&&l.email.includes('@')&&l.size>=minBill&&l.status==='cold').slice(0,limit);
+  if(!qualified.length){flash('No qualifying leads — add emails to leads first');return;}
+  if(!confirm('Send '+qualified.length+' personalized emails now?'))return;
+  document.getElementById('ae-status').textContent='Sending '+qualified.length+' emails...';
+  document.getElementById('ae-status').style.color='var(--amber)';
+  document.getElementById('ae-result').textContent='';
+  try{
+    const resp=await fetch('/.netlify/functions/autoemail',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({leads:qualified,minBill,dailyLimit:limit,fromEmail})});
+    const data=await resp.json();
+    if(data.error){throw new Error(data.error);}
+    // Update lead statuses
+    if(data.results){
+      data.results.forEach(r=>{
+        if(r.success){
+          const l=leads.find(x=>x.id===r.leadId);
+          if(l){
+            l.status='contacted';
+            if(!l.callLog)l.callLog=[];
+            l.callLog.push({date:new Date().toLocaleDateString(),outcome:'emailed',notes:'Auto-email sent: '+r.subject,cb:''});
+          }
+        }
+      });
+      save();stats();renderLeads();
+    }
+    document.getElementById('ae-status').textContent='Done!';
+    document.getElementById('ae-status').style.color='var(--green)';
+    document.getElementById('ae-result').textContent='✓ Sent: '+data.sent+' | Failed: '+data.failed+' | Skipped: '+data.skipped;
+    flash('Campaign complete — '+data.sent+' emails sent!');
+  }catch(e){
+    document.getElementById('ae-status').textContent='Error';
+    document.getElementById('ae-status').style.color='var(--red)';
+    flash('Error: '+e.message);
+  }
+}
 
 // INIT
 stats();renderLeads();renderQueue();
