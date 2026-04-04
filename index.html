@@ -429,13 +429,6 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     </div>
   </div>
   <div class="set-sec">
-    <h3>API Keys</h3>
-    <div class="fr c2">
-      <div class="fld"><label>Google Maps API Key</label><input id="cfg-gkey" type="password" placeholder="AIza..."></div>
-      <div class="fld"><label>Anthropic API Key</label><input id="cfg-akey" type="password" placeholder="sk-ant-..."></div>
-    </div>
-  </div>
-  <div class="set-sec">
     <h3>Data</h3>
     <div class="brow">
       <button class="btn" onclick="exportCSV()">Export Leads CSV</button>
@@ -872,10 +865,6 @@ function saveSettings(){
   cfg.email=document.getElementById('cfg-email').value;
   cfg.terr=document.getElementById('cfg-terr').value;
   cfg.co=document.getElementById('cfg-co').value;
-  const gk=document.getElementById('cfg-gkey').value;
-  const ak=document.getElementById('cfg-akey').value;
-  if(gk)cfg.gkey=gk;
-  if(ak)cfg.akey=ak;
   saveCfg();
   document.getElementById('rep-name').textContent=cfg.name||'Lauren Hatwan';
   flash('Settings saved');
