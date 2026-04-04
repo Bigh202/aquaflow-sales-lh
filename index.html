@@ -31,10 +31,11 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .main{padding:20px;max-width:1400px;margin:0 auto}
 .pane{display:none}.pane.active{display:block}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
 .stat{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:14px}
-.stat .v{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:3px}
-.stat .l{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em}
+.stat{padding:22px 24px}
+.stat .v{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;margin-bottom:6px;line-height:1}
+.stat .l{font-size:12px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.09em}
 .card{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:18px;margin-bottom:14px}
 .ctitle{font-size:11px;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px;font-family:'DM Mono',monospace}
 .fr{display:grid;gap:10px;margin-bottom:10px}
@@ -153,12 +154,6 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     <div class="stat"><div class="v" style="color:var(--accent)" id="s-tot">0</div><div class="l">Total Leads</div></div>
     <div class="stat"><div class="v" style="color:var(--green)" id="s-dm">0</div><div class="l">Decision Makers</div></div>
     <div class="stat"><div class="v" style="color:var(--blue)" id="s-em">0</div><div class="l">Emails Found</div></div>
-    <div class="stat"><div class="v" style="color:var(--amber)" id="s-ab">$0</div><div class="l">Avg Water Bill</div></div>
-    <div class="stat"><div class="v" style="color:var(--green)" id="s-as">$0</div><div class="l">Avg 30% Savings</div></div>
-  </div>
-
-  <div class="setup-bar">
-    <div class="setup-title">✅ API keys are stored securely in Netlify — no setup needed here. To update keys go to Netlify → Site Settings → Environment Variables.</div>
   </div>
 
   <div class="card">
@@ -525,11 +520,6 @@ function stats(){
   document.getElementById('s-dm').textContent=leads.filter(l=>l.contact&&l.contact!=='Owner / Manager').length;
   document.getElementById('s-em').textContent=leads.filter(l=>l.email).length;
   document.getElementById('hdr-count').textContent=leads.length+' leads';
-  if(leads.length){
-    const avg=Math.round(leads.reduce((a,l)=>a+l.size,0)/leads.length);
-    document.getElementById('s-ab').textContent='$'+avg.toLocaleString();
-    document.getElementById('s-as').textContent='$'+Math.round(avg*.3).toLocaleString();
-  }
 }
 
 document.querySelectorAll('.cat').forEach(c=>c.onclick=()=>c.classList.toggle('on'));
