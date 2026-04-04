@@ -546,15 +546,22 @@ async function scrape(){
   document.getElementById('prog-fill').style.width='0%';
 
   const loc=document.getElementById('loc').value;
+  const placeId=document.getElementById('loc').dataset.placeId||'';
   const radius=document.getElementById('rad').value;
   const maxPer=parseInt(document.getElementById('rcount').value);
 
   try{
     document.getElementById('scr-msg').textContent='Finding '+loc+'...';
-    // Geocode through Netlify proxy — works for any city worldwide
-    const geoResp=await fetch('/.netlify/functions/places?action=geocode&query='+encodeURIComponent(loc));
+    // Geocode through Netlify proxy — use place_id when available (from autocomplete) for reliability
+    const geoUrl=placeId
+      ?'/.netlify/functions/places?action=geocode&placeid='+encodeURIComponent(placeId)
+      :'/.netlify/functions/places?action=geocode&query='+encodeURIComponent(loc);
+    const geoResp=await fetch(geoUrl);
     const geoData=await geoResp.json();
-    if(!geoData.results||!geoData.results[0])throw new Error('Location not found — try something like "Torrance, CA" or "Miami, FL"');
+    if(!geoData.results||!geoData.results[0]){
+      console.error('Geocode response:',geoData);
+      throw new Error('Location not found'+(geoData.status?' ('+geoData.status+')':'')+' — try selecting a city from the autocomplete dropdown');
+    }
     const{lat,lng}=geoData.results[0].geometry.location;
     document.getElementById('scr-msg').textContent='Found: '+geoData.results[0].formatted_address;
 
@@ -577,12 +584,10 @@ async function scrape(){
       await sleep(200);
     }
     document.getElementById('prog-fill').style.width='100%';
-    const existing=new Set(leads.map(l=>l.biz.toLowerCase()));
-    const fresh=newLeads.filter(l=>!existing.has(l.biz.toLowerCase()));
-    leads=[...leads,...fresh];
+    leads=newLeads;
     save();
-    flash('Found '+fresh.length+' new leads!');
-    document.getElementById('scr-status').textContent=fresh.length+' new · '+leads.length+' total';
+    flash('Found '+newLeads.length+' leads!');
+    document.getElementById('scr-status').textContent=newLeads.length+' leads found';
   }catch(err){
     flash('Error: '+err.message);
   }
@@ -999,6 +1004,7 @@ async function runAutoEmail(){
   const acList=document.getElementById('loc-ac');
 
   locIn.addEventListener('input',()=>{
+    locIn.dataset.placeId='';
     clearTimeout(acTimer);
     const q=locIn.value.trim();
     if(q.length<2){hideAC();return;}
@@ -1018,7 +1024,7 @@ async function runAutoEmail(){
   }
 
   function pickAC(i){
-    if(acPreds[i]){locIn.value=acPreds[i].description;hideAC();}
+    if(acPreds[i]){locIn.value=acPreds[i].description;locIn.dataset.placeId=acPreds[i].place_id||'';hideAC();}
   }
 
   function hideAC(){acList.style.display='none';acIdx=-1;}

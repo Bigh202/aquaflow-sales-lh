@@ -29,12 +29,16 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'GOOGLE_MAPS_KEY not set' }) };
   }
 
-  const { action, query, lat, lng, radius, type } = event.queryStringParameters || {};
+  const { action, query, placeid, lat, lng, radius, type } = event.queryStringParameters || {};
 
   try {
     let url;
     if (action === 'geocode') {
-      url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${API_KEY}`;
+      if (placeid) {
+        url = `https://maps.googleapis.com/maps/api/geocode/json?place_id=${encodeURIComponent(placeid)}&key=${API_KEY}`;
+      } else {
+        url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${API_KEY}`;
+      }
     } else if (action === 'autocomplete') {
       url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&types=(cities)&key=${API_KEY}`;
     } else if (action === 'nearby') {
