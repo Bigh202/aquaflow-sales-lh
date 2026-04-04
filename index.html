@@ -473,6 +473,7 @@ let leads=JSON.parse(localStorage.getItem('af_leads')||'null')||DEMO;
 let queue=JSON.parse(localStorage.getItem('af_q')||'[]');
 let cfg=JSON.parse(localStorage.getItem('af_cfg')||'{}');
 let selCallId=null,selPipeId=null,curEmailId=null;
+let lastLat=null,lastLng=null,lastLocText='';
 
 function save(){localStorage.setItem('af_leads',JSON.stringify(leads));localStorage.setItem('af_q',JSON.stringify(queue));}
 function saveCfg(){localStorage.setItem('af_cfg',JSON.stringify(cfg));}
@@ -541,19 +542,26 @@ async function scrape(){
   const maxPer=parseInt(document.getElementById('rcount').value);
 
   try{
-    document.getElementById('scr-msg').textContent='Finding '+loc+'...';
-    // Geocode through Netlify proxy — use place_id when available (from autocomplete) for reliability
-    const geoUrl=placeId
-      ?'/.netlify/functions/places?action=geocode&placeid='+encodeURIComponent(placeId)
-      :'/.netlify/functions/places?action=geocode&query='+encodeURIComponent(loc);
-    const geoResp=await fetch(geoUrl);
-    const geoData=await geoResp.json();
-    if(!geoData.results||!geoData.results[0]){
-      console.error('Geocode response:',geoData);
-      throw new Error('Location not found'+(geoData.status?' ('+geoData.status+')':'')+' — try selecting a city from the autocomplete dropdown');
+    let lat,lng;
+    if(loc===lastLocText&&lastLat!==null){
+      lat=lastLat;lng=lastLng;
+      document.getElementById('scr-msg').textContent='Using cached location: '+loc;
+    }else{
+      document.getElementById('scr-msg').textContent='Finding '+loc+'...';
+      // Geocode through Netlify proxy — use place_id when available (from autocomplete) for reliability
+      const geoUrl=placeId
+        ?'/.netlify/functions/places?action=geocode&placeid='+encodeURIComponent(placeId)
+        :'/.netlify/functions/places?action=geocode&query='+encodeURIComponent(loc);
+      const geoResp=await fetch(geoUrl);
+      const geoData=await geoResp.json();
+      if(!geoData.results||!geoData.results[0]){
+        console.error('Geocode response:',geoData);
+        throw new Error('Location not found'+(geoData.status?' ('+geoData.status+')':'')+' — try selecting a city from the autocomplete dropdown');
+      }
+      ({lat,lng}=geoData.results[0].geometry.location);
+      lastLat=lat;lastLng=lng;lastLocText=loc;
+      document.getElementById('scr-msg').textContent='Found: '+geoData.results[0].formatted_address;
     }
-    const{lat,lng}=geoData.results[0].geometry.location;
-    document.getElementById('scr-msg').textContent='Found: '+geoData.results[0].formatted_address;
 
     let newLeads=[];
     for(let i=0;i<cats.length;i++){
