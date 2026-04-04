@@ -117,6 +117,73 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 @media(max-width:768px){.stats{grid-template-columns:repeat(2,1fr)}.fr.c4,.fr.c3{grid-template-columns:1fr 1fr}.pipe{grid-template-columns:repeat(2,1fr)}.drow{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.fr.c2,.fr.c3,.fr.c4{grid-template-columns:1fr}.main{padding:12px}.pipe{grid-template-columns:1fr}}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:3px}
+/* LIGHT MODE */
+body.light{--bg:#f0f2f5;--surf:#ffffff;--surf2:#f5f7fa;--surf3:#e8eaf0;--bdr:rgba(0,0,0,0.09);--bdr2:rgba(0,0,0,0.16);--txt:#1a1d23;--txt2:#555b66;--txt3:#8b919e}
+body.light::before{display:none}
+body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
+.theme-btn{background:transparent;border:1px solid var(--bdr2);border-radius:7px;color:var(--txt2);font-size:15px;padding:3px 8px;cursor:pointer;line-height:1;transition:all 0.15s}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* MODALS */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-ov.show{display:flex}
+.modal-box{background:var(--surf);border:1px solid var(--bdr2);border-radius:16px;padding:26px 22px;max-width:560px;width:100%;position:relative;max-height:90vh;overflow-y:auto}
+.modal-box.wide{max-width:760px}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800}
+.modal-x{background:transparent;border:none;color:var(--txt3);font-size:18px;cursor:pointer;padding:2px 8px;border-radius:5px;line-height:1}
+.modal-x:hover{color:var(--txt)}
+/* BRIEFING */
+#briefing-ov{z-index:3000;background:rgba(0,0,0,0.88)}
+.briefing-box{background:linear-gradient(135deg,var(--surf) 0%,var(--surf2) 100%);border:1px solid var(--accent);border-radius:20px;padding:44px 40px;max-width:480px;width:100%;text-align:center}
+.briefing-prog{height:3px;background:var(--surf3);border-radius:2px;margin-top:28px;overflow:hidden}
+.briefing-fill{height:100%;background:var(--accent);border-radius:2px;width:0;animation:bProg 5s linear forwards}
+@keyframes bProg{from{width:0}to{width:100%}}
+/* CALL PREP */
+.prep-section{margin-bottom:14px}
+.prep-sec-title{font-size:10px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.09em;color:var(--accent);margin-bottom:7px}
+.prep-obj{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;margin-bottom:6px}
+.prep-obj-q{font-size:11px;color:var(--amber);font-family:'DM Mono',monospace;font-weight:500;margin-bottom:3px}
+.prep-obj-a{font-size:12px;color:var(--txt);line-height:1.55}
+/* TEMPLATES */
+.tmpl-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.tmpl-tab{padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;border:1px solid var(--bdr);color:var(--txt2);font-family:'DM Mono',monospace;transition:all 0.15s}
+.tmpl-tab.on{background:rgba(0,212,170,0.1);color:var(--accent);border-color:rgba(0,212,170,0.35)}
+.tmpl-list{display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto}
+.tmpl-item{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:9px 12px;cursor:pointer;transition:all 0.15s;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.tmpl-item:hover{border-color:var(--accent);background:rgba(0,212,170,0.04)}
+.tmpl-item-name{font-size:12px;font-weight:500;margin-bottom:2px}
+.tmpl-item-prev{font-size:11px;color:var(--txt3);overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
+/* RESEARCH MODAL */
+#research-modal .rlink{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr);text-decoration:none;color:var(--txt);font-size:13px;transition:color 0.15s}
+#research-modal .rlink:last-of-type{border-bottom:none}
+#research-modal .rlink:hover{color:var(--accent)}
+#research-modal .rlink-icon{font-size:18px;width:26px;flex-shrink:0;text-align:center}
+/* OPEN TRACKING */
+.open-track{display:flex;align-items:center;gap:5px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;user-select:none}
+.open-dot{width:7px;height:7px;border-radius:50%;background:var(--txt3);flex-shrink:0;transition:all 0.3s}
+.open-dot.tracked{background:var(--amber);box-shadow:0 0 4px var(--amber)}
+.open-dot.opened{background:var(--green);box-shadow:0 0 5px var(--green)}
+/* AUTOSAVE */
+.autosave-badge{font-size:10px;font-family:'DM Mono',monospace;color:var(--green);opacity:0;transition:opacity 0.4s;display:inline-block}
+.autosave-badge.show{opacity:1}
+/* SHORTCUTS */
+.shortcut-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--bdr);font-size:13px}
+.shortcut-row:last-child{border-bottom:none}
+.kbd{background:var(--surf2);border:1px solid var(--bdr2);border-radius:4px;padding:2px 7px;font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2);box-shadow:0 1px 2px rgba(0,0,0,0.15)}
+/* MAP */
+.map-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--txt2)}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.map-leads-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:7px;margin-top:12px;max-height:300px;overflow-y:auto}
+.map-lead-card{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:9px 12px;cursor:pointer;transition:all 0.15s;border-left-width:3px}
+.map-lead-card:hover{opacity:0.85}
+/* OPEN RATE BAR */
+.open-rate-bar{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:9px 14px;display:flex;gap:18px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.or-stat .or-v{font-family:'DM Mono',monospace;font-size:17px;font-weight:700;color:var(--accent)}
+.or-stat .or-l{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em}
+/* IMPORT PREVIEW */
+.import-row{display:flex;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--bdr);font-size:12px;align-items:center;flex-wrap:wrap}
+.import-row:last-child{border-bottom:none}
 /* Lead Panel */
 #lead-panel{position:fixed;right:0;top:0;height:100%;width:420px;background:var(--surf);border-left:1px solid var(--bdr2);z-index:500;transform:translateX(100%);transition:transform 0.25s;overflow-y:auto;padding:24px}
 #lead-panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:499;display:none}
@@ -184,6 +251,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     <span><span class="dot"></span><span id="rep-name">Lauren Hatwan</span> — Long Beach</span>
     <span id="hdr-count" style="color:var(--accent)">0 leads</span>
     <span id="clock" style="color:var(--txt3);font-size:11px"></span>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle dark/light mode">☀️</button>
+    <button class="theme-btn" onclick="document.getElementById('shortcuts-ov').classList.add('show')" title="Keyboard shortcuts (?)">⌨️</button>
     <button class="logout-btn" onclick="logout()">Sign Out</button>
   </div>
 </div>
@@ -196,6 +265,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div class="tab" onclick="go('sequences',this)">Sequences</div>
   <div class="tab" onclick="go('calculator',this)">Calculator</div>
   <div class="tab" onclick="go('settings',this)">Settings</div>
+  <div class="tab" onclick="go('map',this)">🗺 Map</div>
 </div>
 
 <div class="main">
@@ -322,12 +392,25 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 <!-- EMAIL -->
 <div id="pane-email" class="pane">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
     <div>
       <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Email Composer</div>
       <div style="font-size:12px;color:var(--txt2);margin-top:2px">AI-personalized cold outreach per lead</div>
     </div>
     <button class="btn btn-sm" onclick="showQueue()">📋 Send Queue (<span id="qhdr">0</span>)</button>
+  </div>
+  <div class="open-rate-bar" id="open-rate-bar">
+    <span style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace">EMAIL TRACKING:</span>
+    <div class="or-stat"><div class="or-v" id="or-rate">0%</div><div class="or-l">Open Rate (Week)</div></div>
+    <div class="or-stat"><div class="or-v" id="or-opened">0</div><div class="or-l">Opened</div></div>
+    <div class="or-stat"><div class="or-v" id="or-tracked">0</div><div class="or-l">Tracked</div></div>
+    <div class="or-stat"><div class="or-v" id="or-sent">0</div><div class="or-l">Sent This Week</div></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="ctitle">📄 Quick Templates</div>
+    <div class="tmpl-tabs" id="tmpl-tabs"></div>
+    <div class="tmpl-list" id="tmpl-list"></div>
+    <div style="font-size:11px;color:var(--txt3);margin-top:8px;font-family:'DM Mono',monospace">Click a template to load it into the composer. Templates are auto-filled with your lead info.</div>
   </div>
   <div class="tip"><strong>Best angle:</strong> Free water audit, no commitment. AquaFlow 6-month money-back + lifetime warranty closes the trust gap. Golf: irrigation. Hotels: HVAC + laundry. Hospitals: cooling + sterilization. CRE: NOI improvement.</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
@@ -457,7 +540,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       </div>
       <div class="fld"><label>Callback Date/Time</label><input type="datetime-local" id="c-cb"></div>
     </div>
-    <div class="fld" style="margin-bottom:10px"><label>Notes</label><textarea id="c-notes" rows="3" placeholder="Spoke with GM, very interested, wants audit next week..."></textarea></div>
+    <div class="fld" style="margin-bottom:10px"><label>Notes <span class="autosave-badge" id="autosave-ind">✓ Saved</span></label><textarea id="c-notes" rows="3" placeholder="Spoke with GM, very interested, wants audit next week..."></textarea></div>
     <div class="brow">
       <button class="btn btn-a" onclick="saveCall()">Save Log</button>
       <button class="btn btn-b btn-sm" onclick="emailFromCall()">✉ Write Follow-up</button>
@@ -554,6 +637,28 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div class="brow"><button class="btn btn-a" onclick="saveSettings()">Save All Settings</button></div>
 </div>
 
+<!-- MAP -->
+<div id="pane-map" class="pane">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Territory Map</div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:2px">Long Beach / LA South Bay coverage area</div>
+    </div>
+    <button class="btn btn-sm" onclick="renderMap()">🔄 Refresh Leads</button>
+  </div>
+  <div class="map-legend">
+    <span style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace">STATUS:</span>
+    <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div>Interested</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Contacted / Callback</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Cold</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#a855f7"></div>Audit Booked</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#00d4aa"></div>Closed</div>
+  </div>
+  <iframe src="https://maps.google.com/maps?q=Long+Beach,+CA&output=embed&z=11" style="width:100%;height:400px;border:none;border-radius:10px;margin-bottom:14px" loading="lazy"></iframe>
+  <div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;margin-bottom:8px">ALL LEADS — click any card to open lead details</div>
+  <div id="map-leads-grid" class="map-leads-grid"></div>
+</div>
+
 </div><!-- /main -->
 <div class="flash" id="flash"></div>
 
@@ -602,6 +707,107 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
 </div>
 
+<!-- DAILY BRIEFING MODAL -->
+<div class="modal-ov" id="briefing-ov">
+  <div class="briefing-box">
+    <div style="font-size:40px;margin-bottom:10px">☀️</div>
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px" id="brief-date"></div>
+    <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:18px">Good morning, Lauren!</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px" id="brief-stats"></div>
+    <div style="font-size:13px;color:var(--txt2);line-height:1.65;font-style:italic;background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.2);border-radius:8px;padding:12px" id="brief-quote"></div>
+    <div class="briefing-prog"><div class="briefing-fill" id="brief-fill"></div></div>
+    <button class="btn btn-sm" style="margin-top:14px;width:100%;justify-content:center" onclick="closeBriefing()">Let's Go →</button>
+  </div>
+</div>
+
+<!-- CALL PREP MODAL -->
+<div class="modal-ov" id="callprep-ov">
+  <div class="modal-box wide">
+    <div class="modal-hdr">
+      <div class="modal-title">📞 Call Prep Card</div>
+      <button class="modal-x" onclick="closeCallPrep()">×</button>
+    </div>
+    <div class="prep-section">
+      <div style="font-size:16px;font-weight:600" id="prep-biz"></div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:2px" id="prep-contact"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div>
+        <div class="prep-sec-title">💧 Water Usage Fact</div>
+        <div class="tt" style="margin:0"><div class="tt-text" id="prep-fact" style="font-size:12px"></div></div>
+      </div>
+      <div>
+        <div class="prep-sec-title">💰 Savings Potential</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--green)" id="prep-savings"></div>
+        <div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace" id="prep-savings-yr"></div>
+      </div>
+    </div>
+    <div class="prep-section">
+      <div class="prep-sec-title">🛡 Objections & Responses (Top 3)</div>
+      <div id="prep-objs"></div>
+    </div>
+    <div class="prep-section">
+      <div class="prep-sec-title">📋 Opening Talk Track</div>
+      <div class="tt" style="margin:0"><div class="tt-text" id="prep-script" style="font-size:12px"></div></div>
+    </div>
+    <div style="margin-top:18px">
+      <a id="prep-call-btn" href="#" class="btn btn-call" style="width:100%;justify-content:center;font-size:15px;padding:13px 0;display:flex" onclick="readyToCall()">✅ Ready to Call — Dial Now →</a>
+    </div>
+  </div>
+</div>
+
+<!-- RESEARCH MODAL -->
+<div class="modal-ov" id="research-ov">
+  <div class="modal-box" id="research-modal">
+    <div class="modal-hdr">
+      <div class="modal-title">🔍 Competitor Research</div>
+      <button class="modal-x" onclick="closeResearch()">×</button>
+    </div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:2px" id="res-biz"></div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px" id="res-type"></div>
+    <div id="res-links"></div>
+    <div class="fld" style="margin-top:14px">
+      <label>Research Notes <span style="font-size:10px;color:var(--txt3)">(saved per lead)</span></label>
+      <textarea id="res-notes" rows="4" placeholder="Key contacts found, recent news, pain points mentioned online..."></textarea>
+    </div>
+    <div class="brow" style="margin-top:10px">
+      <button class="btn btn-a btn-sm" onclick="saveResearchNotes()">Save Notes</button>
+    </div>
+  </div>
+</div>
+
+<!-- KEYBOARD SHORTCUTS MODAL -->
+<div class="modal-ov" id="shortcuts-ov">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title">⌨️ Keyboard Shortcuts</div>
+      <button class="modal-x" onclick="document.getElementById('shortcuts-ov').classList.remove('show')">×</button>
+    </div>
+    <div class="shortcut-row"><span>Next lead in dialer</span><span class="kbd">N</span></div>
+    <div class="shortcut-row"><span>Open call log for current lead</span><span class="kbd">C</span></div>
+    <div class="shortcut-row"><span>Open email composer for current lead</span><span class="kbd">E</span></div>
+    <div class="shortcut-row"><span>Close any open panel / modal</span><span class="kbd">Esc</span></div>
+    <div class="shortcut-row"><span>Focus search bar</span><span class="kbd">/</span></div>
+    <div class="shortcut-row"><span>Toggle dark / light mode</span><span class="kbd">D</span></div>
+    <div class="shortcut-row"><span>Show this help</span><span class="kbd">?</span></div>
+  </div>
+</div>
+
+<!-- CSV IMPORT PREVIEW MODAL -->
+<div class="modal-ov" id="import-ov">
+  <div class="modal-box wide">
+    <div class="modal-hdr">
+      <div class="modal-title">📥 Import Preview</div>
+      <button class="modal-x" onclick="document.getElementById('import-ov').classList.remove('show')">×</button>
+    </div>
+    <div id="import-preview-content"></div>
+    <div class="brow" style="margin-top:14px">
+      <button class="btn btn-a" id="import-confirm-btn">✓ Confirm Import</button>
+      <button class="btn" onclick="document.getElementById('import-ov').classList.remove('show')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- /app -->
 
 <script>
@@ -646,15 +852,19 @@ function go(id,el){
   if(id==='sequences')renderSeq();
   if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
   if(id==='calculator')renderCalc();
+  if(id==='map')renderMap();
+  if(id==='email'){renderTemplates();updateOpenRateBar();}
 }
 function goById(id){
-  const tabs=['scraper','email','dialer','pipeline','sequences','calculator','settings'];
+  const tabs=['scraper','email','dialer','pipeline','sequences','calculator','settings','map'];
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
   document.getElementById('pane-'+id).classList.add('active');
   if(id==='pipeline')renderPipe();
   if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();}
   if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
+  if(id==='map')renderMap();
+  if(id==='email'){renderTemplates();updateOpenRateBar();}
 }
 
 function flash(msg){
@@ -730,10 +940,16 @@ async function scrape(){
       await sleep(200);
     }
     document.getElementById('prog-fill').style.width='100%';
+    // Deduplicate within batch
+    let dupes=0;
+    const deduped=[];
+    newLeads.forEach(l=>{if(!isDuplicate(l,deduped)){deduped.push(l);}else dupes++;});
+    newLeads=deduped;
     leads=newLeads;
     save();
-    flash('Found '+newLeads.length+' leads!');
-    document.getElementById('scr-status').textContent=newLeads.length+' leads found';
+    const dupeMsg=dupes?' ('+dupes+' duplicates skipped)':'';
+    flash('Found '+newLeads.length+' leads'+dupeMsg+'!');
+    document.getElementById('scr-status').textContent=newLeads.length+' leads found'+dupeMsg;
   }catch(err){
     flash('Error: '+err.message);
   }
@@ -793,8 +1009,9 @@ function renderLeads(){
       </td>
       <td>${sbadge(l.status)}</td>
       <td><div style="display:flex;gap:5px;flex-wrap:wrap">
-        <a href="tel:${l.phone.replace(/\D/g,'')}" class="btn btn-call btn-sm" onclick="openCL(${l.id})">📞</a>
+        <button class="btn btn-call btn-sm" onclick="showCallPrep(${l.id})">📞</button>
         <button class="btn btn-sm" onclick="prefillEmail(${l.id})">✉</button>
+        <button class="btn btn-sm" onclick="showResearch(${l.id})" style="color:var(--txt2)" title="Research">🔍</button>
         <button class="btn btn-sm" onclick="editLead(${l.id})" style="color:var(--txt2)">✏</button>
         <button class="btn btn-sm" onclick="rmLead(${l.id})" style="color:var(--txt3)">✕</button>
       </div></td>
@@ -889,10 +1106,17 @@ function renderQueue(){
   document.getElementById('qhdr').textContent=queue.length;
   const c=document.getElementById('qlist');
   if(!queue.length){c.innerHTML='<div style="color:var(--txt3);text-align:center;padding:16px;font-size:12px">Queue empty</div>';return;}
-  c.innerHTML=queue.map((q,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--bdr);gap:10px">
+  c.innerHTML=queue.map((q,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--bdr);gap:10px;flex-wrap:wrap">
     <div style="flex:1;min-width:0">
       <div style="font-weight:500;font-size:13px">${q.biz} — ${q.name}</div>
       <div style="font-size:11px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.subject}</div>
+      <div style="margin-top:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label class="open-track" onclick="toggleTrack(${i})">
+          <div class="open-dot ${q.tracked?(q.opened?'opened':'tracked'):''}"></div>
+          <span>${q.opened?'📬 Opened '+q.openedAt:q.tracked?'👁 Tracking':'Track opens'}</span>
+        </label>
+        ${q.tracked&&!q.opened?`<button class="btn btn-sm" onclick="markOpened(${i})" style="font-size:10px;padding:3px 7px">Mark Opened</button>`:''}
+      </div>
     </div>
     <div style="display:flex;gap:5px;flex-shrink:0">
       ${q.status==='sent'?'<span class="bdg bdg-g">Sent</span>':'<span class="bdg bdg-am">Queued</span>'}
@@ -919,8 +1143,9 @@ function renderDialer(){
     <div style="font-family:'DM Mono',monospace;font-size:12px">${l.phone}</div>
     <div>${sbadge(l.status)}</div>
     <div style="display:flex;gap:5px;flex-wrap:wrap">
-      <a href="tel:${l.phone.replace(/\D/g,'')}" class="btn btn-call btn-sm" onclick="openCL(${l.id})">📞 Call</a>
+      <button class="btn btn-call btn-sm" onclick="showCallPrep(${l.id})">📞 Call</button>
       <button class="btn btn-sm" onclick="prefillEmail(${l.id})">✉</button>
+      <button class="btn btn-sm" onclick="showResearch(${l.id})" style="color:var(--txt2)" title="Research">🔍</button>
       <button class="btn btn-sm" onclick="openCL(${l.id})" style="color:var(--txt2)">📝</button>
     </div>
   </div>`).join('');
@@ -956,11 +1181,13 @@ function saveCall(){
   if(!selCallId)return;
   const l=leads.find(x=>x.id===selCallId);
   const outcome=document.getElementById('c-out').value;
+  const oldStatus=l.status;
   l.notes=document.getElementById('c-notes').value;
   if(outcome)l.status=outcome;
   if(!l.callLog)l.callLog=[];
   l.callLog.push({date:new Date().toLocaleDateString(),outcome,notes:l.notes,cb:document.getElementById('c-cb').value});
   save();renderDialer();renderPipe();flash('Call logged');
+  if(outcome&&outcome!==oldStatus)checkPipelineAutomation(l,oldStatus,outcome);
 }
 function emailFromCall(){if(selCallId)prefillEmail(selCallId);}
 
@@ -1071,12 +1298,60 @@ function importLeads(){
   inp.onchange=e=>{
     const r=new FileReader();
     r.onload=ev=>{
-      const lines=ev.target.result.split('\n').slice(1);let n=0;
-      lines.forEach(line=>{
-        const c=line.split(',').map(v=>v.replace(/^"|"$/g,'').trim());
-        if(c[0]){leads.push({id:Date.now()+n,biz:c[0],type:c[1]||'',contact:c[2]||'',title:c[3]||'',phone:c[4]||'',email:c[5]||'',city:c[6]||'',size:parseInt((c[7]||'0').replace(/[^0-9]/g,''))||3000,status:'cold',notes:'',callLog:[],source:'Import',created:new Date().toLocaleDateString()});n++;}
+      const text=ev.target.result;
+      const rows=text.split('\n').filter(l=>l.trim());
+      if(!rows.length)return;
+      const rawHeader=rows[0].split(',').map(v=>v.replace(/^"|"$/g,'').trim().toLowerCase());
+      const aliases={
+        biz:['business name','business','company','company name','name','organization','biz'],
+        type:['type','category','business type','industry'],
+        contact:['contact','contact name','full name','contact person','person','first name'],
+        title:['title','job title','position','role'],
+        phone:['phone','phone number','telephone','tel','mobile','cell'],
+        email:['email','email address','e-mail'],
+        city:['city','location','city state','city, state','address'],
+        size:['water bill','monthly water bill','bill','monthly bill','water cost','size','monthly spend']
+      };
+      const colMap={};
+      for(const[field,alts]of Object.entries(aliases)){
+        for(let i=0;i<rawHeader.length;i++){
+          if(alts.some(a=>rawHeader[i].includes(a))){colMap[field]=i;break;}
+        }
+      }
+      const toImport=[];const skipped=[];
+      rows.slice(1).forEach((line,rowIdx)=>{
+        if(!line.trim())return;
+        const cols=line.split(',').map(v=>v.replace(/^"|"$/g,'').trim());
+        const biz=colMap.biz!==undefined?cols[colMap.biz]:'';
+        if(!biz){skipped.push(rowIdx);return;}
+        toImport.push({id:Date.now()+rowIdx+Math.random(),biz,type:colMap.type!==undefined?cols[colMap.type]:'',contact:colMap.contact!==undefined?cols[colMap.contact]:'Owner / Manager',title:colMap.title!==undefined?cols[colMap.title]:'Decision Maker',phone:colMap.phone!==undefined?cols[colMap.phone]:'',email:colMap.email!==undefined?cols[colMap.email]:'',city:colMap.city!==undefined?cols[colMap.city]:'',size:parseInt((colMap.size!==undefined?cols[colMap.size]:'0').replace(/[^0-9]/g,''))||3000,status:'cold',notes:'',callLog:[],source:'Import',created:new Date().toLocaleDateString()});
       });
-      save();stats();renderLeads();flash('Imported '+n+' leads');
+      let dupeCount=0;
+      const noDupes=toImport.filter(l=>{if(isDuplicate(l,leads)){dupeCount++;return false;}return true;});
+      const detectedCols=Object.entries(colMap).map(([k,v])=>`<span class="bdg bdg-a">${k}</span>`).join(' ');
+      document.getElementById('import-preview-content').innerHTML=`
+        <div style="margin-bottom:10px;font-size:12px;color:var(--txt2)">Detected columns: ${detectedCols||'<span style="color:var(--amber)">none — using column order fallback</span>'}</div>
+        <div style="display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap">
+          <div style="font-family:'DM Mono',monospace;color:var(--green)">✓ ${noDupes.length} will import</div>
+          ${dupeCount?`<div style="font-family:'DM Mono',monospace;color:var(--amber)">⚠ ${dupeCount} duplicates skipped</div>`:''}
+          ${skipped.length?`<div style="font-family:'DM Mono',monospace;color:var(--red)">✕ ${skipped.length} rows skipped (no name)</div>`:''}
+        </div>
+        <div style="max-height:280px;overflow-y:auto">
+          ${noDupes.slice(0,25).map(l=>`<div class="import-row">
+            <span class="bdg bdg-g">NEW</span>
+            <span style="font-weight:500;flex:1">${l.biz}</span>
+            <span style="color:var(--txt3);min-width:100px">${l.city||'—'}</span>
+            <span style="color:var(--txt2);min-width:110px;font-family:'DM Mono',monospace;font-size:11px">${l.phone||'no phone'}</span>
+            <span style="color:var(--accent);font-family:'DM Mono',monospace;font-size:11px">$${l.size.toLocaleString()}/mo</span>
+          </div>`).join('')}
+          ${noDupes.length>25?`<div style="color:var(--txt3);padding:8px 0;font-size:12px">... and ${noDupes.length-25} more</div>`:''}
+        </div>`;
+      document.getElementById('import-confirm-btn').onclick=()=>{
+        leads.push(...noDupes);save();stats();renderLeads();
+        document.getElementById('import-ov').classList.remove('show');
+        flash(`Imported ${noDupes.length} leads${dupeCount?' · '+dupeCount+' dupes skipped':''}`);
+      };
+      document.getElementById('import-ov').classList.add('show');
     };
     r.readAsText(e.target.files[0]);
   };
@@ -1193,7 +1468,7 @@ function renderCallbacks(){
         <div style="margin-top:4px"><span class="bdg bdg-am">${diffDays===0?'Today':diffDays+' day'+(diffDays===1?'':' s')+' overdue'}</span></div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
-        <a href="tel:${lead.phone.replace(/\D/g,'')}" class="btn btn-call btn-sm" onclick="openCL(${lead.id})">Call</a>
+        <button class="btn btn-call btn-sm" onclick="showCallPrep(${lead.id})">📞 Call</button>
         <button class="btn btn-sm" onclick="markCBDone(${lead.id},${entryIdx})" style="color:var(--txt2)">Mark Done</button>
       </div>
     </div>`).join('');
@@ -1254,6 +1529,7 @@ function saveLeadPanel(){
   if(!lpLeadId)return;
   const l=leads.find(x=>x.id===lpLeadId);
   if(!l)return;
+  const oldStatus=l.status;
   l.biz=document.getElementById('lp-biz').value;
   l.contact=document.getElementById('lp-contact').value;
   l.title=document.getElementById('lp-job-title').value;
@@ -1264,6 +1540,7 @@ function saveLeadPanel(){
   l.notes=document.getElementById('lp-notes').value;
   save();renderLeads();flash('Contact saved');
   document.getElementById('lp-title').textContent=l.biz;
+  if(l.status!==oldStatus)checkPipelineAutomation(l,oldStatus,l.status);
 }
 
 // FEATURE 4 — CALCULATOR
@@ -1413,7 +1690,7 @@ function renderMobileDialer(){
       <div style="font-size:12px;color:var(--txt2);margin-bottom:4px">${l.contact} · ${l.title}</div>
       <div style="font-family:'DM Mono',monospace;font-size:13px;margin-bottom:8px">${l.phone}</div>
       <div style="margin-bottom:12px">${sbadge(l.status)}</div>
-      <a href="tel:${l.phone.replace(/\D/g,'')}" class="btn btn-call" style="width:100%;justify-content:center;padding:14px;font-size:16px;display:flex;margin-bottom:8px" onclick="openCL(${l.id})">📞 Call</a>
+      <button class="btn btn-call" style="width:100%;justify-content:center;padding:14px;font-size:16px;display:flex;margin-bottom:8px" onclick="showCallPrep(${l.id})">📞 Call</button>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
         <button class="btn btn-sm" onclick="quickLog(${l.id},'contacted')" style="justify-content:center">Called</button>
         <button class="btn btn-sm" onclick="quickLog(${l.id},'voicemail')" style="justify-content:center">Voicemail</button>
@@ -1527,6 +1804,9 @@ function initApp(user){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
   stats();renderLeads();renderQueue();renderDailyStats();populateFilterDropdowns();
+  renderTemplates();updateOpenRateBar();
+  initTheme();initKeyboard();initAutosave();
+  setTimeout(()=>showBriefing(),800);
   // Check for calculator bill param
   const billParam=new URLSearchParams(window.location.search).get('bill');
   if(billParam){
@@ -1538,6 +1818,328 @@ function initApp(user){
 }
 
 function logout(){netlifyIdentity.logout();}
+
+// ===== FEATURE: DARK/LIGHT MODE =====
+function initTheme(){
+  const saved=localStorage.getItem('af_theme')||'dark';
+  if(saved==='light')document.body.classList.add('light');
+  updateThemeBtn();
+}
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  localStorage.setItem('af_theme',document.body.classList.contains('light')?'light':'dark');
+  updateThemeBtn();
+}
+function updateThemeBtn(){
+  const btn=document.getElementById('theme-btn');
+  if(btn)btn.textContent=document.body.classList.contains('light')?'🌙':'☀️';
+}
+
+// ===== FEATURE: DAILY BRIEFING =====
+function showBriefing(){
+  const todayKey=userKey('brief_'+new Date().toDateString());
+  if(localStorage.getItem(todayKey))return;
+  localStorage.setItem(todayKey,'1');
+  const today=new Date();
+  document.getElementById('brief-date').textContent=today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const cbDue=leads.filter(l=>(l.callLog||[]).some(e=>{if(!e.cb)return false;const d=new Date(e.cb);return!isNaN(d)&&d<=today;})).length;
+  const yesterday=new Date(today);yesterday.setDate(today.getDate()-1);
+  const addedYest=leads.filter(l=>l.created===yesterday.toLocaleDateString()).length;
+  const pipeVal=leads.reduce((s,l)=>s+Math.round(l.size*.3),0);
+  document.getElementById('brief-stats').innerHTML=`
+    <div style="background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:700;color:var(--accent)">${cbDue}</div>
+      <div style="font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em;margin-top:3px">Callbacks Due</div>
+    </div>
+    <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:700;color:var(--green)">${addedYest}</div>
+      <div style="font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em;margin-top:3px">Added Yesterday</div>
+    </div>
+    <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:700;color:var(--blue)">${leads.length}</div>
+      <div style="font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em;margin-top:3px">Total Leads</div>
+    </div>
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--amber)">$${pipeVal>=1000?Math.round(pipeVal/1000)+'K':pipeVal.toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em;margin-top:3px">Pipeline Value</div>
+    </div>`;
+  const quotes=["The fortune is in the follow-up. Most reps quit at touch 2. You're still calling.","Every 'no' is one call closer to a 'yes'. Keep dialing.","Your prospects' water bills don't stop — neither should your calls.","You're not selling valves. You're saving them $3,000 a month. Call with confidence.","One booked audit a day keeps the quota away. You've got this.","Persistence beats talent when talent doesn't persist.","Water savings don't sell themselves — you do. And you're excellent at it.","The reps who win are the ones who show up every single day."];
+  document.getElementById('brief-quote').textContent='"'+quotes[Math.floor(Math.random()*quotes.length)]+'"';
+  document.getElementById('briefing-ov').classList.add('show');
+  setTimeout(()=>closeBriefing(),5000);
+}
+function closeBriefing(){document.getElementById('briefing-ov').classList.remove('show');}
+
+// ===== FEATURE: KEYBOARD SHORTCUTS =====
+function initKeyboard(){
+  document.addEventListener('keydown',e=>{
+    const tag=e.target.tagName.toLowerCase();
+    const isInput=tag==='input'||tag==='textarea'||tag==='select';
+    if(e.key==='Escape'){
+      ['briefing-ov','callprep-ov','research-ov','shortcuts-ov','import-ov'].forEach(id=>document.getElementById(id)&&document.getElementById(id).classList.remove('show'));
+      closeLeadPanel();
+      const clp=document.getElementById('clp');if(clp)clp.style.display='none';
+      return;
+    }
+    if(isInput)return;
+    if(e.key==='?'){e.preventDefault();document.getElementById('shortcuts-ov').classList.add('show');return;}
+    if(e.key==='/'){e.preventDefault();const s=document.getElementById('lead-search');if(s)s.focus();return;}
+    const k=e.key.toLowerCase();
+    if(k==='d'){toggleTheme();return;}
+    if(k==='n'){
+      const sorted=[...leads].sort((a,b)=>b.size-a.size);
+      if(selCallId){const idx=sorted.findIndex(l=>l.id===selCallId);const next=sorted[idx+1];if(next){openCL(next.id);flash('Next: '+next.biz);}else flash('No more leads');}
+      else if(sorted.length){openCL(sorted[0].id);}
+    }
+    if(k==='c'&&selCallId){const clp=document.getElementById('clp');if(clp)clp.style.display='block';}
+    if(k==='e'&&selCallId){prefillEmail(selCallId);}
+  });
+}
+
+// ===== FEATURE: EMAIL TEMPLATES =====
+const EMAIL_TEMPLATES={
+  'Golf course':[
+    {name:'Irrigation Cost Angle',subj:'Cut [Business] irrigation costs 30%',body:'Hi [Name],\n\nGolf courses are one of the biggest water users in California — most use 50+ million gallons per year.\n\nAquaFlow\'s patented valve installs before your meter and reduces water+sewer bills by 10–30% by compressing trapped air. No disruption to your course, installs in under an hour.\n\n[Business] could be saving $[Savings]/month — that\'s real money back in grounds operations.\n\nWorth a 10-minute conversation? I\'ll do a free water analysis, no strings.\n\n[Rep]'},
+    {name:'Dry Season Urgency',subj:'Before summer irrigation season at [Business]',body:'Hi [Name],\n\nWith summer coming, irrigation costs at [Business] are about to spike.\n\nWe\'ve been helping courses in the LA area lock in 20–30% water savings before the dry season. AquaFlow installs in under an hour, lifetime warranty, 6-month money-back guarantee.\n\n$[Savings]/month in savings — every month.\n\nFree water analysis, no commitment. 10 minutes?\n\n[Rep]'},
+    {name:'Peer Comparison',subj:'How similar courses cut their water bill 28%',body:'Hi [Name],\n\nA golf course similar to [Business] in the South Bay recently cut their water and sewer bill by 28% using AquaFlow.\n\nInstalls under 1 hour. No maintenance. Lifetime warranty. We guarantee savings or refund.\n\n[Business] could be looking at $[Savings]/month in savings.\n\nHappy to schedule a free 10-minute analysis?\n\n[Rep]'},
+    {name:'Annual ROI',subj:'$[Annual] back in [Business]\'s budget',body:'Hi [Name],\n\n$[Annual] a year.\n\nThat\'s the estimated annual savings for a facility with [Business]\'s water usage using AquaFlow\'s valve system.\n\n10–30% reduction on water+sewer. No disruption. No maintenance. 6-month money-back guarantee.\n\nFree water analysis — 10 minutes, no commitment.\n\n[Rep]'},
+    {name:'Break-up',subj:'Closing the loop — [Business]',body:'Hi [Name],\n\nI\'ve reached out a couple of times about reducing [Business]\'s water bills — just closing the loop.\n\nIf the timing isn\'t right, totally understood. We\'re here when it makes sense. Free analysis is always available.\n\nBest of luck with the season,\n[Rep]'}
+  ],
+  'Hotel':[
+    {name:'HVAC + Laundry Angle',subj:'Hotels lose 30%+ on water — here\'s the fix',body:'Hi [Name],\n\nHotels are among the top 10 commercial water users in California. HVAC, laundry, pools, and guest rooms all add up fast.\n\nAquaFlow\'s valve reduces water+sewer costs by 10–30%, installs in under an hour, and requires zero maintenance.\n\n[Business] could save $[Savings]/month.\n\nFree 10-minute water analysis. No commitment.\n\n[Rep]'},
+    {name:'Peak Season',subj:'Peak season at [Business] — water costs optimized?',body:'Hi [Name],\n\nWith occupancy climbing, [Business]\'s water and sewer costs are climbing with it.\n\nWe\'ve helped hotels across the LA area cut water costs by 20–30% using AquaFlow — installs before the meter in under an hour.\n\n$[Savings]/month is worth a 10-minute conversation.\n\nFree analysis, no obligation?\n\n[Rep]'},
+    {name:'ESG / Sustainability',subj:'Sustainable ops at [Business] — easy water win',body:'Hi [Name],\n\nMore corporate travelers are choosing hotels with strong sustainability credentials.\n\nAquaFlow helps properties like [Business] reduce water consumption by 10–30% — improves ESG metrics, reduces sewer charges, saves $[Savings]/month.\n\nNSF/ANSI certified, installs in under an hour.\n\nFree water analysis?\n\n[Rep]'},
+    {name:'ROI Clear',subj:'ROI in 60 days — [Business] water savings',body:'Hi [Name],\n\nShort version: AquaFlow saves hotels 10–30% on water+sewer bills.\n\nFor [Business]: $[Savings]/month — $[Annual]/year. Installs in under an hour, lifetime warranty, 6-month money-back guarantee.\n\nFree analysis to confirm your numbers. Worth 10 minutes?\n\n[Rep]'},
+    {name:'Break-up',subj:'Last note — [Business]',body:'Hi [Name],\n\nJust following up one last time on the water savings opportunity at [Business].\n\nIf it\'s not the right time, no worries. Free water analysis is always available.\n\nWishing you a great season.\n\n[Rep]'}
+  ],
+  'Restaurant / chain':[
+    {name:'Kitchen Usage',subj:'Restaurant water costs — easy 20% cut',body:'Hi [Name],\n\nRestaurants are some of the heaviest water users per sq ft — kitchen, dishwashers, ice machines.\n\nAquaFlow reduces water+sewer bills by 10–30%, is NSF/ANSI certified (health dept approved), installs in under an hour.\n\n[Business] could save $[Savings]/month.\n\nFree water analysis — 10 minutes, no commitment?\n\n[Rep]'},
+    {name:'Multi-Location Multiplier',subj:'If you have multiple locations — this multiplies',body:'Hi [Name],\n\nFor restaurant groups, the real story is the multiplier effect.\n\nIf each location saves $[Savings]/month with AquaFlow, across multiple locations that adds up fast.\n\nInstalls in under an hour per location. Worth a quick call?\n\n[Rep]'},
+    {name:'CA Drought Surcharges',subj:'CA water surcharges are coming — [Business]',body:'Hi [Name],\n\nCalifornia water agencies are implementing drought surcharges that will hit restaurants this summer.\n\nNow\'s the time to reduce baseline consumption. AquaFlow cuts water+sewer costs by 10–30%.\n\nFree analysis for [Business]? Takes 10 minutes.\n\n[Rep]'},
+    {name:'NSF Certified Safe',subj:'NSF certified water savings — [Business]',body:'Hi [Name],\n\nFor any food service operation, compliance is non-negotiable.\n\nAquaFlow is NSF/ANSI 372 certified — safe for potable water, fully health department compliant. Cuts water+sewer bills by 10–30%.\n\n[Business] could save $[Savings]/month.\n\n[Rep]'},
+    {name:'Break-up',subj:'Closing the loop on water savings',body:'Hi [Name],\n\nFinal note on cutting [Business]\'s water costs.\n\nOffer for a free analysis is open any time.\n\n[Rep]'}
+  ],
+  'Commercial real estate':[
+    {name:'NOI Improvement',subj:'Improve [Business] NOI — water savings',body:'Hi [Name],\n\nFor commercial property managers, every dollar of OpEx reduction goes straight to NOI.\n\nAquaFlow reduces water+sewer costs by 10–30%, lowering CAM charges and improving asset value.\n\n$[Savings]/month per property.\n\nFree portfolio analysis — 10 minutes, no commitment?\n\n[Rep]'},
+    {name:'Make Ownership Happy',subj:'Easy water win for [Business] ownership',body:'Hi [Name],\n\nProperty managers who bring proactive cost savings to ownership look great.\n\nAquaFlow cuts water+sewer costs by 10–30%, lifetime warranty, 6-month money-back.\n\nAt [Business]\'s scale: $[Savings]/month — and you get the credit.\n\nFree water analysis?\n\n[Rep]'},
+    {name:'LEED / Green Building',subj:'LEED points + water savings — [Business]',body:'Hi [Name],\n\nAquaFlow can contribute to LEED certifications while reducing water+sewer costs by 10–30%.\n\nFor [Business]: a sustainability story AND $[Savings]/month in real savings.\n\nFree analysis?\n\n[Rep]'},
+    {name:'Portfolio Audit Offer',subj:'Portfolio water audit for [Business]',body:'Hi [Name],\n\nHappy to do a full portfolio water analysis for [Business] — map savings opportunity across all your properties.\n\nAquaFlow saves 10–30% per asset. Installs in under an hour, lifetime warranty.\n\nNo cost for the analysis. Worth 20 minutes?\n\n[Rep]'},
+    {name:'Break-up',subj:'Closing loop — portfolio analysis offer',body:'Hi [Name],\n\nJust closing the loop on the water savings analysis for [Business].\n\nFree portfolio audit is open any time. No pressure.\n\nBest,\n[Rep]'}
+  ],
+  'Hospital / medical center':[
+    {name:'Usage Facts Hook',subj:'Hospital water costs — 570 gal/day per bed',body:'Hi [Name],\n\nThe average hospital uses 570 gallons per staffed bed per day — cooling towers, sterilization, HVAC all driving enormous consumption.\n\nAquaFlow cuts water+sewer costs by 10–30%. NSF/ANSI certified — fully safe for healthcare settings.\n\n[Business] could save $[Savings]/month.\n\nFree water analysis — 10 minutes, no commitment?\n\n[Rep]'},
+    {name:'Compliance + Sustainability',subj:'Sustainability reporting at [Business] — water',body:'Hi [Name],\n\nHospital sustainability reporting increasingly includes water usage. AquaFlow reduces consumption by 10–30% — improving metrics while saving $[Savings]/month.\n\nNSF/ANSI certified, installs in under an hour, zero disruption.\n\nFree analysis?\n\n[Rep]'},
+    {name:'Case Study Approach',subj:'Similar hospital saved 26% on water',body:'Hi [Name],\n\nA regional hospital in Southern California recently reduced water and sewer bills by 26% using AquaFlow.\n\nNSF certified, installs under an hour, 6-month money-back guarantee.\n\nFor [Business]: approximately $[Savings]/month in savings.\n\nFree water analysis?\n\n[Rep]'},
+    {name:'Facilities Director',subj:'Quick note for Facilities — [Business]',body:'Hi [Name],\n\nReaching out about reducing [Business]\'s water and sewer costs.\n\nAquaFlow is NSF/ANSI certified, installs in under an hour with zero disruption, saves 10–30%. Lifetime warranty, 6-month money-back.\n\nEstimated savings: $[Savings]/month.\n\nFree analysis — 10 minutes?\n\n[Rep]'},
+    {name:'Break-up',subj:'Closing the loop — [Business] water savings',body:'Hi [Name],\n\nLast note on the water savings opportunity at [Business].\n\nFree analysis is always on the table.\n\nBest,\n[Rep]'}
+  ]
+};
+let activeTemplateType='Golf course';
+
+function renderTemplates(){
+  const types=Object.keys(EMAIL_TEMPLATES);
+  document.getElementById('tmpl-tabs').innerHTML=types.map(t=>`<div class="tmpl-tab${t===activeTemplateType?' on':''}" onclick="setTemplateType('${t.replace(/'/g,"\\'")}')">${t}</div>`).join('');
+  const tmpls=EMAIL_TEMPLATES[activeTemplateType]||[];
+  document.getElementById('tmpl-list').innerHTML=tmpls.map((t,i)=>`
+    <div class="tmpl-item" onclick="loadTemplate(${i})">
+      <div style="flex:1">
+        <div class="tmpl-item-name">${t.name}</div>
+        <div class="tmpl-item-prev">${t.subj}</div>
+      </div>
+      <button class="btn btn-sm btn-a" onclick="event.stopPropagation();loadTemplate(${i})" style="flex-shrink:0">Use</button>
+    </div>`).join('');
+}
+function setTemplateType(t){activeTemplateType=t;renderTemplates();const sel=document.getElementById('ety');if(sel)sel.value=t;}
+function loadTemplate(idx){
+  const t=EMAIL_TEMPLATES[activeTemplateType]?.[idx];
+  if(!t)return;
+  const biz=document.getElementById('eb').value||'[Business]';
+  const name=document.getElementById('en').value||'[Name]';
+  const bill=parseInt((document.getElementById('ebi').value||'0').replace(/[^0-9]/g,''))||0;
+  const savings=Math.round(bill*.3).toLocaleString()||'X,XXX';
+  const annual=Math.round(bill*.3*12).toLocaleString()||'XX,XXX';
+  const rep=cfg.name||'Lauren Hatwan';
+  const repFull=`${rep} | AquaFlow — Long Beach/LA | ${cfg.phone||'(562) 555-0194'} | ${cfg.email||'lauren@aquaflowsales.com'}`;
+  const repl=s=>s.replace(/\[Name\]/g,name).replace(/\[Business\]/g,biz).replace(/\[Savings\]/g,savings).replace(/\[Annual\]/g,annual).replace(/\[Rep\]/g,repFull);
+  document.getElementById('eout').style.display='block';
+  document.getElementById('e-gen').style.display='none';
+  document.getElementById('e-content').style.display='block';
+  document.getElementById('esubj').textContent='Subject: '+repl(t.subj);
+  document.getElementById('ebody').textContent=repl(t.body);
+  flash('Template loaded — edit and send!');
+}
+function updateOpenRateBar(){
+  const tracked=queue.filter(q=>q.tracked);
+  const opened=tracked.filter(q=>q.opened);
+  const rate=tracked.length?Math.round((opened.length/tracked.length)*100):0;
+  const week=new Date();week.setDate(week.getDate()-7);
+  const sentWeek=queue.filter(q=>q.status==='sent').length;
+  const el=id=>document.getElementById(id);
+  if(el('or-rate'))el('or-rate').textContent=rate+'%';
+  if(el('or-opened'))el('or-opened').textContent=opened.length;
+  if(el('or-tracked'))el('or-tracked').textContent=tracked.length;
+  if(el('or-sent'))el('or-sent').textContent=sentWeek;
+}
+
+// ===== FEATURE: CALL PREP CARD =====
+const WATER_FACTS={
+  'golf':'Golf courses use 50–150 million gallons per year. Irrigation accounts for 70–80% of water use.',
+  'hotel':'Hotels use 100–200 gallons per occupied room per day. A 200-room hotel can use 1.5M+ gallons/month.',
+  'restaurant':'Restaurants use 3–7 gallons per meal served. Kitchen, dishwashing, and ice machines are the top drains.',
+  'commercial':'Commercial buildings account for 17% of US public water withdrawals. HVAC is the #1 source of waste.',
+  'hospital':'Hospitals use 570 gallons per staffed bed per day. Cooling towers and sterilization are top users.',
+  'manufactur':'Manufacturing plants can use millions of gallons daily. Process cooling is the largest single consumer.',
+  'universit':'Universities use 20–30 gallons per student per day across labs, dorms, and facilities.',
+  'car wash':'Car washes use 40–80 gallons per vehicle — compressed air in lines wastes significant additional water.',
+  'laundromat':'Laundromats use 35 gallons per top-load cycle. With dozens of machines running daily, bills mount fast.',
+  'grocery':'Grocery stores use refrigeration cooling, produce misters, and restrooms — 1,000+ gallons per day.',
+  'apartment':'Apartment complexes average 75–100 gallons per unit per day including common areas.',
+  'stadium':'Stadiums spike water use on event days — concessions, restrooms, and HVAC all surge simultaneously.'
+};
+const OBJECTIONS=[
+  {q:'We already have a water conservation program.',a:'Great — this complements what you\'re doing. AquaFlow works at the meter level, before any fixtures, capturing waste that fixture-level programs miss. Most facilities see 10–15% additional savings on top of existing programs.'},
+  {q:'I\'m not the decision maker for this.',a:'Totally understand. Who would I send a brief 1-page savings analysis to? I\'ll make it easy for them — just the numbers. You pass it along, and you look like the person who found them free money.'},
+  {q:'We don\'t have budget for capital projects.',a:'This isn\'t really a capital expense — it\'s an operating cost reduction. Savings typically cover the investment in months, not years. And we offer a 6-month money-back guarantee, so there\'s zero financial risk.'},
+  {q:'Send me some information.',a:'Absolutely — what\'s your email? And to make the info relevant to you specifically, let me do a quick free water analysis so I can show your exact numbers, not just generic figures.'},
+  {q:'We\'re locked into a contract with our utility.',a:'AquaFlow doesn\'t replace your utility — it works with your existing system. Nothing changes with your utility provider. It installs before the meter and reduces how much water flows through, so your bill just goes down.'},
+  {q:'How long does installation take?',a:'Under one hour, typically. We install before the meter, no pipe cutting, no disruption to your operations. You won\'t even notice we were there — except on your next water bill.'},
+  {q:'What if it doesn\'t work?',a:'We have a 6-month money-back guarantee and a lifetime warranty. If you don\'t see meaningful savings in 6 months, we refund you completely. It\'s genuinely risk-free.'}
+];
+let prepLeadId=null;
+function showCallPrep(id){
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  prepLeadId=id;
+  document.getElementById('prep-biz').textContent=l.biz;
+  document.getElementById('prep-contact').textContent=l.contact+' · '+l.title+' · '+l.phone;
+  document.getElementById('prep-savings').textContent='$'+Math.round(l.size*.3).toLocaleString()+'/month';
+  document.getElementById('prep-savings-yr').textContent='$'+Math.round(l.size*.3*12).toLocaleString()+'/year';
+  const t=(l.type||'').toLowerCase();
+  let fact='Water bills can typically be reduced 10–30% with AquaFlow\'s patented valve system.';
+  for(const[k,v]of Object.entries(WATER_FACTS)){if(t.includes(k)){fact=v;break;}}
+  document.getElementById('prep-fact').innerHTML='<em>'+fact+'</em>';
+  const shuffled=[...OBJECTIONS].sort(()=>Math.random()-0.5).slice(0,3);
+  document.getElementById('prep-objs').innerHTML=shuffled.map(o=>`<div class="prep-obj"><div class="prep-obj-q">👋 "${o.q}"</div><div class="prep-obj-a">${o.a}</div></div>`).join('');
+  document.getElementById('prep-script').innerHTML=`<em>"Hi, is this ${l.contact}? — Great, this is [your name] from AquaFlow out of Long Beach. Quick question — do you handle facilities or utilities for ${l.biz}? ... Perfect. We've been helping ${l.type.toLowerCase()}s cut water bills by up to 30%. You could be looking at <strong style='color:var(--green)'>$${Math.round(l.size*.3).toLocaleString()}/month in savings</strong>. We do a free water analysis — 10 minutes, zero commitment. Worth a look?"</em>`;
+  document.getElementById('prep-call-btn').href='tel:'+l.phone.replace(/\D/g,'');
+  document.getElementById('callprep-ov').classList.add('show');
+}
+function readyToCall(){document.getElementById('callprep-ov').classList.remove('show');if(prepLeadId)openCL(prepLeadId);}
+function closeCallPrep(){document.getElementById('callprep-ov').classList.remove('show');}
+
+// ===== FEATURE: COMPETITOR RESEARCH =====
+let resLeadId=null;
+function showResearch(id){
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  resLeadId=id;
+  document.getElementById('res-biz').textContent=l.biz;
+  document.getElementById('res-type').textContent=l.type+' · '+l.city;
+  const enc=encodeURIComponent;
+  document.getElementById('res-links').innerHTML=`
+    <a class="rlink" href="https://www.google.com/search?q=${enc(l.biz+' '+l.city)}" target="_blank"><span class="rlink-icon">🔍</span><div><div>Google Search</div><div style="font-size:11px;color:var(--txt3)">${l.biz} — reviews, news, contacts</div></div></a>
+    <a class="rlink" href="https://www.yelp.com/search?find_desc=${enc(l.biz)}&find_loc=${enc(l.city)}" target="_blank"><span class="rlink-icon">⭐</span><div><div>Yelp</div><div style="font-size:11px;color:var(--txt3)">Reviews, ratings, hours, contact info</div></div></a>
+    <a class="rlink" href="https://www.linkedin.com/company/${enc(l.biz.toLowerCase().replace(/[^a-z0-9]+/g,'-'))}" target="_blank"><span class="rlink-icon">💼</span><div><div>LinkedIn Company Page</div><div style="font-size:11px;color:var(--txt3)">Company size, key people, updates</div></div></a>
+    <a class="rlink" href="https://www.google.com/search?q=${enc(l.biz+' '+l.type+' facilities manager OR property manager site:linkedin.com')}" target="_blank"><span class="rlink-icon">👤</span><div><div>Find Decision Maker on LinkedIn</div><div style="font-size:11px;color:var(--txt3)">Search for facilities/property manager</div></div></a>`;
+  document.getElementById('res-notes').value=l.researchNotes||'';
+  document.getElementById('research-ov').classList.add('show');
+}
+function closeResearch(){document.getElementById('research-ov').classList.remove('show');resLeadId=null;}
+function saveResearchNotes(){
+  if(!resLeadId)return;
+  const l=leads.find(x=>x.id===resLeadId);if(!l)return;
+  l.researchNotes=document.getElementById('res-notes').value;
+  save();flash('Research notes saved');
+}
+
+// ===== FEATURE: NOTES AUTOSAVE =====
+let autosaveTimer=null;
+function initAutosave(){
+  const el=document.getElementById('c-notes');if(!el)return;
+  el.addEventListener('input',()=>{
+    clearTimeout(autosaveTimer);
+    autosaveTimer=setTimeout(()=>{
+      if(selCallId){const l=leads.find(x=>x.id===selCallId);if(l){l.notes=el.value;save();}}
+      const ind=document.getElementById('autosave-ind');
+      if(ind){ind.classList.add('show');setTimeout(()=>ind.classList.remove('show'),2200);}
+    },3000);
+  });
+}
+
+// ===== FEATURE: OPEN TRACKING =====
+function toggleTrack(idx){
+  if(!queue[idx])return;
+  queue[idx].tracked=!queue[idx].tracked;
+  if(!queue[idx].tracked)queue[idx].opened=false;
+  save();renderQueue();updateOpenRateBar();
+}
+function markOpened(idx){
+  if(!queue[idx])return;
+  queue[idx].opened=true;queue[idx].openedAt=new Date().toLocaleDateString();
+  save();renderQueue();updateOpenRateBar();flash('Marked as opened ✓');
+}
+
+// ===== FEATURE: TERRITORY MAP =====
+function renderMap(){
+  const c=document.getElementById('map-leads-grid');if(!c)return;
+  if(!leads.length){c.innerHTML='<div class="empty">No leads to display</div>';return;}
+  const statusColors={cold:'#ef4444',contacted:'#f59e0b',interested:'#22c55e',callback:'#f59e0b',voicemail:'#6b7280',no_answer:'#6b7280',audit:'#a855f7',closed:'#00d4aa',not_interested:'#374151'};
+  const order=['audit','interested','contacted','callback','closed','cold','voicemail','no_answer','not_interested'];
+  const sorted=[...leads].sort((a,b)=>(order.indexOf(a.status)||99)-(order.indexOf(b.status)||99));
+  c.innerHTML=sorted.map(l=>{
+    const color=statusColors[l.status]||'#6b7280';
+    return`<div class="map-lead-card" style="border-left-color:${color}" onclick="editLead(${l.id})">
+      <div style="font-size:12px;font-weight:500;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.biz}</div>
+      <div style="font-size:11px;color:var(--txt3);margin-bottom:4px">${l.city}</div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <div style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <span style="font-size:10px;color:var(--txt2);font-family:'DM Mono',monospace;flex:1">${l.status}</span>
+        <span style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace">$${Math.round(l.size*.3).toLocaleString()}/mo</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== FEATURE: DUPLICATE DETECTION =====
+function isDuplicate(newLead,existingLeads){
+  const np=p=>(p||'').replace(/\D/g,'');
+  const nn=n=>(n||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const nPhone=np(newLead.phone);const nName=nn(newLead.biz);
+  return existingLeads.some(l=>{
+    if(nn(l.biz)===nName&&nName.length>3)return true;
+    if(nPhone&&nPhone.length>=7&&np(l.phone)===nPhone)return true;
+    return false;
+  });
+}
+
+// ===== FEATURE: PIPELINE STAGE AUTOMATION =====
+function checkPipelineAutomation(lead,oldStatus,newStatus){
+  if(newStatus==='audit'&&oldStatus!=='audit'){
+    const auditDate=prompt(`🎉 Audit Booked for ${lead.biz}!\n\nEnter audit date/time for a 24hr reminder (format: YYYY-MM-DDThh:mm or leave blank to skip):`,'');
+    if(auditDate&&auditDate.trim()){
+      const dt=new Date(auditDate);
+      if(!isNaN(dt.getTime())){
+        const reminder=new Date(dt.getTime()-86400000);
+        if(!lead.callLog)lead.callLog=[];
+        lead.callLog.push({date:new Date().toLocaleDateString(),outcome:'note',notes:`AUDIT REMINDER: Audit scheduled for ${dt.toLocaleString()} — follow up day before`,cb:reminder.toISOString().slice(0,16)});
+        save();flash('📅 Follow-up reminder set for '+reminder.toLocaleDateString()+' ✓');
+      }
+    }
+  }
+  if(newStatus==='closed'&&oldStatus!=='closed'){
+    const modal=document.createElement('div');
+    modal.className='modal-ov show';
+    modal.innerHTML=`<div class="modal-box" style="text-align:center">
+      <div style="font-size:48px;margin-bottom:10px">🎉</div>
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px">Deal Closed!</div>
+      <div style="font-size:14px;color:var(--txt2);margin-bottom:18px">Congratulations on closing <strong>${lead.biz}</strong>!<br>Savings locked in: <span style="color:var(--green)">$${Math.round(lead.size*.3).toLocaleString()}/month</span></div>
+      <div style="background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);border-radius:10px;padding:14px 16px;margin-bottom:18px;text-align:left">
+        <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Referral Ask</div>
+        <div style="font-size:13px;color:var(--txt);line-height:1.65">"By the way — do you know anyone else in the area whose water bills could use a trim? Even just a name and number would be hugely helpful."</div>
+      </div>
+      <button class="btn btn-a" style="width:100%;justify-content:center" onclick="this.closest('.modal-ov').remove()">Awesome, let's go! 🚀</button>
+    </div>`;
+    document.body.appendChild(modal);
+  }
+}
 
 netlifyIdentity.on('init',user=>{
   if(user){initApp(user);}
