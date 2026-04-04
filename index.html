@@ -1837,8 +1837,6 @@ function initApp(user){
   if(cfg.email)document.getElementById('cfg-email').value=cfg.email;
   if(cfg.terr)document.getElementById('cfg-terr').value=cfg.terr;
   if(cfg.co)document.getElementById('cfg-co').value=cfg.co;
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='block';
   stats();renderLeads();renderQueue();renderDailyStats();populateFilterDropdowns();
   renderTemplates();updateOpenRateBar();
   initTheme();initKeyboard();initAutosave();
@@ -1852,8 +1850,6 @@ function initApp(user){
     renderCalc();
   }
 }
-
-function logout(){netlifyIdentity.logout();}
 
 // ===== FEATURE: DARK/LIGHT MODE =====
 function initTheme(){
@@ -2177,17 +2173,29 @@ function checkPipelineAutomation(lead,oldStatus,newStatus){
   }
 }
 
-netlifyIdentity.on('init',user=>{
-  if(user){initApp(user);}
-  else{document.getElementById('login-screen').style.display='flex';}
-});
-netlifyIdentity.on('login',user=>{netlifyIdentity.close();initApp(user);});
-netlifyIdentity.on('logout',()=>{
-  currentUser=null;leads=[];queue=[];cfg={};
+function showApp(user){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp(user);
+}
+function showLogin(){
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
+}
+function logout(){netlifyIdentity.logout();}
+
+window.addEventListener('load',function(){
+  const user=netlifyIdentity.currentUser();
+  if(user){showApp(user);}else{showLogin();}
+  netlifyIdentity.on('login',function(user){
+    netlifyIdentity.close();
+    showApp(user);
+  });
+  netlifyIdentity.on('logout',function(){
+    currentUser=null;leads=[];queue=[];cfg={};
+    showLogin();
+  });
 });
-netlifyIdentity.init();
 </script>
 </body>
 </html>

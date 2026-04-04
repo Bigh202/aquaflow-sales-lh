@@ -4,6 +4,9 @@
 [functions]
   directory = "netlify/functions"
 
+[template.environment]
+  NETLIFY_IDENTITY = "true"
+
 # Never cache HTML — always serve fresh so auth + code changes deploy instantly
 [[headers]]
   for = "/*.html"
