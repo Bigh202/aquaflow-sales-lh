@@ -35,6 +35,8 @@ exports.handler = async (event) => {
     let url;
     if (action === 'geocode') {
       url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${API_KEY}`;
+    } else if (action === 'autocomplete') {
+      url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&types=(cities)&key=${API_KEY}`;
     } else if (action === 'nearby') {
       url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${radius}&keyword=${encodeURIComponent(type)}&key=${API_KEY}`;
     } else if (action === 'details') {

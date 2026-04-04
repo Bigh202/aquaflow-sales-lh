@@ -115,6 +115,11 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 @media(max-width:768px){.stats{grid-template-columns:repeat(2,1fr)}.fr.c4,.fr.c3{grid-template-columns:1fr 1fr}.pipe{grid-template-columns:repeat(2,1fr)}.drow{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.fr.c2,.fr.c3,.fr.c4{grid-template-columns:1fr}.main{padding:12px}.pipe{grid-template-columns:1fr}}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:3px}
+.ac-wrap{position:relative}
+.ac-list{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surf2);border:1px solid var(--bdr2);border-radius:8px;z-index:300;max-height:220px;overflow-y:auto;display:none;list-style:none;padding:0;margin:0;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.ac-item{padding:9px 11px;font-size:13px;cursor:pointer;color:var(--txt);border-bottom:1px solid var(--bdr)}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.hov{background:rgba(0,212,170,0.08);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -159,7 +164,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div class="card">
     <div class="ctitle">Search Parameters</div>
     <div class="fr c4">
-      <div class="fld"><label>Base Location</label><input id="loc" value="Long Beach, CA" placeholder="Long Beach, Torrance, Irvine, LA..."></div>
+      <div class="fld ac-wrap"><label>Base Location</label><input id="loc" placeholder="Any city worldwide..." autocomplete="off"><ul id="loc-ac" class="ac-list"></ul></div>
       <div class="fld"><label>Radius</label>
         <select id="rad">
           <option value="16000">10 miles</option>
@@ -986,6 +991,54 @@ async function runAutoEmail(){
     flash('Error: '+e.message);
   }
 }
+
+// LOCATION AUTOCOMPLETE
+(function(){
+  let acTimer=null,acIdx=-1,acPreds=[];
+  const locIn=document.getElementById('loc');
+  const acList=document.getElementById('loc-ac');
+
+  locIn.addEventListener('input',()=>{
+    clearTimeout(acTimer);
+    const q=locIn.value.trim();
+    if(q.length<2){hideAC();return;}
+    acTimer=setTimeout(()=>fetchAC(q),300);
+  });
+
+  async function fetchAC(q){
+    try{
+      const r=await fetch('/.netlify/functions/places?action=autocomplete&query='+encodeURIComponent(q));
+      const d=await r.json();
+      if(!d.predictions||!d.predictions.length){hideAC();return;}
+      acPreds=d.predictions;
+      acIdx=-1;
+      acList.innerHTML=acPreds.map((p,i)=>`<li class="ac-item" data-i="${i}">${p.description}</li>`).join('');
+      acList.style.display='block';
+    }catch(e){hideAC();}
+  }
+
+  function pickAC(i){
+    if(acPreds[i]){locIn.value=acPreds[i].description;hideAC();}
+  }
+
+  function hideAC(){acList.style.display='none';acIdx=-1;}
+
+  acList.addEventListener('mousedown',e=>{
+    const li=e.target.closest('.ac-item');
+    if(li)pickAC(parseInt(li.dataset.i,10));
+  });
+
+  locIn.addEventListener('keydown',e=>{
+    const items=acList.querySelectorAll('.ac-item');
+    if(!items.length||acList.style.display==='none')return;
+    if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('hov',i===acIdx));}
+    else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);items.forEach((el,i)=>el.classList.toggle('hov',i===acIdx));}
+    else if(e.key==='Enter'&&acIdx>=0){e.preventDefault();pickAC(acIdx);}
+    else if(e.key==='Escape'){hideAC();}
+  });
+
+  document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))hideAC();});
+})();
 
 // INIT
 stats();renderLeads();renderQueue();
