@@ -11,6 +11,7 @@ Output
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AquaFlow Sales OS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
 :root{--bg:#0a0c10;--surf:#111318;--surf2:#181c24;--surf3:#1e232e;--bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);--txt:#e8eaf0;--txt2:#8b919e;--txt3:#555b66;--accent:#00d4aa;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -116,6 +117,11 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 @media(max-width:768px){.stats{grid-template-columns:repeat(2,1fr)}.fr.c4,.fr.c3{grid-template-columns:1fr 1fr}.pipe{grid-template-columns:repeat(2,1fr)}.drow{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.fr.c2,.fr.c3,.fr.c4{grid-template-columns:1fr}.main{padding:12px}.pipe{grid-template-columns:1fr}}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:3px}
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:none;align-items:center;justify-content:center}
+.login-box{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;padding:36px 32px;width:100%;max-width:360px;text-align:center}
+.login-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px}
+.logout-btn{background:transparent;border:1px solid var(--bdr2);border-radius:7px;color:var(--txt2);font-size:11px;font-family:'DM Mono',monospace;padding:4px 10px;cursor:pointer;transition:all 0.15s}
+.logout-btn:hover{color:var(--txt);border-color:var(--txt3)}
 .ac-wrap{position:relative}
 .ac-list{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surf2);border:1px solid var(--bdr2);border-radius:8px;z-index:300;max-height:220px;overflow-y:auto;display:none;list-style:none;padding:0;margin:0;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
 .ac-item{padding:9px 11px;font-size:13px;cursor:pointer;color:var(--txt);border-bottom:1px solid var(--bdr)}
@@ -124,6 +130,21 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 </style>
 </head>
 <body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo-mark">💧</div>
+      <div class="logo-txt">AquaFlow <span>Sales OS</span></div>
+    </div>
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px">Welcome back</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:28px">Sign in to access your sales dashboard</div>
+    <button class="btn btn-a" style="width:100%;justify-content:center;padding:12px 0;font-size:14px" onclick="netlifyIdentity.open('login')">Sign In</button>
+    <div style="margin-top:14px;font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">AquaFlow Technologies — Sales OS</div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
 
 <div class="hdr">
   <div class="logo">
@@ -134,6 +155,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     <span><span class="dot"></span><span id="rep-name">Lauren Hatwan</span> — Long Beach</span>
     <span id="hdr-count" style="color:var(--accent)">0 leads</span>
     <span id="clock" style="color:var(--txt3);font-size:11px"></span>
+    <button class="logout-btn" onclick="logout()">Sign Out</button>
   </div>
 </div>
 
@@ -443,6 +465,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 </div><!-- /main -->
 <div class="flash" id="flash"></div>
 
+</div><!-- /app -->
+
 <script>
 const DEMO=[
   {id:1,biz:"Torrance Golf Club",type:"Golf course",contact:"Jim Hartley",title:"General Manager",phone:"(310) 540-8000",email:"jim.hartley@torrancegolf.com",source:"Demo",city:"Torrance, CA",size:6200,status:"cold",notes:"",callLog:[]},
@@ -462,23 +486,14 @@ const DEMO=[
   {id:15,biz:"Dignity Health — St. Mary",type:"Hospital",contact:"Kevin Brooks",title:"Facilities Manager",phone:"(562) 491-9100",email:"kbrooks@dignityhealth.org",source:"Demo",city:"Long Beach, CA",size:17600,status:"cold",notes:"",callLog:[]},
 ];
 
-let leads=JSON.parse(localStorage.getItem('af_leads')||'null')||DEMO;
-let queue=JSON.parse(localStorage.getItem('af_q')||'[]');
-let cfg=JSON.parse(localStorage.getItem('af_cfg')||'{}');
+let leads=[],queue=[],cfg={};
 let selCallId=null,selPipeId=null,curEmailId=null;
 let lastLat=null,lastLng=null,lastLocText='';
+let currentUser=null;
 
-function save(){localStorage.setItem('af_leads',JSON.stringify(leads));localStorage.setItem('af_q',JSON.stringify(queue));}
-function saveCfg(){localStorage.setItem('af_cfg',JSON.stringify(cfg));}
-
-// Keys stored locally
-function saveKeys(){
-  cfg.gkey=document.getElementById('gkey').value;
-  cfg.akey=document.getElementById('akey').value;
-  saveCfg();
-  document.getElementById('key-status').textContent='✓ Keys saved';
-  flash('API keys saved');
-}
+function userKey(k){return currentUser?k+'_'+currentUser.email:k;}
+function save(){localStorage.setItem(userKey('af_leads'),JSON.stringify(leads));localStorage.setItem(userKey('af_q'),JSON.stringify(queue));}
+function saveCfg(){localStorage.setItem(userKey('af_cfg'),JSON.stringify(cfg));}
 
 // Clock
 setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});},1000);
@@ -866,7 +881,8 @@ function saveSettings(){
   cfg.terr=document.getElementById('cfg-terr').value;
   cfg.co=document.getElementById('cfg-co').value;
   saveCfg();
-  document.getElementById('rep-name').textContent=cfg.name||'Lauren Hatwan';
+  const displayName=cfg.name||(currentUser&&currentUser.user_metadata&&currentUser.user_metadata.full_name)||(currentUser&&currentUser.email)||'Rep';
+  document.getElementById('rep-name').textContent=displayName;
   flash('Settings saved');
 }
 
@@ -1033,14 +1049,37 @@ async function runAutoEmail(){
   document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))hideAC();});
 })();
 
-// INIT
-stats();renderLeads();renderQueue();
-if(cfg.name){document.getElementById('cfg-name').value=cfg.name;document.getElementById('rep-name').textContent=cfg.name;}
-if(cfg.phone)document.getElementById('cfg-phone').value=cfg.phone;
-if(cfg.email)document.getElementById('cfg-email').value=cfg.email;
-if(cfg.terr)document.getElementById('cfg-terr').value=cfg.terr;
-if(cfg.co)document.getElementById('cfg-co').value=cfg.co;
-if(cfg.gkey)document.getElementById('key-status').textContent='✓ Keys loaded';
+// AUTH
+function initApp(user){
+  currentUser=user;
+  leads=JSON.parse(localStorage.getItem(userKey('af_leads'))||'null')||DEMO;
+  queue=JSON.parse(localStorage.getItem(userKey('af_q'))||'[]');
+  cfg=JSON.parse(localStorage.getItem(userKey('af_cfg'))||'{}');
+  const displayName=cfg.name||(user.user_metadata&&user.user_metadata.full_name)||user.email;
+  document.getElementById('rep-name').textContent=displayName;
+  if(cfg.name)document.getElementById('cfg-name').value=cfg.name;
+  if(cfg.phone)document.getElementById('cfg-phone').value=cfg.phone;
+  if(cfg.email)document.getElementById('cfg-email').value=cfg.email;
+  if(cfg.terr)document.getElementById('cfg-terr').value=cfg.terr;
+  if(cfg.co)document.getElementById('cfg-co').value=cfg.co;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  stats();renderLeads();renderQueue();
+}
+
+function logout(){netlifyIdentity.logout();}
+
+netlifyIdentity.on('init',user=>{
+  if(user){initApp(user);}
+  else{document.getElementById('login-screen').style.display='flex';}
+});
+netlifyIdentity.on('login',user=>{netlifyIdentity.close();initApp(user);});
+netlifyIdentity.on('logout',()=>{
+  currentUser=null;leads=[];queue=[];cfg={};
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+});
+netlifyIdentity.init();
 </script>
 </body>
 </html>
