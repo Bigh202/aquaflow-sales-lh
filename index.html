@@ -956,6 +956,8 @@ async function scrape(){
   document.getElementById('scr-load').style.display='none';
   document.getElementById('prog').style.display='none';
   stats();renderLeads();
+  // Kick off Apollo enrichment in the background — updates rows in-place
+  if(leads.length)enrichLeads([...leads]);
 }
 
 function estBill(t){
@@ -989,16 +991,12 @@ function renderLeads(){
     <tbody>${filtered.map(l=>{
       const score=scoreLead(l);
       const scoreCls=score>=8?'bdg-g':score>=5?'bdg-am':'bdg-r';
-      return`<tr>
+      return`<tr data-lid="${l.id}">
       <td><input type="checkbox" class="lead-cb" data-id="${l.id}"></td>
       <td><span class="bdg ${scoreCls}">${score}</span></td>
       <td><div style="font-weight:500">${l.biz}</div><div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">${l.city} · ${l.type}${l.rating?' · ⭐'+l.rating:''}</div></td>
-      <td>
-        <div style="font-weight:500">${l.contact}</div>
-        <div style="font-size:11px;color:var(--txt2)">${l.title}</div>
-        <a href="https://www.google.com/search?q=${encodeURIComponent(l.biz+' '+l.type+' facilities manager OR property manager OR owner site:linkedin.com')}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">🔗 Find on LinkedIn</a>
-      </td>
-      <td>
+      <td class="contact-cell">${contactCellHTML(l)}</td>
+      <td class="phone-cell">
         <div style="font-family:'DM Mono',monospace;font-size:12px">${l.phone}</div>
         <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>
       </td>
@@ -1020,6 +1018,65 @@ function renderLeads(){
   const selAll=document.getElementById('sel-all');
   if(selAll){selAll.onchange=()=>{document.querySelectorAll('.lead-cb').forEach(cb=>cb.checked=selAll.checked);updateBulkBar();};}
   c.onchange=e=>{if(e.target.classList.contains('lead-cb'))updateBulkBar();};
+}
+
+// Helper: renders the contact cell (used in renderLeads and live row updates)
+function contactCellHTML(l){
+  if(l.enriching){
+    return`<div class="ai-spin" style="padding:2px 0"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:5px;font-size:11px">Finding contact...</span></div>`;
+  }
+  const linkedinLink=l.linkedin
+    ?`<a href="${l.linkedin}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">💼 LinkedIn Profile</a>`
+    :`<a href="https://www.google.com/search?q=${encodeURIComponent(l.biz+' '+l.type+' facilities manager OR property manager OR owner site:linkedin.com')}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">🔗 Find on LinkedIn</a>`;
+  return`${l.enriched?'<span class="bdg bdg-a" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Apollo</span><br>':''}
+    <div style="font-weight:500">${l.contact}</div>
+    <div style="font-size:11px;color:var(--txt2)">${l.title}</div>
+    ${linkedinLink}`;
+}
+
+// Update a single lead row's contact+phone cells without full re-render
+function updateLeadRow(id){
+  const l=leads.find(x=>x.id===id);
+  if(!l)return;
+  const row=document.querySelector(`tr[data-lid="${id}"]`);
+  if(!row)return;
+  const cc=row.querySelector('.contact-cell');
+  if(cc)cc.innerHTML=contactCellHTML(l);
+  const pc=row.querySelector('.phone-cell');
+  if(pc)pc.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:12px">${l.phone}</div>
+    <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>`;
+}
+
+// Apollo enrichment — runs after scrape, updates leads in-place
+async function enrichLeads(leadsToEnrich){
+  const BATCH=3;const DELAY=400;
+  for(let i=0;i<leadsToEnrich.length;i+=BATCH){
+    const batch=leadsToEnrich.slice(i,i+BATCH);
+    await Promise.all(batch.map(l=>enrichOneLead(l)));
+    if(i+BATCH<leadsToEnrich.length)await sleep(DELAY);
+  }
+  save();flash('✓ Decision maker enrichment complete');
+}
+
+async function enrichOneLead(lead){
+  lead.enriching=true;
+  updateLeadRow(lead.id);
+  try{
+    const resp=await fetch('/.netlify/functions/enrich',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({biz:lead.biz,city:lead.city,type:lead.type})});
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const data=await resp.json();
+    if(data.found){
+      if(data.name&&data.name!=='')lead.contact=data.name;
+      if(data.title&&data.title!=='')lead.title=data.title;
+      if(data.email&&data.email!=='')lead.email=data.email;
+      if(data.phone&&data.phone!=='')lead.phone=data.phone;
+      if(data.linkedin&&data.linkedin!=='')lead.linkedin=data.linkedin;
+      lead.enriched=true;
+    }
+  }catch(e){/* fail silently — keep default contact info */}
+  lead.enriching=false;
+  updateLeadRow(lead.id);
+  save();
 }
 
 function rmLead(id){leads=leads.filter(l=>l.id!==id);save();stats();renderLeads();}
