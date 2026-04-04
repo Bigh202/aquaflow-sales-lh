@@ -213,7 +213,8 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 .proj-col .pc2{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace}
 /* Calculator */
 #pane-calculator .calc-result-row.highlight td{color:var(--accent);font-weight:600}
-#login-screen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:none;align-items:center;justify-content:center}
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;align-items:center;justify-content:center}
+#app{display:none}
 .login-box{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;padding:36px 32px;width:100%;max-width:360px;text-align:center}
 .login-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px}
 .logout-btn{background:transparent;border:1px solid var(--bdr2);border-radius:7px;color:var(--txt2);font-size:11px;font-family:'DM Mono',monospace;padding:4px 10px;cursor:pointer;transition:all 0.15s}
@@ -240,7 +241,7 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   </div>
 </div>
 
-<div id="app" style="display:none">
+<div id="app">
 
 <div class="hdr">
   <div class="logo">
@@ -811,23 +812,6 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 </div><!-- /app -->
 
 <script>
-const DEMO=[
-  {id:1,biz:"Torrance Golf Club",type:"Golf course",contact:"Jim Hartley",title:"General Manager",phone:"(310) 540-8000",email:"jim.hartley@torrancegolf.com",source:"Demo",city:"Torrance, CA",size:6200,status:"cold",notes:"",callLog:[]},
-  {id:2,biz:"Marriott Long Beach",type:"Hotel",contact:"Sandra Ruiz",title:"Director of Facilities",phone:"(562) 435-8511",email:"s.ruiz@marriott-lb.com",source:"Demo",city:"Long Beach, CA",size:11400,status:"cold",notes:"",callLog:[]},
-  {id:3,biz:"El Torito Restaurants HQ",type:"Restaurant chain",contact:"David Park",title:"VP Operations",phone:"(714) 255-3400",email:"dpark@eltoritocorp.com",source:"Demo",city:"Irvine, CA",size:8800,status:"cold",notes:"",callLog:[]},
-  {id:4,biz:"Harbor Associates CRE",type:"Commercial RE",contact:"Lori Chen",title:"Property Manager",phone:"(562) 981-0100",email:"lori.chen@harborassoc.com",source:"Demo",city:"Long Beach, CA",size:14200,status:"cold",notes:"",callLog:[]},
-  {id:5,biz:"Pacific Car Wash Network",type:"Car wash",contact:"Robert Finn",title:"Owner",phone:"(310) 830-4400",email:"rfinn@pacificcarwash.net",source:"Demo",city:"Wilmington, CA",size:3900,status:"cold",notes:"",callLog:[]},
-  {id:6,biz:"Dignity Health St. Mary",type:"Hospital",contact:"Angela Torres",title:"Facilities Director",phone:"(562) 491-9000",email:"atorres@dignityhealth.org",source:"Demo",city:"Long Beach, CA",size:22100,status:"cold",notes:"",callLog:[]},
-  {id:7,biz:"CSULB Facilities",type:"University",contact:"Mark Liu",title:"Assoc VP Facilities",phone:"(562) 985-4111",email:"mark.liu@csulb.edu",source:"Demo",city:"Long Beach, CA",size:18400,status:"cold",notes:"",callLog:[]},
-  {id:8,biz:"Del Monte Foods Carson",type:"Manufacturing",contact:"Paul Vega",title:"Plant Manager",phone:"(310) 217-8000",email:"pvega@delmonte.com",source:"Demo",city:"Carson, CA",size:31000,status:"cold",notes:"",callLog:[]},
-  {id:9,biz:"South Bay Golf Center",type:"Golf course",contact:"Tracy Kim",title:"Owner",phone:"(310) 371-8800",email:"tracy@southbaygolf.com",source:"Demo",city:"Torrance, CA",size:4100,status:"cold",notes:"",callLog:[]},
-  {id:10,biz:"DoubleTree by Hilton LAX",type:"Hotel",contact:"Frank Morales",title:"Chief Engineer",phone:"(310) 670-9000",email:"fmorales@doubletree-lax.com",source:"Demo",city:"El Segundo, CA",size:9700,status:"cold",notes:"",callLog:[]},
-  {id:11,biz:"Los Coyotes Country Club",type:"Golf course",contact:"Brian Walsh",title:"Club Manager",phone:"(714) 521-7662",email:"bwalsh@loscoyotescc.com",source:"Demo",city:"Buena Park, CA",size:7300,status:"cold",notes:"",callLog:[]},
-  {id:12,biz:"Hyatt Regency Long Beach",type:"Hotel",contact:"Claire Bennett",title:"Dir. of Engineering",phone:"(562) 491-1234",email:"cbennett@hyattlb.com",source:"Demo",city:"Long Beach, CA",size:12600,status:"cold",notes:"",callLog:[]},
-  {id:13,biz:"Sprouts Farmers Market",type:"Grocery chain",contact:"Tom Nguyen",title:"VP Facilities",phone:"(480) 814-8016",email:"tnguyen@sprouts.com",source:"Demo",city:"LA Region",size:19800,status:"cold",notes:"",callLog:[]},
-  {id:14,biz:"Palos Verdes Golf Club",type:"Golf course",contact:"Susan Hart",title:"Operations Director",phone:"(310) 375-2759",email:"shart@pvgc.com",source:"Demo",city:"Palos Verdes, CA",size:5800,status:"cold",notes:"",callLog:[]},
-  {id:15,biz:"Dignity Health — St. Mary",type:"Hospital",contact:"Kevin Brooks",title:"Facilities Manager",phone:"(562) 491-9100",email:"kbrooks@dignityhealth.org",source:"Demo",city:"Long Beach, CA",size:17600,status:"cold",notes:"",callLog:[]},
-];
 
 let leads=[],queue=[],cfg={};
 let selCallId=null,selPipeId=null,curEmailId=null;
@@ -1848,7 +1832,7 @@ function renderProjections(){
 // AUTH
 function initApp(user){
   currentUser=user;
-  leads=JSON.parse(localStorage.getItem(userKey('af_leads'))||'null')||DEMO;
+  leads=JSON.parse(localStorage.getItem(userKey('af_leads'))||'null')||[];
   queue=JSON.parse(localStorage.getItem(userKey('af_q'))||'[]');
   cfg=JSON.parse(localStorage.getItem(userKey('af_cfg'))||'{}');
   const displayName=cfg.name||(user.user_metadata&&user.user_metadata.full_name)||user.email;
