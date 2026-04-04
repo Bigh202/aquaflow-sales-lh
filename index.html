@@ -117,6 +117,35 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 @media(max-width:768px){.stats{grid-template-columns:repeat(2,1fr)}.fr.c4,.fr.c3{grid-template-columns:1fr 1fr}.pipe{grid-template-columns:repeat(2,1fr)}.drow{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.fr.c2,.fr.c3,.fr.c4{grid-template-columns:1fr}.main{padding:12px}.pipe{grid-template-columns:1fr}}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:3px}
+/* Lead Panel */
+#lead-panel{position:fixed;right:0;top:0;height:100%;width:420px;background:var(--surf);border-left:1px solid var(--bdr2);z-index:500;transform:translateX(100%);transition:transform 0.25s;overflow-y:auto;padding:24px}
+#lead-panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:499;display:none}
+.lp-tl-item{display:flex;gap:10px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--bdr)}
+.lp-tl-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px}
+/* Daily stats bar */
+.daily-bar{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:12px 20px;display:flex;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+.daily-item .dl{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em;font-family:'DM Mono',monospace}
+.daily-item .dv{font-family:'DM Mono',monospace;font-size:26px;font-weight:700;color:var(--accent)}
+/* Filter bar */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.filter-bar input,.filter-bar select{background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:7px 10px;font-size:12px;color:var(--txt);font-family:'DM Sans',sans-serif;outline:none}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--accent)}
+/* Bulk bar */
+#bulk-bar{background:var(--surf2);border:1px solid var(--accent);border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* Callback cards */
+.cb-card{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+/* Mobile dialer */
+#mobile-dialer{display:none}
+#desktop-dialer{display:block}
+@media(max-width:600px){#mobile-dialer{display:block}#desktop-dialer{display:none}}
+/* Pipeline projections */
+.proj-card{background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;padding:16px;margin-bottom:14px}
+.proj-col{flex:1;text-align:center;padding:10px}
+.proj-col .pv{font-family:'DM Mono',monospace;font-size:18px;color:var(--green);font-weight:700}
+.proj-col .pl{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px}
+.proj-col .pc2{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace}
+/* Calculator */
+#pane-calculator .calc-result-row.highlight td{color:var(--accent);font-weight:600}
 #login-screen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:none;align-items:center;justify-content:center}
 .login-box{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;padding:36px 32px;width:100%;max-width:360px;text-align:center}
 .login-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px}
@@ -165,6 +194,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div class="tab" onclick="go('dialer',this)">Dialer</div>
   <div class="tab" onclick="go('pipeline',this)">Pipeline</div>
   <div class="tab" onclick="go('sequences',this)">Sequences</div>
+  <div class="tab" onclick="go('calculator',this)">Calculator</div>
   <div class="tab" onclick="go('settings',this)">Settings</div>
 </div>
 
@@ -172,6 +202,12 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 <!-- SCRAPER -->
 <div id="pane-scraper" class="pane active">
+  <div id="daily-stats-bar" class="daily-bar">
+    <div class="daily-item"><div class="dl">Calls Today</div><div class="dv" id="ds-calls">0</div></div>
+    <div class="daily-item"><div class="dl">Emails Today</div><div class="dv" id="ds-emails">0</div></div>
+    <div class="daily-item"><div class="dl">Leads Added</div><div class="dv" id="ds-added">0</div></div>
+    <div class="daily-item"><div class="dl">Interested Today</div><div class="dv" id="ds-int">0</div></div>
+  </div>
   <div class="stats">
     <div class="stat"><div class="v" style="color:var(--accent)" id="s-tot">0</div><div class="l">Total Leads</div></div>
     <div class="stat"><div class="v" style="color:var(--green)" id="s-dm">0</div><div class="l">Decision Makers</div></div>
@@ -262,6 +298,25 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
 
   <div id="scr-load"><div class="big-spin"></div><div style="color:var(--txt2);font-size:13px;font-family:'DM Mono',monospace" id="scr-msg">Searching...</div></div>
+  <div class="filter-bar" id="filter-bar">
+    <input id="lead-search" placeholder="Search business or contact..." style="min-width:200px" oninput="renderLeads()">
+    <select id="f-status" onchange="renderLeads()"><option value="">All Statuses</option><option value="cold">Cold</option><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="callback">Callback</option><option value="voicemail">Voicemail</option><option value="no_answer">No Answer</option><option value="not_interested">Not Interested</option><option value="audit">Audit Booked</option><option value="closed">Closed</option></select>
+    <select id="f-type" onchange="renderLeads()"><option value="">All Types</option></select>
+    <select id="f-city" onchange="renderLeads()"><option value="">All Cities</option></select>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace">Min Bill:</span>
+      <input type="range" id="f-minbill" min="0" max="30000" step="500" value="0" oninput="document.getElementById('f-minbill-val').textContent='$'+parseInt(this.value).toLocaleString();renderLeads()" style="width:100px;padding:0;border:none;background:transparent">
+      <span id="f-minbill-val" style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace;min-width:55px">$0</span>
+    </div>
+    <button class="btn btn-sm" onclick="clearFilters()">Clear Filters</button>
+  </div>
+  <div id="bulk-bar" style="display:none">
+    <span id="bulk-count" style="font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace">0 selected</span>
+    <select id="bulk-stage" style="background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);padding:5px 8px;border-radius:6px;font-size:12px"><option value="cold">Cold</option><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="audit">Audit Scheduled</option><option value="closed">Closed Won</option><option value="not_interested">Closed Lost</option></select>
+    <button class="btn btn-sm btn-a" onclick="bulkMove(document.getElementById('bulk-stage').value)">Apply Stage</button>
+    <button class="btn btn-sm" onclick="bulkExport()">Export CSV</button>
+    <button class="btn btn-sm btn-b" onclick="bulkEmail()">Send Auto-Email</button>
+  </div>
   <div id="leads-wrap"></div>
 </div>
 
@@ -354,6 +409,15 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 <!-- DIALER -->
 <div id="pane-dialer" class="pane">
+  <div id="callbacks-section" style="margin-bottom:18px">
+    <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--amber);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">Today's Callbacks</div>
+    <div id="callbacks-list"><div style="font-size:12px;color:var(--txt3);font-family:'DM Mono',monospace">No callbacks scheduled for today</div></div>
+  </div>
+  <div id="mobile-dialer">
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:10px">Dialer</div>
+    <div id="mobile-dialer-cards"></div>
+  </div>
+  <div id="desktop-dialer">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
     <div>
       <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Dialer Queue</div>
@@ -369,6 +433,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     <div class="tt-text" id="tt-text"><em>"Hi, is this [Name]? — Great, I'm [your name] calling from AquaFlow out of Long Beach. Quick question — do you handle utilities or facilities for [Business]? ... Perfect. We've been helping [business type]s in the area cut their water and sewer bills by up to 30%. We'd do a free water analysis — 10 minutes, zero commitment. Worth a look?"</em></div>
   </div>
   <div id="dialer-list"></div>
+  </div><!-- /desktop-dialer -->
   <div class="clp" id="clp" style="display:none">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <div>
@@ -424,6 +489,11 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     <span style="font-family:'DM Mono',monospace;font-size:13px">Audit: <span id="pv-aud" style="color:var(--amber)">$0/mo</span></span>
     <span style="font-family:'DM Mono',monospace;font-size:13px">Closed: <span id="pv-cls" style="color:var(--green);font-weight:600">$0/mo</span></span>
   </div>
+  <div id="projections-card" class="proj-card" style="margin-bottom:14px">
+    <div class="ctitle">Projected Commission (10% of 1st-Year Savings)</div>
+    <div style="display:flex;gap:0;border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:10px" id="proj-cols"></div>
+    <div style="text-align:center;font-family:'DM Mono',monospace;font-size:14px;color:var(--accent);font-weight:700;padding:6px 0" id="proj-total">Total Projected Commission: $0</div>
+  </div>
   <div class="pipe" id="pipe-board"></div>
 </div>
 
@@ -433,6 +503,28 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div style="font-size:12px;color:var(--txt2);margin-bottom:14px">5-touch cadences — 14-day window per lead</div>
   <div class="tip"><strong>Key stat:</strong> Average B2B deal closes on touch 5–8. Most reps quit after 1–2. Your biggest competitive edge is just following through.</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" id="seq-grid"></div>
+</div>
+
+<!-- CALCULATOR -->
+<div id="pane-calculator" class="pane">
+  <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px">Water Savings Calculator</div>
+  <div style="font-size:12px;color:var(--txt2);margin-bottom:18px">Show prospects their exact savings potential</div>
+  <div class="card" style="max-width:560px">
+    <div class="ctitle">Monthly Water Bill</div>
+    <div class="fld" style="margin-bottom:16px">
+      <input type="number" id="calc-bill" placeholder="Enter monthly water bill amount..." style="font-size:22px;padding:14px 16px;font-family:'DM Mono',monospace" oninput="renderCalc()">
+    </div>
+    <div id="calc-results" style="display:none;margin-bottom:16px">
+      <table class="tbl" style="margin-bottom:0">
+        <thead><tr><th>Reduction</th><th>Monthly Savings</th><th>Annual Savings</th><th>5-Year Savings</th></tr></thead>
+        <tbody id="calc-tbody"></tbody>
+      </table>
+    </div>
+    <div id="calc-empty" style="font-size:12px;color:var(--txt3);font-family:'DM Mono',monospace;padding:12px 0">Enter a monthly water bill to see savings</div>
+    <div class="brow">
+      <button class="btn btn-sm" onclick="copyCalcLink()">Copy Shareable Link</button>
+    </div>
+  </div>
 </div>
 
 <!-- SETTINGS -->
@@ -464,6 +556,51 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 </div><!-- /main -->
 <div class="flash" id="flash"></div>
+
+<!-- LEAD PANEL -->
+<div id="lead-panel-overlay" onclick="closeLeadPanel()"></div>
+<div id="lead-panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800" id="lp-title">Lead Details</div>
+    <button class="btn btn-sm" onclick="closeLeadPanel()" style="font-size:16px;padding:4px 10px">×</button>
+  </div>
+  <div class="ctitle">Contact Info</div>
+  <div class="fr c2" style="margin-bottom:8px">
+    <div class="fld"><label>Business Name</label><input id="lp-biz"></div>
+    <div class="fld"><label>Contact</label><input id="lp-contact"></div>
+  </div>
+  <div class="fr c2" style="margin-bottom:8px">
+    <div class="fld"><label>Title</label><input id="lp-job-title"></div>
+    <div class="fld"><label>City</label><input id="lp-city"></div>
+  </div>
+  <div class="fr c2" style="margin-bottom:8px">
+    <div class="fld"><label>Phone</label><input id="lp-phone"></div>
+    <div class="fld"><label>Email</label><input id="lp-email"></div>
+  </div>
+  <div class="fld" style="margin-bottom:8px">
+    <label>Status</label>
+    <select id="lp-status">
+      <option value="cold">Cold</option>
+      <option value="contacted">Contacted</option>
+      <option value="interested">Interested</option>
+      <option value="callback">Callback</option>
+      <option value="voicemail">Voicemail</option>
+      <option value="no_answer">No Answer</option>
+      <option value="not_interested">Not Interested</option>
+      <option value="audit">Audit Booked</option>
+      <option value="closed">Closed ✓</option>
+    </select>
+  </div>
+  <div class="fld" style="margin-bottom:12px">
+    <label>Notes</label>
+    <textarea id="lp-notes" rows="3"></textarea>
+  </div>
+  <button class="btn btn-a" onclick="saveLeadPanel()" style="width:100%;justify-content:center">Save Contact</button>
+  <div style="margin-top:20px;margin-bottom:10px">
+    <div class="ctitle">Activity Timeline</div>
+    <div id="lp-timeline"></div>
+  </div>
+</div>
 
 </div><!-- /app -->
 
@@ -505,16 +642,19 @@ function go(id,el){
   document.getElementById('pane-'+id).classList.add('active');
   if(el)el.classList.add('active');
   if(id==='pipeline')renderPipe();
-  if(id==='dialer')renderDialer();
+  if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();}
   if(id==='sequences')renderSeq();
+  if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
+  if(id==='calculator')renderCalc();
 }
 function goById(id){
-  const tabs=['scraper','email','dialer','pipeline','sequences','settings'];
+  const tabs=['scraper','email','dialer','pipeline','sequences','calculator','settings'];
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
   document.getElementById('pane-'+id).classList.add('active');
   if(id==='pipeline')renderPipe();
-  if(id==='dialer')renderDialer();
+  if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();}
+  if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
 }
 
 function flash(msg){
@@ -584,7 +724,7 @@ async function scrape(){
             const det=await fetch(`/.netlify/functions/places?action=details&query=${place.place_id}`).then(r=>r.json());
             if(det.result&&det.result.formatted_phone_number)phone=det.result.formatted_phone_number;
           }catch(e){}
-          newLeads.push({id:Date.now()+Math.random(),biz:place.name,type:cat,contact:'Owner / Manager',title:'Decision Maker',phone,email:'',source:'Google Maps',city:place.vicinity||loc,size:estBill(cat),status:'cold',notes:'',callLog:[],rating:place.rating||null});
+          newLeads.push({id:Date.now()+Math.random(),biz:place.name,type:cat,contact:'Owner / Manager',title:'Decision Maker',phone,email:'',source:'Google Maps',city:place.vicinity||loc,size:estBill(cat),status:'cold',notes:'',callLog:[],rating:place.rating||null,created:new Date().toLocaleDateString()});
         }
       }
       await sleep(200);
@@ -612,11 +752,30 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
 function renderLeads(){
   const c=document.getElementById('leads-wrap');
+  populateFilterDropdowns();
   if(!leads.length){c.innerHTML='<div class="empty"><p>No leads yet. Hit Search Leads to start.</p></div>';return;}
-  const sorted=[...leads].sort((a,b)=>b.size-a.size);
+  // Apply filters
+  const search=(document.getElementById('lead-search')||{value:''}).value.toLowerCase();
+  const fStatus=(document.getElementById('f-status')||{value:''}).value;
+  const fType=(document.getElementById('f-type')||{value:''}).value;
+  const fCity=(document.getElementById('f-city')||{value:''}).value;
+  const fMinBill=parseInt((document.getElementById('f-minbill')||{value:0}).value)||0;
+  let filtered=[...leads].sort((a,b)=>b.size-a.size).filter(l=>{
+    if(search&&!(l.biz.toLowerCase().includes(search)||l.contact.toLowerCase().includes(search)))return false;
+    if(fStatus&&l.status!==fStatus)return false;
+    if(fType&&l.type!==fType)return false;
+    if(fCity&&l.city!==fCity)return false;
+    if(fMinBill&&l.size<fMinBill)return false;
+    return true;
+  });
   c.innerHTML=`<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table class="tbl">
-    <thead><tr><th>Business</th><th>Decision Maker</th><th>Phone / Email</th><th>Water Bill</th><th>30% Savings</th><th>Status</th><th>Actions</th></tr></thead>
-    <tbody>${sorted.map(l=>`<tr>
+    <thead><tr><th><input type="checkbox" id="sel-all"></th><th>Score</th><th>Business</th><th>Decision Maker</th><th>Phone / Email</th><th>Water Bill</th><th>30% Savings</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${filtered.map(l=>{
+      const score=scoreLead(l);
+      const scoreCls=score>=8?'bdg-g':score>=5?'bdg-am':'bdg-r';
+      return`<tr>
+      <td><input type="checkbox" class="lead-cb" data-id="${l.id}"></td>
+      <td><span class="bdg ${scoreCls}">${score}</span></td>
       <td><div style="font-weight:500">${l.biz}</div><div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">${l.city} · ${l.type}${l.rating?' · ⭐'+l.rating:''}</div></td>
       <td>
         <div style="font-weight:500">${l.contact}</div>
@@ -636,10 +795,14 @@ function renderLeads(){
       <td><div style="display:flex;gap:5px;flex-wrap:wrap">
         <a href="tel:${l.phone.replace(/\D/g,'')}" class="btn btn-call btn-sm" onclick="openCL(${l.id})">📞</a>
         <button class="btn btn-sm" onclick="prefillEmail(${l.id})">✉</button>
-        <button class="btn btn-sm" onclick="editContact(${l.id})" style="color:var(--txt2)">✏</button>
+        <button class="btn btn-sm" onclick="editLead(${l.id})" style="color:var(--txt2)">✏</button>
         <button class="btn btn-sm" onclick="rmLead(${l.id})" style="color:var(--txt3)">✕</button>
       </div></td>
-    </tr>`).join('')}</tbody></table></div></div>`;
+    </tr>`;}).join('')}</tbody></table></div></div>`;
+  // Wire up checkboxes
+  const selAll=document.getElementById('sel-all');
+  if(selAll){selAll.onchange=()=>{document.querySelectorAll('.lead-cb').forEach(cb=>cb.checked=selAll.checked);updateBulkBar();};}
+  c.onchange=e=>{if(e.target.classList.contains('lead-cb'))updateBulkBar();};
 }
 
 function rmLead(id){leads=leads.filter(l=>l.id!==id);save();stats();renderLeads();}
@@ -824,6 +987,7 @@ function renderPipe(){
   document.getElementById('pv-int').textContent='$'+sv(leads.filter(l=>l.status==='interested')).toLocaleString()+'/mo';
   document.getElementById('pv-aud').textContent='$'+sv(leads.filter(l=>l.status==='audit')).toLocaleString()+'/mo';
   document.getElementById('pv-cls').textContent='$'+sv(leads.filter(l=>l.status==='closed')).toLocaleString()+'/mo';
+  renderProjections();
 }
 function selPipe(id,el){document.querySelectorAll('.pc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');selPipeId=id;}
 function moveLead(){
@@ -910,7 +1074,7 @@ function importLeads(){
       const lines=ev.target.result.split('\n').slice(1);let n=0;
       lines.forEach(line=>{
         const c=line.split(',').map(v=>v.replace(/^"|"$/g,'').trim());
-        if(c[0]){leads.push({id:Date.now()+n,biz:c[0],type:c[1]||'',contact:c[2]||'',title:c[3]||'',phone:c[4]||'',email:c[5]||'',city:c[6]||'',size:parseInt((c[7]||'0').replace(/[^0-9]/g,''))||3000,status:'cold',notes:'',callLog:[],source:'Import'});n++;}
+        if(c[0]){leads.push({id:Date.now()+n,biz:c[0],type:c[1]||'',contact:c[2]||'',title:c[3]||'',phone:c[4]||'',email:c[5]||'',city:c[6]||'',size:parseInt((c[7]||'0').replace(/[^0-9]/g,''))||3000,status:'cold',notes:'',callLog:[],source:'Import',created:new Date().toLocaleDateString()});n++;}
       });
       save();stats();renderLeads();flash('Imported '+n+' leads');
     };
@@ -1000,6 +1164,304 @@ async function runAutoEmail(){
   }
 }
 
+// FEATURE 1 — TODAY'S CALLBACKS
+function renderCallbacks(){
+  const today=new Date().toLocaleDateString();
+  const todayMs=new Date(new Date().toDateString()).getTime();
+  const due=[];
+  leads.forEach(l=>{
+    (l.callLog||[]).forEach((entry,idx)=>{
+      if(!entry.cb)return;
+      let cbDate;
+      try{cbDate=new Date(entry.cb);}catch(e){return;}
+      if(isNaN(cbDate.getTime()))return;
+      const cbMs=new Date(cbDate.toDateString()).getTime();
+      if(cbMs<=todayMs){
+        const diffDays=Math.round((todayMs-cbMs)/86400000);
+        due.push({lead:l,entryIdx:idx,entry,diffDays});
+      }
+    });
+  });
+  const c=document.getElementById('callbacks-list');
+  if(!due.length){c.innerHTML='<div style="font-size:12px;color:var(--txt3);font-family:\'DM Mono\',monospace">No callbacks scheduled for today</div>';return;}
+  c.innerHTML=due.map(({lead,entryIdx,entry,diffDays})=>`
+    <div class="cb-card">
+      <div style="flex:1">
+        <div style="font-weight:500;font-size:13px">${lead.biz}</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px">${lead.contact} · ${lead.phone}</div>
+        ${entry.notes?`<div style="font-size:11px;color:var(--txt2);margin-top:2px;font-style:italic">${entry.notes}</div>`:''}
+        <div style="margin-top:4px"><span class="bdg bdg-am">${diffDays===0?'Today':diffDays+' day'+(diffDays===1?'':' s')+' overdue'}</span></div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <a href="tel:${lead.phone.replace(/\D/g,'')}" class="btn btn-call btn-sm" onclick="openCL(${lead.id})">Call</a>
+        <button class="btn btn-sm" onclick="markCBDone(${lead.id},${entryIdx})" style="color:var(--txt2)">Mark Done</button>
+      </div>
+    </div>`).join('');
+}
+function markCBDone(leadId,entryIdx){
+  const l=leads.find(x=>x.id===leadId);
+  if(l&&l.callLog&&l.callLog[entryIdx]){
+    l.callLog[entryIdx].cb='';
+    save();renderCallbacks();flash('Callback marked done');
+  }
+}
+
+// FEATURE 2 — LEAD PANEL
+let lpLeadId=null;
+function editLead(id){
+  const l=leads.find(x=>x.id===id);
+  if(!l)return;
+  lpLeadId=id;
+  document.getElementById('lp-title').textContent=l.biz||'Lead Details';
+  document.getElementById('lp-biz').value=l.biz||'';
+  document.getElementById('lp-contact').value=l.contact||'';
+  document.getElementById('lp-job-title').value=l.title||'';
+  document.getElementById('lp-city').value=l.city||'';
+  document.getElementById('lp-phone').value=l.phone||'';
+  document.getElementById('lp-email').value=l.email||'';
+  document.getElementById('lp-status').value=l.status||'cold';
+  document.getElementById('lp-notes').value=l.notes||'';
+  // timeline
+  const tl=document.getElementById('lp-timeline');
+  const log=[...(l.callLog||[])].reverse();
+  if(!log.length){tl.innerHTML='<div style="font-size:12px;color:var(--txt3);font-family:\'DM Mono\',monospace;padding:8px 0">No activity yet</div>';
+  } else {
+    tl.innerHTML=log.map(e=>{
+      const outcomeMap={called:['bdg-b','Called'],emailed:['bdg-g','Emailed'],voicemail:['bdg-am','Voicemail'],'not-interested':['bdg-r','Not Interested'],contacted:['bdg-b','Contacted'],callback:['bdg-am','Callback'],no_answer:['bdg-gr','No Answer'],wrong_contact:['bdg-gr','Wrong Contact'],audit:['bdg-p','Audit'],closed:['bdg-g','Closed'],not_interested:['bdg-r','Not Interested']};
+      const[cls,lbl]=outcomeMap[e.outcome]||['bdg-gr',e.outcome||'Note'];
+      return`<div class="lp-tl-item">
+        <div class="lp-tl-dot"></div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+            <span class="bdg ${cls}">${lbl}</span>
+            <span style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace">${e.date||''}</span>
+          </div>
+          ${e.notes?`<div style="font-size:12px;color:var(--txt2)">${e.notes}</div>`:''}
+          ${e.cb?`<div style="font-size:11px;color:var(--amber);margin-top:2px">Callback: ${e.cb}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('lead-panel').style.transform='translateX(0)';
+  document.getElementById('lead-panel-overlay').style.display='block';
+}
+function closeLeadPanel(){
+  document.getElementById('lead-panel').style.transform='translateX(100%)';
+  document.getElementById('lead-panel-overlay').style.display='none';
+  lpLeadId=null;
+}
+function saveLeadPanel(){
+  if(!lpLeadId)return;
+  const l=leads.find(x=>x.id===lpLeadId);
+  if(!l)return;
+  l.biz=document.getElementById('lp-biz').value;
+  l.contact=document.getElementById('lp-contact').value;
+  l.title=document.getElementById('lp-job-title').value;
+  l.city=document.getElementById('lp-city').value;
+  l.phone=document.getElementById('lp-phone').value;
+  l.email=document.getElementById('lp-email').value;
+  l.status=document.getElementById('lp-status').value;
+  l.notes=document.getElementById('lp-notes').value;
+  save();renderLeads();flash('Contact saved');
+  document.getElementById('lp-title').textContent=l.biz;
+}
+
+// FEATURE 4 — CALCULATOR
+function renderCalc(){
+  const val=parseFloat(document.getElementById('calc-bill').value);
+  const empty=document.getElementById('calc-empty');
+  const results=document.getElementById('calc-results');
+  if(!val||val<=0){empty.style.display='block';results.style.display='none';return;}
+  empty.style.display='none';results.style.display='block';
+  const fmt=n=>'$'+Math.round(n).toLocaleString();
+  const tiers=[{pct:10,label:'10%'},{pct:20,label:'20%'},{pct:30,label:'30% (Recommended)'}];
+  document.getElementById('calc-tbody').innerHTML=tiers.map(t=>{
+    const mo=val*(t.pct/100);
+    const yr=mo*12;
+    const f5=yr*5;
+    const hi=t.pct===30;
+    return`<tr class="calc-result-row${hi?' highlight':''}">
+      <td>${t.label}</td>
+      <td>${fmt(mo)}/mo</td>
+      <td>${fmt(yr)}/yr</td>
+      <td>${fmt(f5)}</td>
+    </tr>`;
+  }).join('');
+}
+function copyCalcLink(){
+  const val=document.getElementById('calc-bill').value;
+  const url=window.location.href.split('?')[0]+(val?'?bill='+val:'');
+  navigator.clipboard.writeText(url).then(()=>flash('Link copied!'));
+}
+
+// FEATURE 5 — SEARCH & FILTER
+function clearFilters(){
+  document.getElementById('lead-search').value='';
+  document.getElementById('f-status').value='';
+  document.getElementById('f-type').value='';
+  document.getElementById('f-city').value='';
+  document.getElementById('f-minbill').value=0;
+  document.getElementById('f-minbill-val').textContent='$0';
+  renderLeads();
+}
+function populateFilterDropdowns(){
+  const types=[...new Set(leads.map(l=>l.type).filter(Boolean))].sort();
+  const cities=[...new Set(leads.map(l=>l.city).filter(Boolean))].sort();
+  const typeEl=document.getElementById('f-type');
+  const cityEl=document.getElementById('f-city');
+  const curType=typeEl.value,curCity=cityEl.value;
+  typeEl.innerHTML='<option value="">All Types</option>'+types.map(t=>`<option value="${t}"${t===curType?' selected':''}>${t}</option>`).join('');
+  cityEl.innerHTML='<option value="">All Cities</option>'+cities.map(c=>`<option value="${c}"${c===curCity?' selected':''}>${c}</option>`).join('');
+}
+
+// FEATURE 6 — LEAD SCORING
+function scoreLead(lead){
+  let s=0;
+  // Water bill score
+  if(lead.size>=20000)s+=4;else if(lead.size>=10000)s+=3;else if(lead.size>=5000)s+=2;else s+=1;
+  // Type score
+  const t=(lead.type||'').toLowerCase();
+  if(t.includes('manufactur')||t.includes('hospital')||t.includes('universit'))s+=3;
+  else if(t.includes('hotel')||t.includes('golf')||t.includes('restaurant'))s+=2;
+  else s+=1;
+  // Recency score
+  if(!lead.callLog||!lead.callLog.length){s+=1;}
+  else{
+    const last=lead.callLog[lead.callLog.length-1];
+    const lastDate=last.date?new Date(last.date):null;
+    if(!lastDate||isNaN(lastDate.getTime())){s+=1;}
+    else{
+      const days=Math.round((Date.now()-lastDate.getTime())/86400000);
+      if(days<7)s+=3;else if(days<30)s+=2;else s+=1;
+    }
+  }
+  return Math.min(10,Math.max(1,s));
+}
+
+// FEATURE 7 — DAILY STATS
+function renderDailyStats(){
+  const today=new Date().toLocaleDateString();
+  let calls=0,emails=0,interested=0;
+  leads.forEach(l=>{
+    (l.callLog||[]).forEach(e=>{
+      if(e.date===today){
+        if(['called','voicemail','no_answer','not_interested','contacted','callback','wrong_contact'].includes(e.outcome))calls++;
+        if(e.outcome==='emailed')emails++;
+        if(e.outcome==='interested'||e.outcome==='contacted'){}
+      }
+    });
+    // interested today proxy
+    if(l.status==='interested'&&l.callLog&&l.callLog.length){
+      const last=l.callLog[l.callLog.length-1];
+      if(last.date===today)interested++;
+    }
+  });
+  const added=leads.filter(l=>l.created===today).length;
+  document.getElementById('ds-calls').textContent=calls;
+  document.getElementById('ds-emails').textContent=emails;
+  document.getElementById('ds-added').textContent=added;
+  document.getElementById('ds-int').textContent=interested;
+}
+
+// FEATURE 8 — BULK ACTIONS
+function getSelectedIds(){
+  return Array.from(document.querySelectorAll('.lead-cb:checked')).map(cb=>parseFloat(cb.dataset.id));
+}
+function updateBulkBar(){
+  const ids=getSelectedIds();
+  const bar=document.getElementById('bulk-bar');
+  if(ids.length>0){
+    bar.style.display='flex';
+    document.getElementById('bulk-count').textContent=ids.length+' selected';
+  } else {
+    bar.style.display='none';
+  }
+}
+function bulkMove(status){
+  const ids=getSelectedIds();
+  ids.forEach(id=>{const l=leads.find(x=>x.id===id);if(l)l.status=status;});
+  save();renderLeads();flash('Moved '+ids.length+' leads to '+status);
+}
+function bulkExport(){
+  const ids=getSelectedIds();
+  const sel=leads.filter(l=>ids.includes(l.id));
+  const rows=[['Business','Type','Contact','Title','Phone','Email','City','Water Bill','Status','Notes']];
+  sel.forEach(l=>rows.push([l.biz,l.type,l.contact,l.title,l.phone,l.email||'',l.city,'$'+l.size,l.status,l.notes||'']));
+  dlCSV(rows,'selected_leads.csv');
+}
+async function bulkEmail(){
+  const ids=getSelectedIds();
+  const sel=leads.filter(l=>ids.includes(l.id)&&l.email&&l.email.includes('@')&&l.status==='cold');
+  if(!sel.length){flash('No qualifying leads (need email + cold status)');return;}
+  if(!confirm('Send auto-email to '+sel.length+' leads?'))return;
+  try{
+    const resp=await fetch('/.netlify/functions/autoemail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leads:sel,minBill:0,dailyLimit:sel.length,fromEmail:cfg.email||''})});
+    const data=await resp.json();
+    if(data.results){data.results.forEach(r=>{if(r.success){const l=leads.find(x=>x.id===r.leadId);if(l){l.status='contacted';if(!l.callLog)l.callLog=[];l.callLog.push({date:new Date().toLocaleDateString(),outcome:'emailed',notes:'Bulk auto-email sent',cb:''});}}});}
+    save();renderLeads();flash('Bulk emails sent: '+(data.sent||0));
+  }catch(e){flash('Error: '+e.message);}
+}
+
+// FEATURE 9 — MOBILE DIALER
+function renderMobileDialer(){
+  const source=queue.length?queue.map(q=>leads.find(l=>l.id===q.leadId)).filter(Boolean):[...leads].sort((a,b)=>b.size-a.size).slice(0,10);
+  const c=document.getElementById('mobile-dialer-cards');
+  if(!source.length){c.innerHTML='<div class="empty">No leads loaded.</div>';return;}
+  c.innerHTML=source.map(l=>`
+    <div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:20px;margin-bottom:12px">
+      <div style="font-weight:700;font-size:15px;margin-bottom:2px">${l.biz}</div>
+      <div style="font-size:12px;color:var(--txt2);margin-bottom:4px">${l.contact} · ${l.title}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;margin-bottom:8px">${l.phone}</div>
+      <div style="margin-bottom:12px">${sbadge(l.status)}</div>
+      <a href="tel:${l.phone.replace(/\D/g,'')}" class="btn btn-call" style="width:100%;justify-content:center;padding:14px;font-size:16px;display:flex;margin-bottom:8px" onclick="openCL(${l.id})">📞 Call</a>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <button class="btn btn-sm" onclick="quickLog(${l.id},'contacted')" style="justify-content:center">Called</button>
+        <button class="btn btn-sm" onclick="quickLog(${l.id},'voicemail')" style="justify-content:center">Voicemail</button>
+        <button class="btn btn-sm" onclick="quickLog(${l.id},'not_interested')" style="color:var(--red);justify-content:center">Not Int.</button>
+      </div>
+      <button class="btn btn-sm" style="width:100%;justify-content:center;margin-top:6px" onclick="mobileNote(${l.id})">+ Note</button>
+    </div>`).join('');
+}
+function quickLog(id,outcome){
+  const l=leads.find(x=>x.id===id);
+  if(!l)return;
+  l.status=outcome;
+  if(!l.callLog)l.callLog=[];
+  l.callLog.push({date:new Date().toLocaleDateString(),outcome,notes:'',cb:''});
+  save();renderMobileDialer();flash('Logged: '+outcome);
+}
+function mobileNote(id){
+  const note=prompt('Quick note:');
+  if(note===null)return;
+  const l=leads.find(x=>x.id===id);
+  if(!l)return;
+  if(!l.callLog)l.callLog=[];
+  l.callLog.push({date:new Date().toLocaleDateString(),outcome:'note',notes:note,cb:''});
+  save();flash('Note saved');
+}
+
+// FEATURE 10 — PIPELINE PROJECTIONS
+function renderProjections(){
+  const stages=[
+    {key:'interested',label:'Interested',rate:0.20},
+    {key:'audit',label:'Audit Scheduled',rate:0.50},
+    {key:'closed',label:'Closed Won',rate:1.00}
+  ];
+  let total=0;
+  const cols=stages.map(st=>{
+    const grp=leads.filter(l=>l.status===st.key);
+    const comm=grp.reduce((sum,l)=>sum+(l.size*0.3*12*0.10*st.rate),0);
+    total+=comm;
+    return`<div class="proj-col" style="border-right:1px solid var(--bdr)">
+      <div class="pl">${st.label}</div>
+      <div class="pc2">${Math.round(st.rate*100)}% close · ${grp.length} lead${grp.length===1?'':'s'}</div>
+      <div class="pv">$${Math.round(comm).toLocaleString()}</div>
+    </div>`;
+  });
+  document.getElementById('proj-cols').innerHTML=cols.join('');
+  document.getElementById('proj-total').textContent='Total Projected Commission: $'+Math.round(total).toLocaleString();
+}
+
 // LOCATION AUTOCOMPLETE
 (function(){
   let acTimer=null,acIdx=-1,acPreds=[];
@@ -1064,7 +1526,15 @@ function initApp(user){
   if(cfg.co)document.getElementById('cfg-co').value=cfg.co;
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  stats();renderLeads();renderQueue();
+  stats();renderLeads();renderQueue();renderDailyStats();populateFilterDropdowns();
+  // Check for calculator bill param
+  const billParam=new URLSearchParams(window.location.search).get('bill');
+  if(billParam){
+    document.getElementById('calc-bill').value=billParam;
+    const calcTab=Array.from(document.querySelectorAll('.tab')).find(t=>t.textContent.trim()==='Calculator');
+    go('calculator',calcTab||null);
+    renderCalc();
+  }
 }
 
 function logout(){netlifyIdentity.logout();}
