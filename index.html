@@ -7,6 +7,7 @@
 <title>AquaFlow Sales OS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://sdk.twilio.com/js/client/releases/2.6.0/twilio.min.js"></script>
+<script>if(typeof Twilio==='undefined'){document.write('<script src="https://media.twiliocdn.com/sdk/js/client/v2.6/twilio.min.js"><\/script>');}</script>
 <style>
 :root{--bg:#0a0c10;--surf:#111318;--surf2:#181c24;--surf3:#1e232e;--bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);--txt:#e8eaf0;--txt2:#8b919e;--txt3:#555b66;--accent:#00d4aa;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2297,6 +2298,12 @@ function updateDialStatus(state){
 
 async function setupTwilioDevice(){
   if(twilioSetupStarted)return;
+  if(typeof Twilio==='undefined'){
+    console.error('Twilio SDK not loaded');
+    updateDialStatus('error');
+    flash('Dialer failed to load — refresh the page');
+    return;
+  }
   twilioSetupStarted=true;
   updateDialStatus('connecting');
   try{
