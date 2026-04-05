@@ -6,15 +6,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AquaFlow Sales OS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script>
-  // Must run before anything else — capture identity tokens from URL hash
-  if (window.location.hash) {
-    const hash = window.location.hash;
-    if (hash.includes('invite_token') || hash.includes('recovery_token') || hash.includes('confirmation_token')) {
-      localStorage.setItem('af_pending_token', hash);
-    }
-  }
-</script>
 <style>
 :root{--bg:#0a0c10;--surf:#111318;--surf2:#181c24;--surf3:#1e232e;--bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);--txt:#e8eaf0;--txt2:#8b919e;--txt3:#555b66;--accent:#00d4aa;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -216,7 +207,7 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 .proj-col .pc2{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace}
 /* Calculator */
 #pane-calculator .calc-result-row.highlight td{color:var(--accent);font-weight:600}
-#login-screen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;align-items:center;justify-content:center}
+#login-screen,#setpassword-screen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:none;align-items:center;justify-content:center}
 #app{display:none}
 .login-box{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;padding:36px 32px;width:100%;max-width:360px;text-align:center}
 .login-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px}
@@ -228,7 +219,6 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 .ac-item:last-child{border-bottom:none}
 .ac-item:hover,.ac-item.hov{background:rgba(0,212,170,0.08);color:var(--accent)}
 </style>
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
 
@@ -249,11 +239,33 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <div id="login-err" style="min-height:20px;font-size:11px;color:var(--red);font-family:'DM Mono',monospace;margin-bottom:12px;display:none"></div>
-    <button class="btn btn-a" id="login-btn" style="width:100%;justify-content:center;padding:12px 0;font-size:14px" onclick="netlifyIdentity.open()">Sign In</button>
+    <button class="btn btn-a" id="login-btn" style="width:100%;justify-content:center;padding:12px 0;font-size:14px" onclick="doLogin()">Sign In</button>
     <div style="margin-top:10px;text-align:right">
       <a href="#" style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;text-decoration:none" onclick="doForgotPassword();return false;">Forgot Password?</a>
     </div>
     <div id="forgot-msg" style="display:none;margin-top:10px;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace">Check your email for a reset link.</div>
+    <div style="margin-top:14px;font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">AquaFlow Technologies — Sales OS</div>
+  </div>
+</div>
+
+<div id="setpassword-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo-mark">💧</div>
+      <div class="logo-txt">AquaFlow <span>Sales OS</span></div>
+    </div>
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px" id="setpw-heading">Set Your Password</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:24px" id="setpw-sub">Welcome! Choose a password to activate your account.</div>
+    <div class="fld" style="margin-bottom:12px;text-align:left">
+      <label>New Password</label>
+      <input id="setpw-password" type="password" placeholder="At least 8 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSetPassword()">
+    </div>
+    <div class="fld" style="margin-bottom:8px;text-align:left">
+      <label>Confirm Password</label>
+      <input id="setpw-confirm" type="password" placeholder="Confirm new password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSetPassword()">
+    </div>
+    <div id="setpw-err" style="min-height:20px;font-size:11px;color:var(--red);font-family:'DM Mono',monospace;margin-bottom:12px;display:none"></div>
+    <button class="btn btn-a" id="setpw-btn" style="width:100%;justify-content:center;padding:12px 0;font-size:14px" onclick="doSetPassword()">Set Password &amp; Sign In</button>
     <div style="margin-top:14px;font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">AquaFlow Technologies — Sales OS</div>
   </div>
 </div>
@@ -851,25 +863,6 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 </div><!-- /app -->
 
 <script>
-
-// Handle Netlify Identity token redirects (invite, password recovery, confirmation)
-netlifyIdentity.on('init', function(user) {
-  const pending = localStorage.getItem('af_pending_token');
-  if (pending) {
-    localStorage.removeItem('af_pending_token');
-    if (pending.includes('invite_token')) {
-      netlifyIdentity.open('signup');
-    } else if (pending.includes('recovery_token')) {
-      netlifyIdentity.open('recovery');
-    } else if (pending.includes('confirmation_token')) {
-      netlifyIdentity.open('confirmation');
-    }
-  } else if (!user) {
-    showLogin();
-  } else {
-    showApp(user);
-  }
-});
 
 let leads=[],queue=[],cfg={};
 let selCallId=null,selPipeId=null,curEmailId=null;
@@ -2349,16 +2342,37 @@ function checkPipelineAutomation(lead,oldStatus,newStatus){
   }
 }
 
-// ===== AUTH — direct GoTrue API, no widget =====
-const IDENTITY_URL='/.netlify/identity';
+// ===== AUTH — custom GoTrue API (no Netlify Identity widget) =====
+const IDENTITY_URL='https://aquaflowsales.com/.netlify/identity';
 
-function doForgotPassword(){
-  const email=(document.getElementById('login-email').value||'').trim();
-  const msg=document.getElementById('forgot-msg');
-  if(!email){msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Enter your email address first.';return;}
-  netlifyIdentity.requestPasswordRecovery(email);
-  msg.style.display='block';msg.style.color='var(--accent)';msg.textContent='Check your email for a reset link.';
+// Parse a token value out of the URL hash, e.g. #invite_token=abc123
+function parseHashParam(key){
+  const params=new URLSearchParams(window.location.hash.replace(/^#/,''));
+  return params.get(key)||null;
 }
+
+// Store tokens and user in localStorage
+function saveSession(tokenData,user){
+  localStorage.setItem('af_token',tokenData.access_token);
+  if(tokenData.refresh_token)localStorage.setItem('af_refresh_token',tokenData.refresh_token);
+  localStorage.setItem('af_user',JSON.stringify(user));
+}
+function clearSession(){
+  localStorage.removeItem('af_token');
+  localStorage.removeItem('af_refresh_token');
+  localStorage.removeItem('af_user');
+}
+
+// Given a token response that includes access_token, fetch the user profile and enter the app
+async function loginWithToken(tokenData){
+  const userResp=await fetch(IDENTITY_URL+'/user',{headers:{'Authorization':'Bearer '+tokenData.access_token}});
+  if(!userResp.ok)throw new Error('Could not load user profile');
+  const user=await userResp.json();
+  saveSession(tokenData,user);
+  showApp(user);
+}
+
+// ── Login ──────────────────────────────────────────────────────────────────
 async function doLogin(){
   const email=(document.getElementById('login-email').value||'').trim();
   const password=document.getElementById('login-password').value||'';
@@ -2368,80 +2382,139 @@ async function doLogin(){
   if(!email||!password){err.textContent='Please enter your email and password.';err.style.display='block';return;}
   btn.textContent='Signing in...';btn.disabled=true;
   try{
-    // 1. Exchange credentials for token
-    const tokenResp=await fetch(IDENTITY_URL+'/token',{
+    const resp=await fetch(IDENTITY_URL+'/token',{
       method:'POST',
       headers:{'Content-Type':'application/x-www-form-urlencoded'},
       body:'grant_type=password&username='+encodeURIComponent(email)+'&password='+encodeURIComponent(password)
     });
-    if(!tokenResp.ok){
-      const e=await tokenResp.json().catch(()=>({}));
+    if(!resp.ok){
+      const e=await resp.json().catch(()=>({}));
       throw new Error(e.error_description||e.msg||'Invalid email or password');
     }
-    const tokenData=await tokenResp.json();
-    // 2. Fetch full user profile
-    const userResp=await fetch(IDENTITY_URL+'/user',{
-      headers:{'Authorization':'Bearer '+tokenData.access_token}
-    });
-    if(!userResp.ok)throw new Error('Could not load user profile');
-    const user=await userResp.json();
-    // 3. Persist session
-    localStorage.setItem('af_token',tokenData.access_token);
-    if(tokenData.refresh_token)localStorage.setItem('af_refresh_token',tokenData.refresh_token);
-    localStorage.setItem('af_user',JSON.stringify(user));
-    showApp(user);
+    await loginWithToken(await resp.json());
   }catch(e){
-    err.textContent=e.message;
-    err.style.display='block';
-    btn.textContent='Sign In';
-    btn.disabled=false;
+    err.textContent=e.message;err.style.display='block';
+    btn.textContent='Sign In';btn.disabled=false;
   }
 }
 
+// ── Forgot password ─────────────────────────────────────────────────────────
+async function doForgotPassword(){
+  const email=(document.getElementById('login-email').value||'').trim();
+  const msg=document.getElementById('forgot-msg');
+  if(!email){
+    msg.style.cssText='display:block;color:var(--red)';
+    msg.textContent='Enter your email address first.';return;
+  }
+  try{
+    await fetch(IDENTITY_URL+'/recover',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email})
+    });
+  }catch(e){/* fail silently — always show success to prevent enumeration */}
+  msg.style.cssText='display:block;color:var(--accent)';
+  msg.textContent='Check your email for a reset link.';
+}
+
+// ── Set password (invite + recovery) ────────────────────────────────────────
+let _setPwType=null,_setPwToken=null;
+
+function showSetPassword(type,token){
+  _setPwType=type;_setPwToken=token;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='none';
+  const heading=document.getElementById('setpw-heading');
+  const sub=document.getElementById('setpw-sub');
+  if(type==='invite'){
+    heading.textContent='Set Your Password';
+    sub.textContent='Welcome! Choose a password to activate your account.';
+  }else{
+    heading.textContent='Reset Your Password';
+    sub.textContent='Choose a new password for your account.';
+  }
+  document.getElementById('setpw-err').style.display='none';
+  document.getElementById('setpw-password').value='';
+  document.getElementById('setpw-confirm').value='';
+  document.getElementById('setpassword-screen').style.display='flex';
+  setTimeout(()=>document.getElementById('setpw-password').focus(),50);
+}
+
+async function doSetPassword(){
+  const password=document.getElementById('setpw-password').value||'';
+  const confirm=document.getElementById('setpw-confirm').value||'';
+  const btn=document.getElementById('setpw-btn');
+  const err=document.getElementById('setpw-err');
+  err.style.display='none';
+  if(password.length<8){err.textContent='Password must be at least 8 characters.';err.style.display='block';return;}
+  if(password!==confirm){err.textContent='Passwords do not match.';err.style.display='block';return;}
+  btn.textContent='Setting password...';btn.disabled=true;
+  try{
+    let resp;
+    if(_setPwType==='invite'){
+      resp=await fetch(IDENTITY_URL+'/verify',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({token:_setPwToken,password,type:'signup'})
+      });
+    }else{
+      resp=await fetch(IDENTITY_URL+'/recover',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({token:_setPwToken,password})
+      });
+    }
+    if(!resp.ok){
+      const e=await resp.json().catch(()=>({}));
+      throw new Error(e.msg||e.error_description||'Could not set password. The link may have expired.');
+    }
+    // Response contains access_token — log in directly
+    await loginWithToken(await resp.json());
+    // Clean up the URL hash so the token isn't visible
+    history.replaceState(null,'',window.location.pathname+window.location.search);
+  }catch(e){
+    err.textContent=e.message;err.style.display='block';
+    btn.textContent='Set Password & Sign In';btn.disabled=false;
+  }
+}
+
+// ── Session restore ─────────────────────────────────────────────────────────
 async function verifySession(){
   const token=localStorage.getItem('af_token');
-  const stored=localStorage.getItem('af_user');
-  if(!token||!stored)return null;
+  if(!token)return null;
   try{
-    // Try current token
-    const resp=await fetch(IDENTITY_URL+'/user',{headers:{'Authorization':'Bearer '+token}});
-    if(resp.ok)return await resp.json();
-    // Try refresh token
+    let resp=await fetch(IDENTITY_URL+'/user',{headers:{'Authorization':'Bearer '+token}});
+    if(resp.ok){const u=await resp.json();localStorage.setItem('af_user',JSON.stringify(u));return u;}
+    // Try refresh
     const refresh=localStorage.getItem('af_refresh_token');
-    if(!refresh)throw new Error('No refresh token');
+    if(!refresh)throw new Error('no refresh');
     const ref=await fetch(IDENTITY_URL+'/token',{
       method:'POST',
       headers:{'Content-Type':'application/x-www-form-urlencoded'},
       body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(refresh)
     });
-    if(!ref.ok)throw new Error('Refresh failed');
+    if(!ref.ok)throw new Error('refresh failed');
     const td=await ref.json();
     localStorage.setItem('af_token',td.access_token);
     if(td.refresh_token)localStorage.setItem('af_refresh_token',td.refresh_token);
-    const u=await fetch(IDENTITY_URL+'/user',{headers:{'Authorization':'Bearer '+td.access_token}});
-    if(!u.ok)throw new Error('Profile failed');
-    const user=await u.json();
-    localStorage.setItem('af_user',JSON.stringify(user));
-    return user;
-  }catch(e){
-    clearSession();
-    return null;
-  }
+    resp=await fetch(IDENTITY_URL+'/user',{headers:{'Authorization':'Bearer '+td.access_token}});
+    if(!resp.ok)throw new Error('profile failed');
+    const u=await resp.json();
+    localStorage.setItem('af_user',JSON.stringify(u));
+    return u;
+  }catch(e){clearSession();return null;}
 }
 
-function clearSession(){
-  localStorage.removeItem('af_token');
-  localStorage.removeItem('af_refresh_token');
-  localStorage.removeItem('af_user');
-}
-
+// ── Screen routing ───────────────────────────────────────────────────────────
 function showApp(user){
   document.getElementById('login-screen').style.display='none';
+  document.getElementById('setpassword-screen').style.display='none';
   document.getElementById('app').style.display='block';
   initApp(user);
 }
 function showLogin(){
   document.getElementById('app').style.display='none';
+  document.getElementById('setpassword-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   const btn=document.getElementById('login-btn');
   if(btn){btn.textContent='Sign In';btn.disabled=false;}
@@ -2452,15 +2525,22 @@ function logout(){
   showLogin();
 }
 
-window.addEventListener('load',function(){
-  netlifyIdentity.on('login',function(user){
-    netlifyIdentity.close();
-    showApp(user);
-  });
-  netlifyIdentity.on('logout',function(){
-    currentUser=null;leads=[];queue=[];cfg={};
-    showLogin();
-  });
+// ── Page load entry point ────────────────────────────────────────────────────
+window.addEventListener('load',async function(){
+  // 1. Check URL hash for identity tokens (invite or recovery link)
+  const inviteToken=parseHashParam('invite_token');
+  const recoveryToken=parseHashParam('recovery_token');
+  if(inviteToken){
+    showSetPassword('invite',inviteToken);return;
+  }
+  if(recoveryToken){
+    showSetPassword('recovery',recoveryToken);return;
+  }
+  // 2. Try to restore an existing session
+  const user=await verifySession();
+  if(user){showApp(user);return;}
+  // 3. Default: show login
+  showLogin();
 });
 </script>
 </body>
