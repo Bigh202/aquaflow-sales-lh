@@ -757,6 +757,15 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <button class="btn" style="color:var(--red)" onclick="nukeData()">Clear All Data</button>
     </div>
   </div>
+  <div class="set-sec" style="border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.04);border-radius:10px;padding:14px">
+    <h3 style="color:var(--amber);margin-bottom:8px">🔧 Debug Tools</h3>
+    <p style="font-size:12px;color:var(--txt2);margin-bottom:12px">Test Prospeo enrichment on the first lead and see the raw response. Check browser console for detailed logs.</p>
+    <div class="brow">
+      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugEnrichFirstLead()">Test Enrichment (1st Lead)</button>
+      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugCheckProspeoKey()">Check Prospeo Key</button>
+    </div>
+    <div id="debug-out" style="display:none;margin-top:12px;background:var(--surf3);border:1px solid var(--bdr);border-radius:8px;padding:12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
+  </div>
   <div class="brow"><button class="btn btn-a" onclick="saveSettings()">Save All Settings</button></div>
 </div>
 
@@ -1288,8 +1297,13 @@ async function enrichOneLead(lead){
   updateLeadRow(lead.id);
   try{
     const resp=await fetch('/.netlify/functions/prospeo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({biz:lead.biz,website:lead.website||'',city:lead.city,type:lead.type})});
-    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    if(!resp.ok){
+      const errBody=await resp.json().catch(()=>({}));
+      console.error('[enrichOneLead] Prospeo function error',resp.status,errBody);
+      throw new Error((errBody.error||'HTTP '+resp.status));
+    }
     const data=await resp.json();
+    console.log('[enrichOneLead]',lead.biz,'→ found:',data.found,'website:',lead.website||'(none)');
     if(data.found){
       if(data.name&&data.name!=='')lead.contact=data.name;
       if(data.title&&data.title!=='')lead.title=data.title;
@@ -1299,11 +1313,49 @@ async function enrichOneLead(lead){
     }else{
       lead.noContactFound=true;
     }
-  }catch(e){lead.noContactFound=true;/* fail silently — keep default contact info */}
+  }catch(e){console.error('[enrichOneLead] error for',lead.biz,':',e.message);lead.noContactFound=true;}
   lead.enriching=false;
   updateLeadRow(lead.id);
   save();
 }
+
+// ===== DEBUG TOOLS =====
+function debugOut(msg){
+  const el=document.getElementById('debug-out');
+  if(!el)return;
+  el.style.display='block';
+  el.textContent=msg;
+}
+async function debugEnrichFirstLead(){
+  if(!leads.length){debugOut('No leads loaded — scrape some leads first.');return;}
+  const lead=leads[0];
+  debugOut('Testing enrichment for: '+lead.biz+'\nWebsite: '+(lead.website||'(none)')+'\nCity: '+lead.city+'\nType: '+lead.type+'\n\nCalling Prospeo...');
+  try{
+    const resp=await fetch('/.netlify/functions/prospeo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({biz:lead.biz,website:lead.website||'',city:lead.city,type:lead.type})});
+    const raw=await resp.text();
+    let parsed;try{parsed=JSON.parse(raw);}catch(e){parsed=raw;}
+    debugOut('Lead: '+lead.biz+'\nWebsite: '+(lead.website||'(none)')+'\n\nHTTP Status: '+resp.status+'\n\nResponse:\n'+JSON.stringify(parsed,null,2));
+  }catch(e){
+    debugOut('Fetch error: '+e.message+'\n\nThis likely means the Netlify function is not deployed or unreachable.');
+  }
+}
+async function debugCheckProspeoKey(){
+  debugOut('Sending test request to check if PROSPEO_KEY is set...');
+  try{
+    const resp=await fetch('/.netlify/functions/prospeo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({biz:'Test Business',website:'',city:'Long Beach, CA',type:'hotel'})});
+    const data=await resp.json();
+    if(resp.status===500&&data.error==='PROSPEO_KEY not set'){
+      debugOut('❌ PROSPEO_KEY is NOT set in Netlify environment variables.\n\nFix: Go to Netlify → Site settings → Environment variables → Add PROSPEO_KEY with your Prospeo API key.');
+    }else if(!resp.ok){
+      debugOut('HTTP '+resp.status+' — unexpected error:\n'+JSON.stringify(data,null,2));
+    }else{
+      debugOut('✓ PROSPEO_KEY appears to be set (function returned HTTP '+resp.status+').\n\nResponse:\n'+JSON.stringify(data,null,2));
+    }
+  }catch(e){
+    debugOut('Network error: '+e.message);
+  }
+}
+// ===== END DEBUG TOOLS =====
 
 function rmLead(id){leads=leads.filter(l=>l.id!==id);save();stats();renderLeads();}
 function clearLeads(){if(confirm('Clear all leads?')){leads=[];save();stats();renderLeads();}}

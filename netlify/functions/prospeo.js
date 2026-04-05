@@ -61,6 +61,7 @@ function extractDomain(url) {
 }
 
 exports.handler = async (event) => {
+  console.log('[prospeo] handler invoked — method:', event.httpMethod);
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -70,6 +71,7 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
 
   const PROSPEO_KEY = process.env.PROSPEO_KEY;
+  console.log('[prospeo] PROSPEO_KEY present:', !!PROSPEO_KEY);
   if (!PROSPEO_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: 'PROSPEO_KEY not set' }) };
 
   let body;
@@ -102,8 +104,10 @@ exports.handler = async (event) => {
     if (!biz) return { statusCode: 400, headers, body: JSON.stringify({ error: 'biz required' }) };
 
     const domain = domainParam || (website ? extractDomain(website) : null) || guessDomain(biz);
+    console.log('[prospeo] domain-search — biz:', biz, '| website:', website || '(none)', '| domain:', domain);
 
     const result = await httpsPost('/domain-search', { company: domain, limit: 20 }, PROSPEO_KEY);
+    console.log('[prospeo] domain-search response — status:', result.status, '| error:', result.data.error || null, '| results:', result.data.response?.email_list?.length ?? 0);
 
     if (result.status !== 200 || result.data.error || !result.data.response?.email_list?.length) {
       return { statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'no_results' }) };
