@@ -1,0 +1,8 @@
+{
+  "name": "aquaflow-sales",
+  "version": "1.0.0",
+  "engines": { "node": "18" },
+  "dependencies": {
+    "twilio": "^5.0.0"
+  }
+}

@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AquaFlow Sales OS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://sdk.twilio.com/js/client/releases/1.14.0/twilio.js"></script>
 <style>
 :root{--bg:#0a0c10;--surf:#111318;--surf2:#181c24;--surf3:#1e232e;--bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);--txt:#e8eaf0;--txt2:#8b919e;--txt3:#555b66;--accent:#00d4aa;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -533,9 +534,17 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 
 <!-- DIALER -->
 <div id="pane-dialer" class="pane">
+  <!-- Power Dialer countdown bar -->
+  <div id="pd-bar" style="display:none;align-items:center;justify-content:space-between;background:rgba(0,212,170,0.08);border:1px solid var(--accent);border-radius:10px;padding:12px 16px;margin-bottom:16px">
+    <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--accent)">⚡ Next: <strong id="pd-next-name"></strong> — calling in <span id="pd-countdown">3</span>s</div>
+    <button class="btn btn-sm" onclick="cancelPowerDialer()" style="color:var(--red);flex-shrink:0">Cancel</button>
+  </div>
   <div id="dialpad-widget" style="margin-bottom:22px;display:flex;justify-content:center">
     <div style="width:280px;background:var(--surf);border:1px solid var(--bdr2);border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,0.3)">
-      <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--txt3);text-align:center;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Softphone</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--txt3);text-transform:uppercase;letter-spacing:0.1em">Twilio Softphone</div>
+        <div id="twilio-status" style="font-size:10px;font-family:'DM Mono',monospace;color:var(--txt3)">● Offline</div>
+      </div>
       <div id="dialpad-display" style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;text-align:center;padding:10px 14px;background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;margin-bottom:14px;min-height:46px;letter-spacing:2px;color:var(--txt);overflow:hidden;white-space:nowrap"></div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
         <button class="dialpad-key" onclick="dialpadPress('1')">1</button>
@@ -553,7 +562,7 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       </div>
       <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:8px">
         <button class="btn btn-sm" onclick="dialpadBackspace()" title="Backspace" style="padding:11px 0;font-size:16px;justify-content:center">⌫</button>
-        <button class="btn btn-a" onclick="initiateDialpadCall()" style="padding:11px 0;font-size:13px;justify-content:center">📞 Call</button>
+        <button class="btn btn-a" onclick="initiateCall(dialpadNum)" style="padding:11px 0;font-size:13px;justify-content:center">📞 Call</button>
         <button class="btn btn-sm" onclick="dialpadClear()" title="Clear" style="padding:11px 0;font-size:11px;justify-content:center;color:var(--txt3)">Clr</button>
       </div>
     </div>
@@ -572,8 +581,9 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Dialer Queue</div>
       <div style="font-size:12px;color:var(--txt2);margin-top:2px">Tap to call — log outcome instantly</div>
     </div>
-    <div style="display:flex;gap:7px">
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
       <button class="btn btn-sm btn-a" onclick="genTT()">✨ AI Talk Track</button>
+      <button class="btn btn-sm" id="pd-toggle" onclick="togglePowerDialer()">⚡ Power Dialer</button>
       <button class="btn btn-sm" onclick="exportCalls()">Export Log</button>
     </div>
   </div>
@@ -690,23 +700,19 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <div class="fld"><label>Territory</label><input id="cfg-terr" value="Long Beach / LA South Bay"></div>
       <div class="fld"><label>Company</label><input id="cfg-co" value="AquaFlow Technologies"></div>
     </div>
-    <div class="fr c2">
-      <div class="fld"><label>Quo Phone Number</label><input id="cfg-openphone" placeholder="+15621234567" value=""></div>
+    <div class="fld" style="margin-top:8px">
+      <label>Twilio Voice URL <span style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace">(set as Voice URL in your Twilio TwiML App)</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input readonly id="twilio-voice-url" value="https://aquaflowsales.com/.netlify/functions/twilio-voice" style="flex:1;font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2)">
+        <button class="btn btn-sm" onclick="copyTwilioUrl('twilio-voice-url')">Copy</button>
+      </div>
     </div>
     <div class="fld" style="margin-top:8px">
-      <label>Quo Webhook URL <span style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace">(paste this into your Quo dashboard)</span></label>
+      <label>Twilio Status Callback <span style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace">(set as Status Callback URL in your TwiML App)</span></label>
       <div style="display:flex;gap:8px;align-items:center">
-        <input readonly id="quo-webhook-url" value="https://aquaflowsales.com/.netlify/functions/openphone-webhook" style="flex:1;font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2)">
-        <button class="btn btn-sm" onclick="copyWebhookUrl()">Copy</button>
+        <input readonly id="twilio-status-url" value="https://aquaflowsales.com/.netlify/functions/twilio-status" style="flex:1;font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2)">
+        <button class="btn btn-sm" onclick="copyTwilioUrl('twilio-status-url')">Copy</button>
       </div>
-    </div>
-    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--bdr)">
-      <label style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em">Quo API Debug</label>
-      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <button class="btn btn-sm" onclick="quoDebugMe()">Fetch User Info</button>
-        <button class="btn btn-sm" onclick="quoDebugPhoneNumbers()">Fetch Phone Numbers</button>
-      </div>
-      <pre id="quo-debug-out" style="display:none;margin-top:10px;background:var(--bg2);border:1px solid var(--bdr);border-radius:6px;padding:10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);white-space:pre-wrap;word-break:break-all;max-height:300px;overflow:auto"></pre>
     </div>
   </div>
   <div class="set-sec">
@@ -911,7 +917,9 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 let leads=[],queue=[],cfg={};
 let selCallId=null,selPipeId=null,curEmailId=null;
 let lastLat=null,lastLng=null,lastLocText='';
-let activeCall={id:null,leadId:null,status:null,timer:null};
+let activeCall={id:null,leadId:null,status:null};
+let twilioDevice=null,twilioConn=null,twilioReady=false,twilioSetupStarted=false;
+let powerDialerActive=false,powerDialerQueue=[],powerDialerIdx=-1,powerDialerCountdownTimer=null;
 let currentUser=null;
 let leadQuality=localStorage.getItem('af_lead_quality')||'has_contact';
 let dialpadNum='';
@@ -943,7 +951,7 @@ function go(id,el){
   document.getElementById('pane-'+id).classList.add('active');
   if(el)el.classList.add('active');
   if(id==='pipeline')renderPipe();
-  if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();}
+  if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();setupTwilioDevice();}
   if(id==='sequences')renderSeq();
   if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
   if(id==='calculator')renderCalc();
@@ -956,7 +964,7 @@ function goById(id){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
   document.getElementById('pane-'+id).classList.add('active');
   if(id==='pipeline')renderPipe();
-  if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();}
+  if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();setupTwilioDevice();}
   if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
   if(id==='map')renderMap();
   if(id==='email'){renderTemplates();updateOpenRateBar();}
@@ -1387,6 +1395,7 @@ function saveCall(){
   l.callLog.push({date:new Date().toLocaleDateString(),outcome,notes:l.notes,cb:document.getElementById('c-cb').value});
   save();renderDialer();renderPipe();flash('Call logged');
   if(outcome&&outcome!==oldStatus)checkPipelineAutomation(l,oldStatus,outcome);
+  if(powerDialerActive)powerDialerNext();
 }
 function emailFromCall(){if(selCallId)prefillEmail(selCallId);}
 
@@ -1464,31 +1473,11 @@ function quickSeq(type){
 }
 
 // SETTINGS
-function copyWebhookUrl(){
-  const val=document.getElementById('quo-webhook-url').value;
-  navigator.clipboard.writeText(val).then(()=>flash('Webhook URL copied!')).catch(()=>{
-    document.getElementById('quo-webhook-url').select();document.execCommand('copy');flash('Webhook URL copied!');
+function copyTwilioUrl(id){
+  const val=document.getElementById(id).value;
+  navigator.clipboard.writeText(val).then(()=>flash('URL copied!')).catch(()=>{
+    document.getElementById(id).select();document.execCommand('copy');flash('URL copied!');
   });
-}
-async function quoDebugMe(){
-  const out=document.getElementById('quo-debug-out');
-  out.style.display='block';out.textContent='Fetching user info...';
-  try{
-    const r=await fetch('/.netlify/functions/openphone?action=me');
-    const j=await r.json();
-    out.textContent=JSON.stringify(j,null,2);
-    console.log('[Quo debug /me]',j);
-  }catch(e){out.textContent='Error: '+e.message;}
-}
-async function quoDebugPhoneNumbers(){
-  const out=document.getElementById('quo-debug-out');
-  out.style.display='block';out.textContent='Fetching phone numbers...';
-  try{
-    const r=await fetch('/.netlify/functions/openphone?action=phone-numbers');
-    const j=await r.json();
-    out.textContent=JSON.stringify(j,null,2);
-    console.log('[Quo debug /phone-numbers]',j);
-  }catch(e){out.textContent='Error: '+e.message;}
 }
 function saveSettings(){
   cfg.name=document.getElementById('cfg-name').value;
@@ -1496,7 +1485,6 @@ function saveSettings(){
   cfg.email=document.getElementById('cfg-email').value;
   cfg.terr=document.getElementById('cfg-terr').value;
   cfg.co=document.getElementById('cfg-co').value;
-  cfg.openphoneFrom=document.getElementById('cfg-openphone').value;
   saveCfg();
   const displayName=cfg.name||(currentUser&&currentUser.user_metadata&&currentUser.user_metadata.full_name)||(currentUser&&currentUser.email)||'Rep';
   document.getElementById('rep-name').textContent=displayName;
@@ -2045,7 +2033,6 @@ function initApp(user){
   if(cfg.email)document.getElementById('cfg-email').value=cfg.email;
   if(cfg.terr)document.getElementById('cfg-terr').value=cfg.terr;
   if(cfg.co)document.getElementById('cfg-co').value=cfg.co;
-  if(cfg.openphoneFrom)document.getElementById('cfg-openphone').value=cfg.openphoneFrom;
   loadLocCache();
   stats();renderLeads();renderQueue();renderDailyStats();populateFilterDropdowns();
   renderTemplates();updateOpenRateBar();
@@ -2266,7 +2253,7 @@ function showCallPrep(id){
   document.getElementById('prep-call-btn').dataset.leadId=id;
   document.getElementById('callprep-ov').classList.add('show');
 }
-function readyToCall(){if(prepLeadId)initiateOpenPhoneCall(prepLeadId);}
+function readyToCall(){if(prepLeadId){const l=leads.find(x=>x.id===prepLeadId);if(l)initiateCall(l.phone,prepLeadId);}}
 function closeCallPrep(){document.getElementById('callprep-ov').classList.remove('show');}
 
 // ===== SOFTPHONE DIALPAD =====
@@ -2292,47 +2279,63 @@ function dialpadLoadLead(id){
   document.getElementById('dialpad-widget').scrollIntoView({behavior:'smooth',block:'start'});
   openCL(id);
 }
-async function initiateDialpadCall(){
-  const num=(document.getElementById('dialpad-display').textContent||'').trim();
-  if(!num){flash('Enter a number first');return;}
-  const from=(cfg.openphoneFrom||'').trim();
-  if(!from){flash('Add your Quo number in Settings first');return;}
-  const toRaw=num.replace(/\D/g,'');
-  const to=toRaw.length===10?'+1'+toRaw:toRaw.length===11&&toRaw[0]==='1'?'+'+toRaw:num;
-  const tempLead={id:null,biz:to,phone:to};
-  showCallStatusBar(tempLead,'ringing');
-  try{
-    const resp=await fetch('/.netlify/functions/openphone',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to,from})});
-    const data=await resp.json();
-    if(!data.success){flash('Quo: '+(data.error||'Could not initiate call'));hideCallStatusBar();return;}
-    activeCall={id:data.callId,leadId:null,status:'ringing',timer:setInterval(pollCallStatus,3000)};
-  }catch(e){flash('Error: '+e.message);hideCallStatusBar();}
-}
 
-// ===== OPENPHONE DIALER =====
-async function initiateOpenPhoneCall(leadId){
-  const l=leads.find(x=>x.id===leadId);
-  if(!l)return;
-  const from=(cfg.openphoneFrom||'').trim();
-  if(!from){flash('Add your OpenPhone number in Settings first');return;}
-  document.getElementById('callprep-ov').classList.remove('show');
-  openCL(leadId);
-  // Normalize to E.164
-  const toRaw=l.phone.replace(/\D/g,'');
-  const to=toRaw.length===10?'+1'+toRaw:toRaw.length===11&&toRaw[0]==='1'?'+'+toRaw:l.phone;
-  showCallStatusBar(l,'ringing');
+// ===== TWILIO DIALER =====
+async function setupTwilioDevice(){
+  if(twilioSetupStarted)return;
+  twilioSetupStarted=true;
+  const statusEl=document.getElementById('twilio-status');
+  if(statusEl){statusEl.textContent='● Connecting...';statusEl.style.color='var(--amber)';}
   try{
-    const resp=await fetch('/.netlify/functions/openphone',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to,from})});
+    const resp=await fetch('/.netlify/functions/twilio-token');
     const data=await resp.json();
-    if(!data.success){
-      flash('OpenPhone: '+(data.error||'Could not initiate call'));
-      hideCallStatusBar();return;
-    }
-    activeCall={id:data.callId,leadId,status:'ringing',timer:setInterval(pollCallStatus,3000)};
+    if(!data.token){flash('Twilio: could not get token');twilioSetupStarted=false;return;}
+    Twilio.Device.setup(data.token,{debug:false,enableRingingState:true});
+    Twilio.Device.ready(()=>{
+      twilioReady=true;
+      if(statusEl){statusEl.textContent='● Ready';statusEl.style.color='var(--green)';}
+    });
+    Twilio.Device.error((err)=>{
+      flash('Twilio error: '+err.message);
+      twilioReady=false;twilioSetupStarted=false;
+      if(statusEl){statusEl.textContent='● Error';statusEl.style.color='var(--red)';}
+    });
+    Twilio.Device.disconnect(()=>{
+      twilioConn=null;
+      // Auto-open call log for the lead that was just called
+      if(activeCall.leadId){const l=leads.find(x=>x.id===activeCall.leadId);if(l)openCL(l.id);}
+      setTimeout(hideCallStatusBar,1200);
+    });
   }catch(e){
-    flash('Error: '+e.message);hideCallStatusBar();
+    flash('Twilio setup error: '+e.message);
+    twilioSetupStarted=false;
+    if(statusEl){statusEl.textContent='● Error';statusEl.style.color='var(--red)';}
   }
 }
+
+function toE164(num){
+  const raw=(num||'').replace(/\D/g,'');
+  if(raw.length===10)return'+1'+raw;
+  if(raw.length===11&&raw[0]==='1')return'+'+raw;
+  return num;
+}
+
+function initiateCall(number,leadId){
+  if(!twilioReady){flash('Twilio device not ready — open the Dialer tab and wait for ● Ready');return;}
+  if(!number||!number.trim()){flash('Enter a number first');return;}
+  const to=toE164(number.trim());
+  const lead=leadId?leads.find(x=>x.id===leadId):null;
+  activeCall={id:null,leadId:leadId||null,status:'ringing'};
+  showCallStatusBar(lead||{biz:to,phone:to},'ringing');
+  if(leadId){document.getElementById('callprep-ov')&&document.getElementById('callprep-ov').classList.remove('show');openCL(leadId);}
+  try{
+    twilioConn=Twilio.Device.connect({To:to});
+    twilioConn.on('ringing',()=>{activeCall.status='ringing';updateCallStatusText('ringing');});
+    twilioConn.on('accept',()=>{activeCall.status='active';updateCallStatusText('active');});
+    twilioConn.on('disconnect',()=>{/* handled by Twilio.Device.disconnect */});
+  }catch(e){flash('Call error: '+e.message);hideCallStatusBar();}
+}
+
 function showCallStatusBar(lead,status){
   document.getElementById('call-status-biz').textContent=lead.biz+' — '+lead.phone;
   updateCallStatusText(status);
@@ -2340,8 +2343,7 @@ function showCallStatusBar(lead,status){
 }
 function hideCallStatusBar(){
   document.getElementById('call-status-bar').style.display='none';
-  if(activeCall.timer){clearInterval(activeCall.timer);}
-  activeCall={id:null,leadId:null,status:null,timer:null};
+  activeCall={id:null,leadId:null,status:null};
 }
 function updateCallStatusText(status){
   const dot=document.getElementById('call-status-dot');
@@ -2352,32 +2354,61 @@ function updateCallStatusText(status){
   dot.style.background=s.color;
   txt.textContent=s.label;
 }
-async function pollCallStatus(){
-  if(!activeCall.id)return;
-  try{
-    const resp=await fetch('/.netlify/functions/openphone?callId='+activeCall.id);
-    const data=await resp.json();
-    if(data.status!==activeCall.status){
-      activeCall.status=data.status;
-      updateCallStatusText(data.status);
-    }
-    if(data.status==='completed'){
-      clearInterval(activeCall.timer);activeCall.timer=null;
-      const l=leads.find(x=>x.id===activeCall.leadId);
-      if(l){
-        if(!l.callLog)l.callLog=[];
-        l.callLog.push({date:new Date().toLocaleDateString(),outcome:'called',notes:'Via OpenPhone'+(data.duration?' — '+Math.round(data.duration)+'s':''),cb:'',recordingUrl:data.recordingUrl||'',callId:activeCall.id});
-        save();renderDialer();
-      }
-      setTimeout(hideCallStatusBar,2000);
-      flash('Call logged'+(data.duration?' — '+Math.round(data.duration)+'s':''));
-    }
-  }catch(e){/* poll silently */}
-}
 function endActiveCall(){
+  if(twilioConn){try{twilioConn.disconnect();}catch(e){}}
+  Twilio.Device.disconnectAll();
   const l=leads.find(x=>x.id===activeCall.leadId);
   if(l)openCL(l.id);
   hideCallStatusBar();
+}
+
+// ===== POWER DIALER =====
+function togglePowerDialer(){
+  powerDialerActive=!powerDialerActive;
+  const btn=document.getElementById('pd-toggle');
+  if(powerDialerActive){
+    powerDialerQueue=[...leads].filter(l=>l.phone&&l.phone.trim()).sort((a,b)=>b.size-a.size);
+    powerDialerIdx=-1;
+    if(btn){btn.style.background='var(--accent)';btn.style.color='var(--bg)';btn.textContent='⚡ Power Dialer ON';}
+    flash('Power Dialer on — log a call outcome to auto-dial the next lead');
+  }else{
+    cancelPowerDialer();
+    if(btn){btn.style.background='';btn.style.color='';btn.textContent='⚡ Power Dialer';}
+    flash('Power Dialer off');
+  }
+}
+function powerDialerNext(){
+  if(!powerDialerActive)return;
+  powerDialerIdx++;
+  if(powerDialerIdx>=powerDialerQueue.length){
+    flash('Power Dialer: all leads called!');
+    togglePowerDialer();return;
+  }
+  const next=powerDialerQueue[powerDialerIdx];
+  let count=3;
+  const nameEl=document.getElementById('pd-next-name');
+  const cdEl=document.getElementById('pd-countdown');
+  const bar=document.getElementById('pd-bar');
+  if(nameEl)nameEl.textContent=next.biz;
+  if(cdEl)cdEl.textContent=count;
+  if(bar)bar.style.display='flex';
+  powerDialerCountdownTimer=setInterval(()=>{
+    count--;
+    if(cdEl)cdEl.textContent=count;
+    if(count<=0){
+      clearInterval(powerDialerCountdownTimer);powerDialerCountdownTimer=null;
+      if(bar)bar.style.display='none';
+      // Load into dialpad and call
+      const raw=next.phone.replace(/\D/g,'');
+      dialpadNum=raw.length===10?'+1'+raw:raw.length===11&&raw[0]==='1'?'+'+raw:next.phone;
+      const el=document.getElementById('dialpad-display');if(el)el.textContent=dialpadNum;
+      initiateCall(next.phone,next.id);
+    }
+  },1000);
+}
+function cancelPowerDialer(){
+  if(powerDialerCountdownTimer){clearInterval(powerDialerCountdownTimer);powerDialerCountdownTimer=null;}
+  const bar=document.getElementById('pd-bar');if(bar)bar.style.display='none';
 }
 
 // ===== FEATURE: COMPETITOR RESEARCH =====
