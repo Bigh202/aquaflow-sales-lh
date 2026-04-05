@@ -6,7 +6,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AquaFlow Sales OS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
 :root{--bg:#0a0c10;--surf:#111318;--surf2:#181c24;--surf3:#1e232e;--bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);--txt:#e8eaf0;--txt2:#8b919e;--txt3:#555b66;--accent:#00d4aa;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -220,6 +219,7 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 .ac-item:last-child{border-bottom:none}
 .ac-item:hover,.ac-item.hov{background:rgba(0,212,170,0.08);color:var(--accent)}
 </style>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
 
@@ -229,9 +229,22 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <div class="logo-mark">💧</div>
       <div class="logo-txt">AquaFlow <span>Sales OS</span></div>
     </div>
-    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px">Welcome back</div>
-    <div style="font-size:12px;color:var(--txt2);margin-bottom:28px">Sign in to access your sales dashboard</div>
-    <button class="btn btn-a" style="width:100%;justify-content:center;padding:12px 0;font-size:14px" onclick="netlifyIdentity.open('login')">Sign In</button>
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">Sign in to AquaFlow Sales OS</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:24px">Enter your credentials to continue</div>
+    <div class="fld" style="margin-bottom:12px;text-align:left">
+      <label>Email</label>
+      <input id="login-email" type="email" placeholder="you@aquaflowsales.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="fld" style="margin-bottom:8px;text-align:left">
+      <label>Password</label>
+      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="login-err" style="min-height:20px;font-size:11px;color:var(--red);font-family:'DM Mono',monospace;margin-bottom:12px;display:none"></div>
+    <button class="btn btn-a" id="login-btn" style="width:100%;justify-content:center;padding:12px 0;font-size:14px" onclick="netlifyIdentity.open()">Sign In</button>
+    <div style="margin-top:10px;text-align:right">
+      <a href="#" style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;text-decoration:none" onclick="doForgotPassword();return false;">Forgot Password?</a>
+    </div>
+    <div id="forgot-msg" style="display:none;margin-top:10px;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace">Check your email for a reset link.</div>
     <div style="margin-top:14px;font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">AquaFlow Technologies — Sales OS</div>
   </div>
 </div>
@@ -620,6 +633,16 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <div class="fld"><label>Territory</label><input id="cfg-terr" value="Long Beach / LA South Bay"></div>
       <div class="fld"><label>Company</label><input id="cfg-co" value="AquaFlow Technologies"></div>
     </div>
+    <div class="fr c2">
+      <div class="fld"><label>Quo Phone Number</label><input id="cfg-openphone" placeholder="+15621234567" value=""></div>
+    </div>
+    <div class="fld" style="margin-top:8px">
+      <label>Quo Webhook URL <span style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace">(paste this into your Quo dashboard)</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input readonly id="quo-webhook-url" value="https://aquaflowsales.com/.netlify/functions/openphone-webhook" style="flex:1;font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2)">
+        <button class="btn btn-sm" onclick="copyWebhookUrl()">Copy</button>
+      </div>
+    </div>
   </div>
   <div class="set-sec">
     <h3>Data</h3>
@@ -656,6 +679,18 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 </div>
 
 </div><!-- /main -->
+<div id="call-status-bar" style="display:none;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);width:min(480px,90vw);background:var(--surf2);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;z-index:500;box-shadow:0 4px 24px rgba(0,212,170,0.2)">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="call-status-dot" style="width:10px;height:10px;border-radius:50%;background:var(--amber);flex-shrink:0;animation:pulse 1.2s infinite"></div>
+      <div>
+        <div style="font-weight:600;font-size:13px" id="call-status-biz"></div>
+        <div style="font-size:11px;color:var(--accent);font-family:'DM Mono',monospace" id="call-status-text">Ringing...</div>
+      </div>
+    </div>
+    <button class="btn btn-sm" onclick="endActiveCall()" style="color:var(--red);flex-shrink:0">End Call</button>
+  </div>
+</div>
 <div class="flash" id="flash"></div>
 
 <!-- LEAD PANEL -->
@@ -747,7 +782,7 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <div class="tt" style="margin:0"><div class="tt-text" id="prep-script" style="font-size:12px"></div></div>
     </div>
     <div style="margin-top:18px">
-      <a id="prep-call-btn" href="#" class="btn btn-call" style="width:100%;justify-content:center;font-size:15px;padding:13px 0;display:flex" onclick="readyToCall()">✅ Ready to Call — Dial Now →</a>
+      <button id="prep-call-btn" class="btn btn-call" style="width:100%;justify-content:center;font-size:15px;padding:13px 0;display:flex" onclick="readyToCall()">✅ Ready to Call — Dial Now →</button>
     </div>
   </div>
 </div>
@@ -808,10 +843,44 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 
 <script>
 
+// Handle Netlify Identity redirects (password reset, invite acceptance)
+if (window.location.hash && window.location.hash.includes('invite_token')) {
+  netlifyIdentity.on('init', () => {
+    netlifyIdentity.open('signup');
+  });
+}
+if (window.location.hash && window.location.hash.includes('recovery_token')) {
+  netlifyIdentity.on('init', () => {
+    netlifyIdentity.open('recovery');
+  });
+  netlifyIdentity.on('password_recovery', () => {
+    netlifyIdentity.open('recovery');
+  });
+}
+if (window.location.hash && window.location.hash.includes('confirmation_token')) {
+  netlifyIdentity.on('init', () => {
+    netlifyIdentity.open('confirmation');
+  });
+}
+
 let leads=[],queue=[],cfg={};
 let selCallId=null,selPipeId=null,curEmailId=null;
 let lastLat=null,lastLng=null,lastLocText='';
+let activeCall={id:null,leadId:null,status:null,timer:null};
 let currentUser=null;
+
+function loadLocCache(){
+  lastLat=parseFloat(localStorage.getItem('af_lastLat'))||null;
+  lastLng=parseFloat(localStorage.getItem('af_lastLng'))||null;
+  lastLocText=localStorage.getItem('af_lastLocText')||'';
+  const inp=document.getElementById('loc');
+  if(inp&&lastLocText&&!inp.value)inp.value=lastLocText;
+}
+function saveLocCache(){
+  if(lastLat!=null)localStorage.setItem('af_lastLat',lastLat);
+  if(lastLng!=null)localStorage.setItem('af_lastLng',lastLng);
+  if(lastLocText)localStorage.setItem('af_lastLocText',lastLocText);
+}
 
 function userKey(k){return currentUser?k+'_'+currentUser.email:k;}
 function save(){localStorage.setItem(userKey('af_leads'),JSON.stringify(leads));localStorage.setItem(userKey('af_q'),JSON.stringify(queue));}
@@ -897,6 +966,7 @@ async function scrape(){
       }
       ({lat,lng}=geoData.results[0].geometry.location);
       lastLat=lat;lastLng=lng;lastLocText=loc;
+      saveLocCache();
       document.getElementById('scr-msg').textContent='Found: '+geoData.results[0].formatted_address;
     }
 
@@ -908,12 +978,13 @@ async function scrape(){
       const data=await fetch(`/.netlify/functions/places?action=nearby&lat=${lat}&lng=${lng}&radius=${radius}&type=${encodeURIComponent(cat)}`).then(r=>r.json());
       if(data.results){
         for(const place of data.results.slice(0,maxPer)){
-          let phone='Search on Google';
+          let phone='Search on Google';let placeWebsite='';
           try{
             const det=await fetch(`/.netlify/functions/places?action=details&query=${place.place_id}`).then(r=>r.json());
             if(det.result&&det.result.formatted_phone_number)phone=det.result.formatted_phone_number;
+            if(det.result&&det.result.website)placeWebsite=det.result.website;
           }catch(e){}
-          newLeads.push({id:Date.now()+Math.random(),biz:place.name,type:cat,contact:'Owner / Manager',title:'Decision Maker',phone,email:'',source:'Google Maps',city:place.vicinity||loc,size:estBill(cat),status:'cold',notes:'',callLog:[],rating:place.rating||null,created:new Date().toLocaleDateString()});
+          newLeads.push({id:Date.now()+Math.random(),biz:place.name,type:cat,contact:'Owner / Manager',title:'Decision Maker',phone,email:'',website:placeWebsite||'',source:'Google Maps',city:place.vicinity||loc,size:estBill(cat),status:'cold',notes:'',callLog:[],rating:place.rating||null,created:new Date().toLocaleDateString()});
         }
       }
       await sleep(200);
@@ -935,7 +1006,7 @@ async function scrape(){
   document.getElementById('scr-load').style.display='none';
   document.getElementById('prog').style.display='none';
   stats();renderLeads();
-  // Kick off Apollo enrichment in the background — updates rows in-place
+  // Kick off Prospeo enrichment in the background — updates rows in-place
   if(leads.length)enrichLeads([...leads]);
 }
 
@@ -1007,7 +1078,7 @@ function contactCellHTML(l){
   const linkedinLink=l.linkedin
     ?`<a href="${l.linkedin}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">💼 LinkedIn Profile</a>`
     :`<a href="https://www.google.com/search?q=${encodeURIComponent(l.biz+' '+l.type+' facilities manager OR property manager OR owner site:linkedin.com')}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">🔗 Find on LinkedIn</a>`;
-  return`${l.enriched?'<span class="bdg bdg-a" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Apollo</span><br>':''}
+  return`${l.enriched?'<span class="bdg bdg-a" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Prospeo</span><br>':''}
     <div style="font-weight:500">${l.contact}</div>
     <div style="font-size:11px;color:var(--txt2)">${l.title}</div>
     ${linkedinLink}`;
@@ -1026,7 +1097,7 @@ function updateLeadRow(id){
     <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>`;
 }
 
-// Apollo enrichment — runs after scrape, updates leads in-place
+// Prospeo enrichment — runs after scrape, updates leads in-place
 async function enrichLeads(leadsToEnrich){
   const BATCH=3;const DELAY=400;
   for(let i=0;i<leadsToEnrich.length;i+=BATCH){
@@ -1041,14 +1112,13 @@ async function enrichOneLead(lead){
   lead.enriching=true;
   updateLeadRow(lead.id);
   try{
-    const resp=await fetch('/.netlify/functions/enrich',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({biz:lead.biz,city:lead.city,type:lead.type})});
+    const resp=await fetch('/.netlify/functions/prospeo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({biz:lead.biz,website:lead.website||'',city:lead.city,type:lead.type})});
     if(!resp.ok)throw new Error('HTTP '+resp.status);
     const data=await resp.json();
     if(data.found){
       if(data.name&&data.name!=='')lead.contact=data.name;
       if(data.title&&data.title!=='')lead.title=data.title;
       if(data.email&&data.email!=='')lead.email=data.email;
-      if(data.phone&&data.phone!=='')lead.phone=data.phone;
       if(data.linkedin&&data.linkedin!=='')lead.linkedin=data.linkedin;
       lead.enriched=true;
     }
@@ -1301,12 +1371,19 @@ function quickSeq(type){
 }
 
 // SETTINGS
+function copyWebhookUrl(){
+  const val=document.getElementById('quo-webhook-url').value;
+  navigator.clipboard.writeText(val).then(()=>flash('Webhook URL copied!')).catch(()=>{
+    document.getElementById('quo-webhook-url').select();document.execCommand('copy');flash('Webhook URL copied!');
+  });
+}
 function saveSettings(){
   cfg.name=document.getElementById('cfg-name').value;
   cfg.phone=document.getElementById('cfg-phone').value;
   cfg.email=document.getElementById('cfg-email').value;
   cfg.terr=document.getElementById('cfg-terr').value;
   cfg.co=document.getElementById('cfg-co').value;
+  cfg.openphoneFrom=document.getElementById('cfg-openphone').value;
   saveCfg();
   const displayName=cfg.name||(currentUser&&currentUser.user_metadata&&currentUser.user_metadata.full_name)||(currentUser&&currentUser.email)||'Rep';
   document.getElementById('rep-name').textContent=displayName;
@@ -1477,7 +1554,7 @@ async function runAutoEmail(){
 
 // FEATURE 1 — TODAY'S CALLBACKS
 function renderCallbacks(){
-  const today=new Date().toLocaleDateString();
+  const nowMs=Date.now();
   const todayMs=new Date(new Date().toDateString()).getTime();
   const due=[];
   leads.forEach(l=>{
@@ -1486,28 +1563,44 @@ function renderCallbacks(){
       let cbDate;
       try{cbDate=new Date(entry.cb);}catch(e){return;}
       if(isNaN(cbDate.getTime()))return;
-      const cbMs=new Date(cbDate.toDateString()).getTime();
-      if(cbMs<=todayMs){
-        const diffDays=Math.round((todayMs-cbMs)/86400000);
-        due.push({lead:l,entryIdx:idx,entry,diffDays});
+      const cbDayMs=new Date(cbDate.toDateString()).getTime();
+      if(cbDayMs<=todayMs){
+        const diffMs=nowMs-cbDate.getTime();
+        const diffMin=Math.round(diffMs/60000);
+        let overdueLabel;
+        if(diffMs<0){const m=Math.round(-diffMs/60000);overdueLabel=m<60?'In '+m+' min':'In '+Math.round(m/60)+'h';}
+        else if(diffMin<60){overdueLabel=diffMin<1?'Due now':diffMin+' min overdue';}
+        else if(diffMin<1440){const h=Math.round(diffMin/60);overdueLabel=h+' hour'+(h!==1?'s':'')+' overdue';}
+        else{const d=Math.round(diffMin/1440);overdueLabel=d+' day'+(d!==1?'s':'')+' overdue';}
+        due.push({lead:l,entryIdx:idx,entry,overdueLabel});
       }
     });
   });
   const c=document.getElementById('callbacks-list');
   if(!due.length){c.innerHTML='<div style="font-size:12px;color:var(--txt3);font-family:\'DM Mono\',monospace">No callbacks scheduled for today</div>';return;}
-  c.innerHTML=due.map(({lead,entryIdx,entry,diffDays})=>`
+  c.innerHTML=due.map(({lead,entryIdx,entry,overdueLabel})=>`
     <div class="cb-card">
       <div style="flex:1">
         <div style="font-weight:500;font-size:13px">${lead.biz}</div>
-        <div style="font-size:11px;color:var(--txt2);margin-top:2px">${lead.contact} · ${lead.phone}</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px">${lead.contact} · ${lead.title} · ${lead.phone}</div>
         ${entry.notes?`<div style="font-size:11px;color:var(--txt2);margin-top:2px;font-style:italic">${entry.notes}</div>`:''}
-        <div style="margin-top:4px"><span class="bdg bdg-am">${diffDays===0?'Today':diffDays+' day'+(diffDays===1?'':' s')+' overdue'}</span></div>
+        <div style="margin-top:4px"><span class="bdg bdg-am">${overdueLabel}</span></div>
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0">
+      <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
         <button class="btn btn-call btn-sm" onclick="showCallPrep(${lead.id})">📞 Call</button>
-        <button class="btn btn-sm" onclick="markCBDone(${lead.id},${entryIdx})" style="color:var(--txt2)">Mark Done</button>
+        <button class="btn btn-sm" onclick="rescheduleCallback(${lead.id},${entryIdx})" style="color:var(--amber)">Reschedule</button>
+        <button class="btn btn-sm" onclick="markCBDone(${lead.id},${entryIdx})" style="color:var(--txt2)">Done</button>
       </div>
     </div>`).join('');
+}
+function rescheduleCallback(leadId,entryIdx){
+  const l=leads.find(x=>x.id===leadId);
+  if(!l||!l.callLog||!l.callLog[entryIdx])return;
+  const def=new Date(Date.now()+3600000).toISOString().slice(0,16);
+  const newDt=prompt('Reschedule to (YYYY-MM-DDThh:mm):',def);
+  if(!newDt)return;
+  l.callLog[entryIdx].cb=newDt;
+  save();renderCallbacks();flash('Callback rescheduled');
 }
 function markCBDone(leadId,entryIdx){
   const l=leads.find(x=>x.id===leadId);
@@ -1549,6 +1642,7 @@ function editLead(id){
           </div>
           ${e.notes?`<div style="font-size:12px;color:var(--txt2)">${e.notes}</div>`:''}
           ${e.cb?`<div style="font-size:11px;color:var(--amber);margin-top:2px">Callback: ${e.cb}</div>`:''}
+          ${e.recordingUrl?`<div style="margin-top:3px"><a href="${e.recordingUrl}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none">🎙 Recording</a></div>`:''}
         </div>
       </div>`;
     }).join('');
@@ -1837,6 +1931,8 @@ function initApp(user){
   if(cfg.email)document.getElementById('cfg-email').value=cfg.email;
   if(cfg.terr)document.getElementById('cfg-terr').value=cfg.terr;
   if(cfg.co)document.getElementById('cfg-co').value=cfg.co;
+  if(cfg.openphoneFrom)document.getElementById('cfg-openphone').value=cfg.openphoneFrom;
+  loadLocCache();
   stats();renderLeads();renderQueue();renderDailyStats();populateFilterDropdowns();
   renderTemplates();updateOpenRateBar();
   initTheme();initKeyboard();initAutosave();
@@ -1874,7 +1970,8 @@ function showBriefing(){
   localStorage.setItem(todayKey,'1');
   const today=new Date();
   document.getElementById('brief-date').textContent=today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const cbDue=leads.filter(l=>(l.callLog||[]).some(e=>{if(!e.cb)return false;const d=new Date(e.cb);return!isNaN(d)&&d<=today;})).length;
+  const todayDayMs=new Date(today.toDateString()).getTime();
+  const cbDue=leads.filter(l=>(l.callLog||[]).some(e=>{if(!e.cb)return false;const d=new Date(e.cb);return!isNaN(d.getTime())&&new Date(d.toDateString()).getTime()<=todayDayMs;})).length;
   const yesterday=new Date(today);yesterday.setDate(today.getDate()-1);
   const addedYest=leads.filter(l=>l.created===yesterday.toLocaleDateString()).length;
   const pipeVal=leads.reduce((s,l)=>s+Math.round(l.size*.3),0);
@@ -2052,11 +2149,82 @@ function showCallPrep(id){
   const shuffled=[...OBJECTIONS].sort(()=>Math.random()-0.5).slice(0,3);
   document.getElementById('prep-objs').innerHTML=shuffled.map(o=>`<div class="prep-obj"><div class="prep-obj-q">👋 "${o.q}"</div><div class="prep-obj-a">${o.a}</div></div>`).join('');
   document.getElementById('prep-script').innerHTML=`<em>"Hi, is this ${l.contact}? — Great, this is [your name] from AquaFlow out of Long Beach. Quick question — do you handle facilities or utilities for ${l.biz}? ... Perfect. We've been helping ${l.type.toLowerCase()}s cut water bills by up to 30%. You could be looking at <strong style='color:var(--green)'>$${Math.round(l.size*.3).toLocaleString()}/month in savings</strong>. We do a free water analysis — 10 minutes, zero commitment. Worth a look?"</em>`;
-  document.getElementById('prep-call-btn').href='tel:'+l.phone.replace(/\D/g,'');
+  document.getElementById('prep-call-btn').dataset.leadId=id;
   document.getElementById('callprep-ov').classList.add('show');
 }
-function readyToCall(){document.getElementById('callprep-ov').classList.remove('show');if(prepLeadId)openCL(prepLeadId);}
+function readyToCall(){if(prepLeadId)initiateOpenPhoneCall(prepLeadId);}
 function closeCallPrep(){document.getElementById('callprep-ov').classList.remove('show');}
+
+// ===== OPENPHONE DIALER =====
+async function initiateOpenPhoneCall(leadId){
+  const l=leads.find(x=>x.id===leadId);
+  if(!l)return;
+  const from=(cfg.openphoneFrom||'').trim();
+  if(!from){flash('Add your OpenPhone number in Settings first');return;}
+  document.getElementById('callprep-ov').classList.remove('show');
+  openCL(leadId);
+  // Normalize to E.164
+  const toRaw=l.phone.replace(/\D/g,'');
+  const to=toRaw.length===10?'+1'+toRaw:toRaw.length===11&&toRaw[0]==='1'?'+'+toRaw:l.phone;
+  showCallStatusBar(l,'ringing');
+  try{
+    const resp=await fetch('/.netlify/functions/openphone',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to,from})});
+    const data=await resp.json();
+    if(!data.success){
+      flash('OpenPhone: '+(data.error||'Could not initiate call'));
+      hideCallStatusBar();return;
+    }
+    activeCall={id:data.callId,leadId,status:'ringing',timer:setInterval(pollCallStatus,3000)};
+  }catch(e){
+    flash('Error: '+e.message);hideCallStatusBar();
+  }
+}
+function showCallStatusBar(lead,status){
+  document.getElementById('call-status-biz').textContent=lead.biz+' — '+lead.phone;
+  updateCallStatusText(status);
+  document.getElementById('call-status-bar').style.display='block';
+}
+function hideCallStatusBar(){
+  document.getElementById('call-status-bar').style.display='none';
+  if(activeCall.timer){clearInterval(activeCall.timer);}
+  activeCall={id:null,leadId:null,status:null,timer:null};
+}
+function updateCallStatusText(status){
+  const dot=document.getElementById('call-status-dot');
+  const txt=document.getElementById('call-status-text');
+  if(!dot||!txt)return;
+  const map={ringing:{color:'var(--amber)',label:'Ringing...'},active:{color:'var(--green)',label:'Connected'},'in-progress':{color:'var(--green)',label:'Connected'},completed:{color:'var(--txt3)',label:'Call Ended'}};
+  const s=map[status]||map.ringing;
+  dot.style.background=s.color;
+  txt.textContent=s.label;
+}
+async function pollCallStatus(){
+  if(!activeCall.id)return;
+  try{
+    const resp=await fetch('/.netlify/functions/openphone?callId='+activeCall.id);
+    const data=await resp.json();
+    if(data.status!==activeCall.status){
+      activeCall.status=data.status;
+      updateCallStatusText(data.status);
+    }
+    if(data.status==='completed'){
+      clearInterval(activeCall.timer);activeCall.timer=null;
+      const l=leads.find(x=>x.id===activeCall.leadId);
+      if(l){
+        if(!l.callLog)l.callLog=[];
+        l.callLog.push({date:new Date().toLocaleDateString(),outcome:'called',notes:'Via OpenPhone'+(data.duration?' — '+Math.round(data.duration)+'s':''),cb:'',recordingUrl:data.recordingUrl||'',callId:activeCall.id});
+        save();renderDialer();
+      }
+      setTimeout(hideCallStatusBar,2000);
+      flash('Call logged'+(data.duration?' — '+Math.round(data.duration)+'s':''));
+    }
+  }catch(e){/* poll silently */}
+}
+function endActiveCall(){
+  const l=leads.find(x=>x.id===activeCall.leadId);
+  if(l)openCL(l.id);
+  hideCallStatusBar();
+}
 
 // ===== FEATURE: COMPETITOR RESEARCH =====
 let resLeadId=null;
@@ -2173,6 +2341,92 @@ function checkPipelineAutomation(lead,oldStatus,newStatus){
   }
 }
 
+// ===== AUTH — direct GoTrue API, no widget =====
+const IDENTITY_URL='/.netlify/identity';
+
+function doForgotPassword(){
+  const email=(document.getElementById('login-email').value||'').trim();
+  const msg=document.getElementById('forgot-msg');
+  if(!email){msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Enter your email address first.';return;}
+  netlifyIdentity.requestPasswordRecovery(email);
+  msg.style.display='block';msg.style.color='var(--accent)';msg.textContent='Check your email for a reset link.';
+}
+async function doLogin(){
+  const email=(document.getElementById('login-email').value||'').trim();
+  const password=document.getElementById('login-password').value||'';
+  const btn=document.getElementById('login-btn');
+  const err=document.getElementById('login-err');
+  err.style.display='none';
+  if(!email||!password){err.textContent='Please enter your email and password.';err.style.display='block';return;}
+  btn.textContent='Signing in...';btn.disabled=true;
+  try{
+    // 1. Exchange credentials for token
+    const tokenResp=await fetch(IDENTITY_URL+'/token',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'grant_type=password&username='+encodeURIComponent(email)+'&password='+encodeURIComponent(password)
+    });
+    if(!tokenResp.ok){
+      const e=await tokenResp.json().catch(()=>({}));
+      throw new Error(e.error_description||e.msg||'Invalid email or password');
+    }
+    const tokenData=await tokenResp.json();
+    // 2. Fetch full user profile
+    const userResp=await fetch(IDENTITY_URL+'/user',{
+      headers:{'Authorization':'Bearer '+tokenData.access_token}
+    });
+    if(!userResp.ok)throw new Error('Could not load user profile');
+    const user=await userResp.json();
+    // 3. Persist session
+    localStorage.setItem('af_token',tokenData.access_token);
+    if(tokenData.refresh_token)localStorage.setItem('af_refresh_token',tokenData.refresh_token);
+    localStorage.setItem('af_user',JSON.stringify(user));
+    showApp(user);
+  }catch(e){
+    err.textContent=e.message;
+    err.style.display='block';
+    btn.textContent='Sign In';
+    btn.disabled=false;
+  }
+}
+
+async function verifySession(){
+  const token=localStorage.getItem('af_token');
+  const stored=localStorage.getItem('af_user');
+  if(!token||!stored)return null;
+  try{
+    // Try current token
+    const resp=await fetch(IDENTITY_URL+'/user',{headers:{'Authorization':'Bearer '+token}});
+    if(resp.ok)return await resp.json();
+    // Try refresh token
+    const refresh=localStorage.getItem('af_refresh_token');
+    if(!refresh)throw new Error('No refresh token');
+    const ref=await fetch(IDENTITY_URL+'/token',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(refresh)
+    });
+    if(!ref.ok)throw new Error('Refresh failed');
+    const td=await ref.json();
+    localStorage.setItem('af_token',td.access_token);
+    if(td.refresh_token)localStorage.setItem('af_refresh_token',td.refresh_token);
+    const u=await fetch(IDENTITY_URL+'/user',{headers:{'Authorization':'Bearer '+td.access_token}});
+    if(!u.ok)throw new Error('Profile failed');
+    const user=await u.json();
+    localStorage.setItem('af_user',JSON.stringify(user));
+    return user;
+  }catch(e){
+    clearSession();
+    return null;
+  }
+}
+
+function clearSession(){
+  localStorage.removeItem('af_token');
+  localStorage.removeItem('af_refresh_token');
+  localStorage.removeItem('af_user');
+}
+
 function showApp(user){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
@@ -2181,12 +2435,19 @@ function showApp(user){
 function showLogin(){
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
+  const btn=document.getElementById('login-btn');
+  if(btn){btn.textContent='Sign In';btn.disabled=false;}
 }
-function logout(){netlifyIdentity.logout();}
+function logout(){
+  clearSession();
+  currentUser=null;leads=[];queue=[];cfg={};
+  showLogin();
+}
 
-window.addEventListener('load',function(){
-  const user=netlifyIdentity.currentUser();
-  if(user){showApp(user);}else{showLogin();}
+window.addEventListener('load',async function(){
+  // Show login immediately while we verify in background
+  showLogin();
+  // Handle widget-based login (netlifyIdentity.open())
   netlifyIdentity.on('login',function(user){
     netlifyIdentity.close();
     showApp(user);
@@ -2195,6 +2456,9 @@ window.addEventListener('load',function(){
     currentUser=null;leads=[];queue=[];cfg={};
     showLogin();
   });
+  // Also try restoring a prior session from localStorage (direct GoTrue tokens)
+  const user=await verifySession();
+  if(user){showApp(user);}
 });
 </script>
 </body>
