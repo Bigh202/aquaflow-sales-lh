@@ -6,6 +6,15 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AquaFlow Sales OS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>
+  // Must run before anything else — capture identity tokens from URL hash
+  if (window.location.hash) {
+    const hash = window.location.hash;
+    if (hash.includes('invite_token') || hash.includes('recovery_token') || hash.includes('confirmation_token')) {
+      localStorage.setItem('af_pending_token', hash);
+    }
+  }
+</script>
 <style>
 :root{--bg:#0a0c10;--surf:#111318;--surf2:#181c24;--surf3:#1e232e;--bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);--txt:#e8eaf0;--txt2:#8b919e;--txt3:#555b66;--accent:#00d4aa;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -843,25 +852,24 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 
 <script>
 
-// Handle Netlify Identity redirects (password reset, invite acceptance)
-if (window.location.hash && window.location.hash.includes('invite_token')) {
-  netlifyIdentity.on('init', () => {
-    netlifyIdentity.open('signup');
-  });
-}
-if (window.location.hash && window.location.hash.includes('recovery_token')) {
-  netlifyIdentity.on('init', () => {
-    netlifyIdentity.open('recovery');
-  });
-  netlifyIdentity.on('password_recovery', () => {
-    netlifyIdentity.open('recovery');
-  });
-}
-if (window.location.hash && window.location.hash.includes('confirmation_token')) {
-  netlifyIdentity.on('init', () => {
-    netlifyIdentity.open('confirmation');
-  });
-}
+// Handle Netlify Identity token redirects (invite, password recovery, confirmation)
+netlifyIdentity.on('init', function(user) {
+  const pending = localStorage.getItem('af_pending_token');
+  if (pending) {
+    localStorage.removeItem('af_pending_token');
+    if (pending.includes('invite_token')) {
+      netlifyIdentity.open('signup');
+    } else if (pending.includes('recovery_token')) {
+      netlifyIdentity.open('recovery');
+    } else if (pending.includes('confirmation_token')) {
+      netlifyIdentity.open('confirmation');
+    }
+  } else if (!user) {
+    showLogin();
+  } else {
+    showApp(user);
+  }
+});
 
 let leads=[],queue=[],cfg={};
 let selCallId=null,selPipeId=null,curEmailId=null;
@@ -2444,10 +2452,7 @@ function logout(){
   showLogin();
 }
 
-window.addEventListener('load',async function(){
-  // Show login immediately while we verify in background
-  showLogin();
-  // Handle widget-based login (netlifyIdentity.open())
+window.addEventListener('load',function(){
   netlifyIdentity.on('login',function(user){
     netlifyIdentity.close();
     showApp(user);
@@ -2456,9 +2461,6 @@ window.addEventListener('load',async function(){
     currentUser=null;leads=[];queue=[];cfg={};
     showLogin();
   });
-  // Also try restoring a prior session from localStorage (direct GoTrue tokens)
-  const user=await verifySession();
-  if(user){showApp(user);}
 });
 </script>
 </body>
