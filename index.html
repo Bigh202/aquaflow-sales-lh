@@ -700,6 +700,14 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
         <button class="btn btn-sm" onclick="copyWebhookUrl()">Copy</button>
       </div>
     </div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--bdr)">
+      <label style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em">Quo API Debug</label>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="quoDebugMe()">Fetch User Info</button>
+        <button class="btn btn-sm" onclick="quoDebugPhoneNumbers()">Fetch Phone Numbers</button>
+      </div>
+      <pre id="quo-debug-out" style="display:none;margin-top:10px;background:var(--bg2);border:1px solid var(--bdr);border-radius:6px;padding:10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);white-space:pre-wrap;word-break:break-all;max-height:300px;overflow:auto"></pre>
+    </div>
   </div>
   <div class="set-sec">
     <h3>Data</h3>
@@ -1461,6 +1469,26 @@ function copyWebhookUrl(){
   navigator.clipboard.writeText(val).then(()=>flash('Webhook URL copied!')).catch(()=>{
     document.getElementById('quo-webhook-url').select();document.execCommand('copy');flash('Webhook URL copied!');
   });
+}
+async function quoDebugMe(){
+  const out=document.getElementById('quo-debug-out');
+  out.style.display='block';out.textContent='Fetching user info...';
+  try{
+    const r=await fetch('/.netlify/functions/openphone?action=me');
+    const j=await r.json();
+    out.textContent=JSON.stringify(j,null,2);
+    console.log('[Quo debug /me]',j);
+  }catch(e){out.textContent='Error: '+e.message;}
+}
+async function quoDebugPhoneNumbers(){
+  const out=document.getElementById('quo-debug-out');
+  out.style.display='block';out.textContent='Fetching phone numbers...';
+  try{
+    const r=await fetch('/.netlify/functions/openphone?action=phone-numbers');
+    const j=await r.json();
+    out.textContent=JSON.stringify(j,null,2);
+    console.log('[Quo debug /phone-numbers]',j);
+  }catch(e){out.textContent='Error: '+e.message;}
 }
 function saveSettings(){
   cfg.name=document.getElementById('cfg-name').value;

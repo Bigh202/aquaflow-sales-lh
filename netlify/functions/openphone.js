@@ -18,8 +18,15 @@ function httpsRequest(method, path, body, apiKey) {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
-        try { resolve({ status: res.statusCode, data: data ? JSON.parse(data) : {} }); }
-        catch (e) { reject(new Error('Parse error: ' + e.message)); }
+        let parsed;
+        try {
+          parsed = data ? JSON.parse(data) : {};
+        } catch (e) {
+          // Non-JSON response — return raw text in error field
+          resolve({ status: res.statusCode, data: { error: 'Non-JSON response', raw: data } });
+          return;
+        }
+        resolve({ status: res.statusCode, data: parsed });
       });
     });
     req.on('error', reject);
@@ -39,10 +46,32 @@ exports.handler = async (event) => {
   const OPENPHONE_API_KEY = process.env.OPENPHONE_API_KEY;
   if (!OPENPHONE_API_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: 'OPENPHONE_API_KEY not set' }) };
 
-  // GET: poll call status
   if (event.httpMethod === 'GET') {
-    const callId = event.queryStringParameters && event.queryStringParameters.callId;
-    if (!callId) return { statusCode: 400, headers, body: JSON.stringify({ error: 'callId required' }) };
+    const params = event.queryStringParameters || {};
+
+    // Debug: fetch current user info
+    if (params.action === 'me') {
+      try {
+        const result = await httpsRequest('GET', '/v1/users/me', null, OPENPHONE_API_KEY);
+        return { statusCode: 200, headers, body: JSON.stringify({ httpStatus: result.status, response: result.data }) };
+      } catch (err) {
+        return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+      }
+    }
+
+    // Debug: fetch available phone numbers
+    if (params.action === 'phone-numbers') {
+      try {
+        const result = await httpsRequest('GET', '/v1/phone-numbers', null, OPENPHONE_API_KEY);
+        return { statusCode: 200, headers, body: JSON.stringify({ httpStatus: result.status, response: result.data }) };
+      } catch (err) {
+        return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+      }
+    }
+
+    // Poll call status
+    const callId = params.callId;
+    if (!callId) return { statusCode: 400, headers, body: JSON.stringify({ error: 'callId or action required' }) };
     try {
       const result = await httpsRequest('GET', `/v1/calls/${callId}`, null, OPENPHONE_API_KEY);
       if (result.status !== 200) return { statusCode: 200, headers, body: JSON.stringify({ status: 'unknown' }) };
