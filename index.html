@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AquaFlow Sales OS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://sdk.twilio.com/js/client/releases/1.14.0/twilio.js"></script>
+<script src="https://sdk.twilio.com/js/client/releases/2.6.0/twilio.min.js"></script>
 <style>
 :root{--bg:#0a0c10;--surf:#111318;--surf2:#181c24;--surf3:#1e232e;--bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);--txt:#e8eaf0;--txt2:#8b919e;--txt3:#555b66;--accent:#00d4aa;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2281,36 +2281,40 @@ function dialpadLoadLead(id){
 }
 
 // ===== TWILIO DIALER =====
+function updateDialStatus(state){
+  const el=document.getElementById('twilio-status');
+  if(!el)return;
+  const map={
+    offline:{label:'● Offline',color:'var(--txt3)'},
+    connecting:{label:'● Connecting...',color:'var(--amber)'},
+    ready:{label:'● Ready',color:'var(--green)'},
+    connected:{label:'● Connected',color:'var(--accent)'},
+    error:{label:'● Error',color:'var(--red)'},
+  };
+  const s=map[state]||map.offline;
+  el.textContent=s.label;el.style.color=s.color;
+}
+
 async function setupTwilioDevice(){
   if(twilioSetupStarted)return;
   twilioSetupStarted=true;
-  const statusEl=document.getElementById('twilio-status');
-  if(statusEl){statusEl.textContent='● Connecting...';statusEl.style.color='var(--amber)';}
+  updateDialStatus('connecting');
   try{
     const resp=await fetch('/.netlify/functions/twilio-token');
     if(!resp.ok){const text=await resp.text();throw new Error('Token fetch failed: '+resp.status+' '+text);}
     const data=await resp.json();
     if(!data.token)throw new Error('No token in response: '+JSON.stringify(data));
-    Twilio.Device.setup(data.token,{debug:false,enableRingingState:true});
-    Twilio.Device.ready(()=>{
-      twilioReady=true;
-      if(statusEl){statusEl.textContent='● Ready';statusEl.style.color='var(--green)';}
-    });
-    Twilio.Device.error((err)=>{
-      flash('Twilio error: '+err.message);
-      twilioReady=false;twilioSetupStarted=false;
-      if(statusEl){statusEl.textContent='● Error';statusEl.style.color='var(--red)';}
-    });
-    Twilio.Device.disconnect(()=>{
-      twilioConn=null;
-      // Auto-open call log for the lead that was just called
-      if(activeCall.leadId){const l=leads.find(x=>x.id===activeCall.leadId);if(l)openCL(l.id);}
-      setTimeout(hideCallStatusBar,1200);
-    });
+    twilioDevice=new Twilio.Device(data.token,{debug:false,enableRingingState:true});
+    twilioDevice.on('registered',()=>{twilioReady=true;updateDialStatus('ready');flash('✓ Dialer ready');});
+    twilioDevice.on('error',(err)=>{updateDialStatus('error');flash('Dialer error: '+err.message);console.error(err);twilioReady=false;twilioSetupStarted=false;});
+    twilioDevice.on('incoming',(call)=>{twilioConn=call;call.accept();});
+    twilioDevice.on('connect',(call)=>{twilioConn=call;updateDialStatus('connected');});
+    twilioDevice.on('disconnect',()=>{updateDialStatus('ready');endActiveCall();});
+    twilioDevice.register();
   }catch(e){
     flash('Twilio setup error: '+e.message);
     twilioSetupStarted=false;
-    if(statusEl){statusEl.textContent='● Error';statusEl.style.color='var(--red)';}
+    updateDialStatus('error');
   }
 }
 
@@ -2321,19 +2325,19 @@ function toE164(num){
   return num;
 }
 
-function initiateCall(number,leadId){
-  if(!twilioReady){flash('Twilio device not ready — open the Dialer tab and wait for ● Ready');return;}
+async function initiateCall(number,leadId){
+  if(!twilioDevice){flash('Dialer not ready — open the Dialer tab and wait for ● Ready');return;}
   if(!number||!number.trim()){flash('Enter a number first');return;}
   const to=toE164(number.trim());
   const lead=leadId?leads.find(x=>x.id===leadId):null;
   activeCall={id:null,leadId:leadId||null,status:'ringing'};
   showCallStatusBar(lead||{biz:to,phone:to},'ringing');
-  if(leadId){document.getElementById('callprep-ov')&&document.getElementById('callprep-ov').classList.remove('show');openCL(leadId);}
+  if(leadId){const ov=document.getElementById('callprep-ov');if(ov)ov.classList.remove('show');openCL(leadId);}
   try{
-    twilioConn=Twilio.Device.connect({To:to});
-    twilioConn.on('ringing',()=>{activeCall.status='ringing';updateCallStatusText('ringing');});
-    twilioConn.on('accept',()=>{activeCall.status='active';updateCallStatusText('active');});
-    twilioConn.on('disconnect',()=>{/* handled by Twilio.Device.disconnect */});
+    twilioConn=await twilioDevice.connect({params:{To:to}});
+    twilioConn.on('accept',()=>{activeCall.status='active';updateDialStatus('connected');updateCallStatusText('active');});
+    twilioConn.on('disconnect',()=>{updateDialStatus('ready');endActiveCall();});
+    twilioConn.on('error',(err)=>{flash('Call error: '+err.message);updateDialStatus('ready');hideCallStatusBar();});
   }catch(e){flash('Call error: '+e.message);hideCallStatusBar();}
 }
 
