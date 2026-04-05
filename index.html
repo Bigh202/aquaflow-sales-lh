@@ -191,6 +191,11 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 .filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .filter-bar input,.filter-bar select{background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:7px 10px;font-size:12px;color:var(--txt);font-family:'DM Sans',sans-serif;outline:none}
 .filter-bar input:focus,.filter-bar select:focus{border-color:var(--accent)}
+.quality-btn{background:transparent;border:1px solid var(--bdr2);border-radius:20px;padding:5px 14px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.quality-btn.active{background:rgba(0,212,170,0.12);border-color:var(--accent);color:var(--accent)}
+.dialpad-key{background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;padding:14px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--txt);font-family:'Syne',sans-serif;font-size:18px;font-weight:700;transition:background 0.1s,border-color 0.1s,transform 0.05s;-webkit-user-select:none;user-select:none}
+.dialpad-key:hover{background:rgba(0,212,170,0.1);border-color:var(--accent);color:var(--accent)}
+.dialpad-key:active{transform:scale(0.94)}
 /* Bulk bar */
 #bulk-bar{background:var(--surf2);border:1px solid var(--accent);border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 /* Callback cards */
@@ -398,6 +403,12 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   </div>
 
   <div id="scr-load"><div class="big-spin"></div><div style="color:var(--txt2);font-size:13px;font-family:'DM Mono',monospace" id="scr-msg">Searching...</div></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <span style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.07em">Quality:</span>
+    <button class="quality-btn" id="qbtn-all" onclick="setLeadQuality('all')">All Leads</button>
+    <button class="quality-btn" id="qbtn-has_contact" onclick="setLeadQuality('has_contact')">Has Contact</button>
+    <button class="quality-btn" id="qbtn-complete" onclick="setLeadQuality('complete')">Complete Leads</button>
+  </div>
   <div class="filter-bar" id="filter-bar">
     <input id="lead-search" placeholder="Search business or contact..." style="min-width:200px" oninput="renderLeads()">
     <select id="f-status" onchange="renderLeads()"><option value="">All Statuses</option><option value="cold">Cold</option><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="callback">Callback</option><option value="voicemail">Voicemail</option><option value="no_answer">No Answer</option><option value="not_interested">Not Interested</option><option value="audit">Audit Booked</option><option value="closed">Closed</option></select>
@@ -522,6 +533,31 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 
 <!-- DIALER -->
 <div id="pane-dialer" class="pane">
+  <div id="dialpad-widget" style="margin-bottom:22px;display:flex;justify-content:center">
+    <div style="width:280px;background:var(--surf);border:1px solid var(--bdr2);border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,0.3)">
+      <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--txt3);text-align:center;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Softphone</div>
+      <div id="dialpad-display" style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;text-align:center;padding:10px 14px;background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;margin-bottom:14px;min-height:46px;letter-spacing:2px;color:var(--txt);overflow:hidden;white-space:nowrap"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+        <button class="dialpad-key" onclick="dialpadPress('1')">1</button>
+        <button class="dialpad-key" onclick="dialpadPress('2')">2</button>
+        <button class="dialpad-key" onclick="dialpadPress('3')">3</button>
+        <button class="dialpad-key" onclick="dialpadPress('4')">4</button>
+        <button class="dialpad-key" onclick="dialpadPress('5')">5</button>
+        <button class="dialpad-key" onclick="dialpadPress('6')">6</button>
+        <button class="dialpad-key" onclick="dialpadPress('7')">7</button>
+        <button class="dialpad-key" onclick="dialpadPress('8')">8</button>
+        <button class="dialpad-key" onclick="dialpadPress('9')">9</button>
+        <button class="dialpad-key" onclick="dialpadPress('*')" style="font-size:22px;font-family:'DM Sans',sans-serif">*</button>
+        <button class="dialpad-key" onclick="dialpadPress('0')">0</button>
+        <button class="dialpad-key" onclick="dialpadPress('#')" style="font-size:16px">#</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:8px">
+        <button class="btn btn-sm" onclick="dialpadBackspace()" title="Backspace" style="padding:11px 0;font-size:16px;justify-content:center">⌫</button>
+        <button class="btn btn-a" onclick="initiateDialpadCall()" style="padding:11px 0;font-size:13px;justify-content:center">📞 Call</button>
+        <button class="btn btn-sm" onclick="dialpadClear()" title="Clear" style="padding:11px 0;font-size:11px;justify-content:center;color:var(--txt3)">Clr</button>
+      </div>
+    </div>
+  </div>
   <div id="callbacks-section" style="margin-bottom:18px">
     <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--amber);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">Today's Callbacks</div>
     <div id="callbacks-list"><div style="font-size:12px;color:var(--txt3);font-family:'DM Mono',monospace">No callbacks scheduled for today</div></div>
@@ -869,6 +905,8 @@ let selCallId=null,selPipeId=null,curEmailId=null;
 let lastLat=null,lastLng=null,lastLocText='';
 let activeCall={id:null,leadId:null,status:null,timer:null};
 let currentUser=null;
+let leadQuality=localStorage.getItem('af_lead_quality')||'has_contact';
+let dialpadNum='';
 
 function loadLocCache(){
   lastLat=parseFloat(localStorage.getItem('af_lastLat'))||null;
@@ -1004,11 +1042,17 @@ async function scrape(){
   }catch(err){
     flash('Error: '+err.message);
   }
-  document.getElementById('scr-load').style.display='none';
   document.getElementById('prog').style.display='none';
+  // Run Prospeo enrichment before showing leads — leads appear in table after enrichment
+  if(leads.length){
+    document.getElementById('scr-msg').textContent='Enriching '+leads.length+' leads with contact data...';
+    await enrichLeadsWithProgress([...leads]);
+    const found=leads.filter(l=>l.enriched).length;
+    const noContact=leads.filter(l=>l.noContactFound).length;
+    flash('✓ '+leads.length+' leads scraped — '+found+' contacts found'+(noContact?' · '+noContact+' with no contact':''));
+  }
+  document.getElementById('scr-load').style.display='none';
   stats();renderLeads();
-  // Kick off Prospeo enrichment in the background — updates rows in-place
-  if(leads.length)enrichLeads([...leads]);
 }
 
 function estBill(t){
@@ -1019,8 +1063,21 @@ function estBill(t){
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
+const GENERIC_CONTACTS=['Owner / Manager','Decision Maker','Owner/Manager'];
+function isGenericContact(l){return!l.contact||GENERIC_CONTACTS.includes(l.contact);}
+
+function setLeadQuality(q){
+  leadQuality=q;
+  localStorage.setItem('af_lead_quality',q);
+  renderLeads();
+}
+
 function renderLeads(){
   const c=document.getElementById('leads-wrap');
+  // Sync quality toggle buttons
+  document.querySelectorAll('.quality-btn').forEach(b=>b.classList.remove('active'));
+  const qbtn=document.getElementById('qbtn-'+leadQuality);
+  if(qbtn)qbtn.classList.add('active');
   populateFilterDropdowns();
   if(!leads.length){c.innerHTML='<div class="empty"><p>No leads yet. Hit Search Leads to start.</p></div>';return;}
   // Apply filters
@@ -1035,6 +1092,8 @@ function renderLeads(){
     if(fType&&l.type!==fType)return false;
     if(fCity&&l.city!==fCity)return false;
     if(fMinBill&&l.size<fMinBill)return false;
+    if(leadQuality==='has_contact'&&isGenericContact(l))return false;
+    if(leadQuality==='complete'&&(isGenericContact(l)||!l.email))return false;
     return true;
   });
   c.innerHTML=`<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table class="tbl">
@@ -1076,9 +1135,20 @@ function contactCellHTML(l){
   if(l.enriching){
     return`<div class="ai-spin" style="padding:2px 0"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:5px;font-size:11px">Finding contact...</span></div>`;
   }
+  const generic=isGenericContact(l);
+  // "No contact found" state — Prospeo tried and came up empty
+  if(l.noContactFound&&generic){
+    return`<span class="bdg bdg-gr" style="font-size:9px;margin-bottom:3px;display:inline-block">No contact found</span><br>
+      <div style="font-weight:500;color:var(--txt3)">${l.contact}</div>
+      <div style="font-size:11px;color:var(--txt3)">${l.title}</div>`;
+  }
+  // Smart LinkedIn search — use real name if available, else role keywords
+  const liQuery=generic
+    ?`${l.biz} ${l.type} facilities manager OR property manager OR owner site:linkedin.com`
+    :`${l.contact} ${l.biz} site:linkedin.com`;
   const linkedinLink=l.linkedin
     ?`<a href="${l.linkedin}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">💼 LinkedIn Profile</a>`
-    :`<a href="https://www.google.com/search?q=${encodeURIComponent(l.biz+' '+l.type+' facilities manager OR property manager OR owner site:linkedin.com')}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">🔗 Find on LinkedIn</a>`;
+    :`<a href="https://www.google.com/search?q=${encodeURIComponent(liQuery)}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">🔗 Find on LinkedIn</a>`;
   return`${l.enriched?'<span class="bdg bdg-a" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Prospeo</span><br>':''}
     <div style="font-weight:500">${l.contact}</div>
     <div style="font-size:11px;color:var(--txt2)">${l.title}</div>
@@ -1098,15 +1168,24 @@ function updateLeadRow(id){
     <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>`;
 }
 
-// Prospeo enrichment — runs after scrape, updates leads in-place
-async function enrichLeads(leadsToEnrich){
+// Prospeo enrichment — background mode (used post-scrape inline with progress)
+async function enrichLeadsWithProgress(leadsToEnrich){
   const BATCH=3;const DELAY=400;
+  const total=leadsToEnrich.length;let done=0;
   for(let i=0;i<leadsToEnrich.length;i+=BATCH){
     const batch=leadsToEnrich.slice(i,i+BATCH);
     await Promise.all(batch.map(l=>enrichOneLead(l)));
+    done=Math.min(done+batch.length,total);
+    const msgEl=document.getElementById('scr-msg');
+    if(msgEl)msgEl.textContent=`Enriching leads... ${done}/${total} complete`;
     if(i+BATCH<leadsToEnrich.length)await sleep(DELAY);
   }
-  save();flash('✓ Decision maker enrichment complete');
+  save();
+}
+// Kept for use outside scraper (e.g. re-enrich button)
+async function enrichLeads(leadsToEnrich){
+  await enrichLeadsWithProgress(leadsToEnrich);
+  flash('✓ Decision maker enrichment complete');
 }
 
 async function enrichOneLead(lead){
@@ -1121,9 +1200,11 @@ async function enrichOneLead(lead){
       if(data.title&&data.title!=='')lead.title=data.title;
       if(data.email&&data.email!=='')lead.email=data.email;
       if(data.linkedin&&data.linkedin!=='')lead.linkedin=data.linkedin;
-      lead.enriched=true;
+      lead.enriched=true;lead.noContactFound=false;
+    }else{
+      lead.noContactFound=true;
     }
-  }catch(e){/* fail silently — keep default contact info */}
+  }catch(e){lead.noContactFound=true;/* fail silently — keep default contact info */}
   lead.enriching=false;
   updateLeadRow(lead.id);
   save();
@@ -1243,14 +1324,17 @@ function markContacted(){if(curEmailId){const l=leads.find(x=>x.id===curEmailId)
 // DIALER
 function renderDialer(){
   const c=document.getElementById('dialer-list');
-  if(!leads.length){c.innerHTML='<div class="empty"><p>No leads loaded.</p></div>';return;}
+  if(!leads.length){
+    c.innerHTML='<div class="empty"><p>No leads loaded.</p><button class="btn btn-a btn-sm" style="margin-top:10px" onclick="goById(\'scraper\')">→ Go to Lead Scraper</button></div>';
+    return;
+  }
   c.innerHTML=[...leads].sort((a,b)=>b.size-a.size).map(l=>`<div class="drow ${selCallId===l.id?'sel':''}" id="dr-${l.id}">
     <div><div style="font-weight:500">${l.biz}</div><div style="font-size:11px;color:var(--txt3)">${l.city} · ${l.type}</div><div style="font-size:11px;color:var(--accent)">${'$'+Math.round(l.size*.3).toLocaleString()}/mo savings</div></div>
     <div><div style="font-weight:500">${l.contact}</div><div style="font-size:11px;color:var(--txt2)">${l.title}</div></div>
     <div style="font-family:'DM Mono',monospace;font-size:12px">${l.phone}</div>
     <div>${sbadge(l.status)}</div>
     <div style="display:flex;gap:5px;flex-wrap:wrap">
-      <button class="btn btn-call btn-sm" onclick="showCallPrep(${l.id})">📞 Call</button>
+      <button class="btn btn-call btn-sm" onclick="dialpadLoadLead(${l.id})" title="Load number into dialpad">📞 Call</button>
       <button class="btn btn-sm" onclick="prefillEmail(${l.id})">✉</button>
       <button class="btn btn-sm" onclick="showResearch(${l.id})" style="color:var(--txt2)" title="Research">🔍</button>
       <button class="btn btn-sm" onclick="openCL(${l.id})" style="color:var(--txt2)">📝</button>
@@ -1710,6 +1794,7 @@ function clearFilters(){
   document.getElementById('f-city').value='';
   document.getElementById('f-minbill').value=0;
   document.getElementById('f-minbill-val').textContent='$0';
+  leadQuality='has_contact';localStorage.setItem('af_lead_quality','has_contact');
   renderLeads();
 }
 function populateFilterDropdowns(){
@@ -2155,6 +2240,46 @@ function showCallPrep(id){
 }
 function readyToCall(){if(prepLeadId)initiateOpenPhoneCall(prepLeadId);}
 function closeCallPrep(){document.getElementById('callprep-ov').classList.remove('show');}
+
+// ===== SOFTPHONE DIALPAD =====
+function dialpadPress(key){
+  if(dialpadNum.length>=15)return;
+  dialpadNum+=key;
+  document.getElementById('dialpad-display').textContent=dialpadNum;
+}
+function dialpadBackspace(){
+  dialpadNum=dialpadNum.slice(0,-1);
+  document.getElementById('dialpad-display').textContent=dialpadNum;
+}
+function dialpadClear(){
+  dialpadNum='';
+  document.getElementById('dialpad-display').textContent='';
+}
+function dialpadLoadLead(id){
+  const l=leads.find(x=>x.id===id);
+  if(!l)return;
+  const raw=l.phone.replace(/\D/g,'');
+  dialpadNum=raw.length===10?'+1'+raw:raw.length===11&&raw[0]==='1'?'+'+raw:l.phone;
+  document.getElementById('dialpad-display').textContent=dialpadNum;
+  document.getElementById('dialpad-widget').scrollIntoView({behavior:'smooth',block:'start'});
+  openCL(id);
+}
+async function initiateDialpadCall(){
+  const num=(document.getElementById('dialpad-display').textContent||'').trim();
+  if(!num){flash('Enter a number first');return;}
+  const from=(cfg.openphoneFrom||'').trim();
+  if(!from){flash('Add your Quo number in Settings first');return;}
+  const toRaw=num.replace(/\D/g,'');
+  const to=toRaw.length===10?'+1'+toRaw:toRaw.length===11&&toRaw[0]==='1'?'+'+toRaw:num;
+  const tempLead={id:null,biz:to,phone:to};
+  showCallStatusBar(tempLead,'ringing');
+  try{
+    const resp=await fetch('/.netlify/functions/openphone',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to,from})});
+    const data=await resp.json();
+    if(!data.success){flash('Quo: '+(data.error||'Could not initiate call'));hideCallStatusBar();return;}
+    activeCall={id:data.callId,leadId:null,status:'ringing',timer:setInterval(pollCallStatus,3000)};
+  }catch(e){flash('Error: '+e.message);hideCallStatusBar();}
+}
 
 // ===== OPENPHONE DIALER =====
 async function initiateOpenPhoneCall(leadId){
