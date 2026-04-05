@@ -13,6 +13,15 @@ exports.handler = async (event) => {
   const TWILIO_API_SECRET  = process.env.TWILIO_API_SECRET;
   const TWILIO_TWIML_APP_SID = process.env.TWILIO_TWIML_APP_SID;
 
+  return { statusCode: 200, headers, body: JSON.stringify({
+    hasAccountSid: !!TWILIO_ACCOUNT_SID,
+    hasApiKey: !!TWILIO_API_KEY,
+    hasApiSecret: !!TWILIO_API_SECRET,
+    hasTwimlAppSid: !!TWILIO_TWIML_APP_SID,
+    accountSidPrefix: TWILIO_ACCOUNT_SID ? TWILIO_ACCOUNT_SID.substring(0,4) : 'missing',
+    apiKeyPrefix: TWILIO_API_KEY ? TWILIO_API_KEY.substring(0,4) : 'missing',
+  }) };
+
   if (!TWILIO_ACCOUNT_SID || !TWILIO_API_KEY || !TWILIO_API_SECRET || !TWILIO_TWIML_APP_SID) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Missing Twilio env vars' }) };
   }
