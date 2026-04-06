@@ -129,6 +129,7 @@ exports.handler = async (event) => {
       headers,
       body: JSON.stringify({
         found: true,
+        source: 'prospeo',
         name: name || '',
         title: best.position || '',
         email: best.email || '',

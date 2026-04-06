@@ -335,6 +335,7 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   <div class="tab" onclick="go('calculator',this)">Calculator</div>
   <div class="tab" onclick="go('settings',this)">Settings</div>
   <div class="tab" onclick="go('map',this)">🗺 Map</div>
+  <div class="tab" onclick="go('admin',this)">Admin</div>
 </div>
 
 <div class="main">
@@ -733,15 +734,60 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <div class="fld"><label>Territory</label><input id="cfg-terr" value="Long Beach / LA South Bay"></div>
       <div class="fld"><label>Company</label><input id="cfg-co" value="AquaFlow Technologies"></div>
     </div>
-    <div class="fld" style="margin-top:8px">
-      <label>Twilio Voice URL <span style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace">(set as Voice URL in your Twilio TwiML App)</span></label>
+  </div>
+  <div class="set-sec">
+    <h3>Preferences</h3>
+    <div class="fr c3">
+      <div class="fld"><label>Default Search Radius</label>
+        <select id="cfg-radius">
+          <option value="16000">10 miles</option>
+          <option value="40000" selected>25 miles</option>
+          <option value="80000">50 miles</option>
+        </select>
+      </div>
+      <div class="fld"><label>Default Results Per Category</label>
+        <select id="cfg-results">
+          <option value="5">5 per category</option>
+          <option value="10" selected>10 per category</option>
+          <option value="20">20 per category</option>
+        </select>
+      </div>
+      <div class="fld"><label>Default Lead Quality Filter</label>
+        <select id="cfg-quality">
+          <option value="all">All Leads</option>
+          <option value="has_contact" selected>Has Contact</option>
+          <option value="complete">Complete Leads</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="set-sec">
+    <h3>Email</h3>
+    <div class="fr c2">
+      <div class="fld"><label>From Name</label><input id="cfg-from-name" placeholder="Lauren Hatwan"></div>
+      <div class="fld"><label>From Email</label><input id="cfg-from-email" placeholder="lauren@aquaflowsales.com"></div>
+    </div>
+  </div>
+  <div class="brow"><button class="btn btn-a" onclick="saveSettings()">Save Settings</button></div>
+  <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--bdr)">
+    <button class="btn" style="color:var(--txt3)" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="pane-admin" class="pane">
+  <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:18px">Admin</div>
+  <div class="set-sec">
+    <h3>Twilio</h3>
+    <div class="fld" style="margin-bottom:10px">
+      <label>Voice URL <span style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace">(set as Voice URL in your Twilio TwiML App)</span></label>
       <div style="display:flex;gap:8px;align-items:center">
         <input readonly id="twilio-voice-url" value="https://aquaflowsales.com/.netlify/functions/twilio-voice" style="flex:1;font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2)">
         <button class="btn btn-sm" onclick="copyTwilioUrl('twilio-voice-url')">Copy</button>
       </div>
     </div>
-    <div class="fld" style="margin-top:8px">
-      <label>Twilio Status Callback <span style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace">(set as Status Callback URL in your TwiML App)</span></label>
+    <div class="fld">
+      <label>Status Callback URL <span style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace">(set as Status Callback URL in your TwiML App)</span></label>
       <div style="display:flex;gap:8px;align-items:center">
         <input readonly id="twilio-status-url" value="https://aquaflowsales.com/.netlify/functions/twilio-status" style="flex:1;font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2)">
         <button class="btn btn-sm" onclick="copyTwilioUrl('twilio-status-url')">Copy</button>
@@ -758,15 +804,27 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
     </div>
   </div>
   <div class="set-sec" style="border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.04);border-radius:10px;padding:14px">
-    <h3 style="color:var(--amber);margin-bottom:8px">🔧 Debug Tools</h3>
-    <p style="font-size:12px;color:var(--txt2);margin-bottom:12px">Test Prospeo enrichment on the first lead and see the raw response. Check browser console for detailed logs.</p>
-    <div class="brow">
-      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugEnrichFirstLead()">Test Enrichment (1st Lead)</button>
+    <h3 style="color:var(--amber);margin-bottom:4px">API Debug</h3>
+    <p style="font-size:12px;color:var(--txt2);margin-bottom:10px">Test API keys and enrichment. Check browser console for step-by-step logs.</p>
+    <div class="brow" style="margin-bottom:10px">
+      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugCheckApolloKey()">Check Apollo Key</button>
+      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugTestApolloFirstLead()">Test Apollo (1st Lead)</button>
       <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugCheckProspeoKey()">Check Prospeo Key</button>
+      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugCheckHunterKey()">Check Hunter Key</button>
     </div>
     <div id="debug-out" style="display:none;margin-top:12px;background:var(--surf3);border:1px solid var(--bdr);border-radius:8px;padding:12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
   </div>
-  <div class="brow"><button class="btn btn-a" onclick="saveSettings()">Save All Settings</button></div>
+  <div class="set-sec">
+    <h3>Environment</h3>
+    <div style="background:var(--surf3);border:1px solid var(--bdr);border-radius:8px;padding:10px;font-size:11px;font-family:'DM Mono',monospace">
+      <div style="color:var(--txt2);line-height:2" id="env-vars-display">
+        APOLLO_KEY — <span style="color:var(--txt3)">not checked</span><br>
+        HUNTER_KEY — <span style="color:var(--txt3)">not checked</span><br>
+        <span style="color:var(--txt3)">GOOGLE_MAPS_KEY, TWILIO_*, ANTHROPIC_API_KEY — see Netlify dashboard</span>
+      </div>
+    </div>
+    <div class="brow"><button class="btn btn-sm" onclick="checkEnvVars()">Check Env Vars</button></div>
+  </div>
 </div>
 
 <!-- MAP -->
@@ -1047,7 +1105,7 @@ function go(id,el){
   if(id==='email'){renderTemplates();updateOpenRateBar();}
 }
 function goById(id){
-  const tabs=['scraper','email','dialer','pipeline','sequences','calculator','settings','map'];
+  const tabs=['scraper','email','dialer','pipeline','sequences','calculator','settings','map','admin'];
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
   document.getElementById('pane-'+id).classList.add('active');
@@ -1147,9 +1205,9 @@ async function scrape(){
     flash('Error: '+err.message);
   }
   document.getElementById('prog').style.display='none';
-  // Run Prospeo enrichment before showing leads — leads appear in table after enrichment
+  // Run Apollo enrichment before showing leads — leads appear in table after enrichment
   if(leads.length){
-    document.getElementById('scr-msg').textContent='Enriching '+leads.length+' leads with contact data...';
+    document.getElementById('scr-msg').textContent='Enriching '+leads.length+' leads with Apollo...';
     await enrichLeadsWithProgress([...leads]);
     const found=leads.filter(l=>l.enriched).length;
     const noContact=leads.filter(l=>l.noContactFound).length;
@@ -1253,7 +1311,14 @@ function contactCellHTML(l){
   const linkedinLink=l.linkedin
     ?`<a href="${l.linkedin}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">💼 LinkedIn Profile</a>`
     :`<a href="https://www.google.com/search?q=${encodeURIComponent(liQuery)}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">🔗 Find on LinkedIn</a>`;
-  return`${l.enriched?'<span class="bdg bdg-a" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Prospeo</span><br>':''}
+  const srcBadge=l.enriched
+    ?l.enrichSource==='hunter'
+      ?'<span class="bdg bdg-b" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Hunter</span><br>'
+      :l.enrichSource==='hunter-guess'
+        ?'<span class="bdg bdg-am" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Hunter (guess)</span><br>'
+        :'<span class="bdg bdg-a" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Apollo</span><br>'
+    :'';
+  return`${srcBadge}
     <div style="font-weight:500">${l.contact}</div>
     <div style="font-size:11px;color:var(--txt2)">${l.title}</div>
     ${linkedinLink}`;
@@ -1272,7 +1337,7 @@ function updateLeadRow(id){
     <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>`;
 }
 
-// Prospeo enrichment — background mode (used post-scrape inline with progress)
+// Apollo enrichment — background mode (used post-scrape inline with progress)
 async function enrichLeadsWithProgress(leadsToEnrich){
   const BATCH=3;const DELAY=400;
   const total=leadsToEnrich.length;let done=0;
@@ -1281,7 +1346,7 @@ async function enrichLeadsWithProgress(leadsToEnrich){
     await Promise.all(batch.map(l=>enrichOneLead(l)));
     done=Math.min(done+batch.length,total);
     const msgEl=document.getElementById('scr-msg');
-    if(msgEl)msgEl.textContent=`Enriching leads... ${done}/${total} complete`;
+    if(msgEl)msgEl.textContent=`Enriching with Apollo... ${done}/${total} complete`;
     if(i+BATCH<leadsToEnrich.length)await sleep(DELAY);
   }
   save();
@@ -1292,28 +1357,54 @@ async function enrichLeads(leadsToEnrich){
   flash('✓ Decision maker enrichment complete');
 }
 
+async function callEnrichAPI(url,body){
+  const resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error||'HTTP '+resp.status);}
+  return resp.json();
+}
+
 async function enrichOneLead(lead){
   lead.enriching=true;
   updateLeadRow(lead.id);
   try{
-    const resp=await fetch('/.netlify/functions/prospeo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({biz:lead.biz,website:lead.website||'',city:lead.city,type:lead.type})});
-    if(!resp.ok){
-      const errBody=await resp.json().catch(()=>({}));
-      console.error('[enrichOneLead] Prospeo function error',resp.status,errBody);
-      throw new Error((errBody.error||'HTTP '+resp.status));
+    const hunterPayload={biz:lead.biz,website:lead.website||''};
+
+    // Step 1: Apollo people-search
+    let data=await callEnrichAPI('/.netlify/functions/apollo',{bizName:lead.biz,city:lead.city,type:lead.type})
+      .catch(e=>{console.warn('[enrich]',lead.biz,'Apollo error:',e.message);return{found:false,reason:'error'};});
+    console.log('[enrich]',lead.biz,'Apollo →',data.found?'✓ found':'✗ '+data.reason);
+
+    // Step 2: Hunter domain-search
+    if(!data.found){
+      data=await callEnrichAPI('/.netlify/functions/hunter',{mode:'domain-search',...hunterPayload})
+        .catch(e=>{console.warn('[enrich]',lead.biz,'Hunter error:',e.message);return{found:false,reason:'error'};});
+      console.log('[enrich]',lead.biz,'Hunter →',data.found?'✓ found':'✗ '+data.reason);
     }
-    const data=await resp.json();
-    console.log('[enrichOneLead]',lead.biz,'→ found:',data.found,'website:',lead.website||'(none)');
+
+    // Step 3: Hunter email pattern guess
+    if(!data.found){
+      data=await callEnrichAPI('/.netlify/functions/hunter',{mode:'email-guess',...hunterPayload})
+        .catch(e=>{console.warn('[enrich]',lead.biz,'Hunter guess error:',e.message);return{found:false,reason:'error'};});
+      console.log('[enrich]',lead.biz,'Hunter guess →',data.found?'✓ found':'✗ '+data.reason);
+    }
+
     if(data.found){
       if(data.name&&data.name!=='')lead.contact=data.name;
       if(data.title&&data.title!=='')lead.title=data.title;
       if(data.email&&data.email!=='')lead.email=data.email;
+      if(data.phone&&data.phone!=='')lead.phone=data.phone;
       if(data.linkedin&&data.linkedin!=='')lead.linkedin=data.linkedin;
-      lead.enriched=true;lead.noContactFound=false;
+      lead.enriched=true;
+      lead.enrichSource=data.source||'Apollo';
+      lead.noContactFound=false;
     }else{
       lead.noContactFound=true;
+      lead.enrichSource=null;
     }
-  }catch(e){console.error('[enrichOneLead] error for',lead.biz,':',e.message);lead.noContactFound=true;}
+  }catch(e){
+    console.error('[enrich] unexpected error for',lead.biz,':',e.message);
+    lead.noContactFound=true;
+  }
   lead.enriching=false;
   updateLeadRow(lead.id);
   save();
@@ -1328,15 +1419,35 @@ function debugOut(msg){
 }
 async function debugEnrichFirstLead(){
   if(!leads.length){debugOut('No leads loaded — scrape some leads first.');return;}
+  await debugTestApolloFirstLead();
+}
+async function debugTestApolloFirstLead(){
+  if(!leads.length){debugOut('No leads loaded — scrape some leads first.');return;}
   const lead=leads[0];
-  debugOut('Testing enrichment for: '+lead.biz+'\nWebsite: '+(lead.website||'(none)')+'\nCity: '+lead.city+'\nType: '+lead.type+'\n\nCalling Prospeo...');
+  debugOut('Testing Apollo for: '+lead.biz+'\nCity: '+lead.city+'\nType: '+lead.type+'\n\nCalling Apollo...');
   try{
-    const resp=await fetch('/.netlify/functions/prospeo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({biz:lead.biz,website:lead.website||'',city:lead.city,type:lead.type})});
+    const resp=await fetch('/.netlify/functions/apollo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bizName:lead.biz,city:lead.city,type:lead.type})});
     const raw=await resp.text();
     let parsed;try{parsed=JSON.parse(raw);}catch(e){parsed=raw;}
-    debugOut('Lead: '+lead.biz+'\nWebsite: '+(lead.website||'(none)')+'\n\nHTTP Status: '+resp.status+'\n\nResponse:\n'+JSON.stringify(parsed,null,2));
+    debugOut('Lead: '+lead.biz+'\nCity: '+lead.city+'\n\nHTTP Status: '+resp.status+'\n\nResponse:\n'+JSON.stringify(parsed,null,2));
   }catch(e){
     debugOut('Fetch error: '+e.message+'\n\nThis likely means the Netlify function is not deployed or unreachable.');
+  }
+}
+async function debugCheckApolloKey(){
+  debugOut('Checking APOLLO_KEY...');
+  try{
+    const resp=await fetch('/.netlify/functions/apollo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bizName:'Test Business',city:'Long Beach, CA',type:'hotel'})});
+    const data=await resp.json();
+    if(resp.status===500&&data.error==='APOLLO_KEY not set'){
+      debugOut('❌ APOLLO_KEY is NOT set in Netlify environment variables.\n\nFix: Go to Netlify → Site settings → Environment variables → Add APOLLO_KEY with your Apollo.io API key.');
+    }else if(!resp.ok){
+      debugOut('HTTP '+resp.status+' — unexpected error:\n'+JSON.stringify(data,null,2));
+    }else{
+      debugOut('✓ APOLLO_KEY appears to be set (function returned HTTP '+resp.status+').\n\nResponse:\n'+JSON.stringify(data,null,2));
+    }
+  }catch(e){
+    debugOut('Network error: '+e.message);
   }
 }
 async function debugCheckProspeoKey(){
@@ -1350,6 +1461,38 @@ async function debugCheckProspeoKey(){
       debugOut('HTTP '+resp.status+' — unexpected error:\n'+JSON.stringify(data,null,2));
     }else{
       debugOut('✓ PROSPEO_KEY appears to be set (function returned HTTP '+resp.status+').\n\nResponse:\n'+JSON.stringify(data,null,2));
+    }
+  }catch(e){
+    debugOut('Network error: '+e.message);
+  }
+}
+async function checkEnvVars(){
+  debugOut('Checking environment variables...');
+  const results={};
+  try{
+    const r=await fetch('/.netlify/functions/apollo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bizName:'Test',city:'',type:''})});
+    const d=await r.json();
+    results['APOLLO_KEY']=!(r.status===500&&d.error==='APOLLO_KEY not set');
+  }catch(e){results['APOLLO_KEY']=null;}
+  try{
+    const r=await fetch('/.netlify/functions/hunter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'domain-search',biz:'Test',website:'',domain:'hunter.io'})});
+    const d=await r.json();
+    results['HUNTER_KEY']=!(r.status===500&&d.error==='HUNTER_KEY not set');
+  }catch(e){results['HUNTER_KEY']=null;}
+  const lines=Object.entries(results).map(([k,v])=>`${v===true?'✓':v===false?'✗':'?'} ${k}`);
+  debugOut('Environment Variables:\n\n'+lines.join('\n')+'\n\nGOOGLE_MAPS_KEY, TWILIO_*, ANTHROPIC_API_KEY — check Netlify dashboard');
+}
+async function debugCheckHunterKey(){
+  debugOut('Sending test request to check if HUNTER_KEY is set...');
+  try{
+    const resp=await fetch('/.netlify/functions/hunter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'domain-search',biz:'Test Business',website:'',domain:'hunter.io'})});
+    const data=await resp.json();
+    if(resp.status===500&&data.error==='HUNTER_KEY not set'){
+      debugOut('❌ HUNTER_KEY is NOT set in Netlify environment variables.\n\nFix: Go to Netlify → Site settings → Environment variables → Add HUNTER_KEY with your Hunter.io API key.');
+    }else if(!resp.ok){
+      debugOut('HTTP '+resp.status+' — unexpected error:\n'+JSON.stringify(data,null,2));
+    }else{
+      debugOut('✓ HUNTER_KEY appears to be set (function returned HTTP '+resp.status+').\n\nResponse:\n'+JSON.stringify(data,null,2));
     }
   }catch(e){
     debugOut('Network error: '+e.message);
@@ -1616,6 +1759,11 @@ function saveSettings(){
   cfg.email=document.getElementById('cfg-email').value;
   cfg.terr=document.getElementById('cfg-terr').value;
   cfg.co=document.getElementById('cfg-co').value;
+  cfg.fromName=document.getElementById('cfg-from-name').value;
+  cfg.fromEmail=document.getElementById('cfg-from-email').value;
+  cfg.defaultRadius=document.getElementById('cfg-radius').value;
+  cfg.defaultResults=document.getElementById('cfg-results').value;
+  cfg.defaultQuality=document.getElementById('cfg-quality').value;
   saveCfg();
   const displayName=cfg.name||(currentUser&&currentUser.user_metadata&&currentUser.user_metadata.full_name)||(currentUser&&currentUser.email)||'Rep';
   document.getElementById('rep-name').textContent=displayName;
@@ -2164,6 +2312,11 @@ function initApp(user){
   if(cfg.email)document.getElementById('cfg-email').value=cfg.email;
   if(cfg.terr)document.getElementById('cfg-terr').value=cfg.terr;
   if(cfg.co)document.getElementById('cfg-co').value=cfg.co;
+  if(cfg.fromName)document.getElementById('cfg-from-name').value=cfg.fromName;
+  if(cfg.fromEmail)document.getElementById('cfg-from-email').value=cfg.fromEmail;
+  if(cfg.defaultRadius)document.getElementById('cfg-radius').value=cfg.defaultRadius;
+  if(cfg.defaultResults)document.getElementById('cfg-results').value=cfg.defaultResults;
+  if(cfg.defaultQuality)document.getElementById('cfg-quality').value=cfg.defaultQuality;
   loadLocCache();
   stats();renderLeads();renderQueue();renderDailyStats();populateFilterDropdowns();
   renderTemplates();updateOpenRateBar();
