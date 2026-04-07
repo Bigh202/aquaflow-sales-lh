@@ -5,14 +5,6 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-[[functions]]
-  path = "netlify/functions/webscrape"
-  timeout = 26
-
-[[functions]]
-  path = "netlify/functions/apollo"
-  timeout = 26
-
 [template.environment]
   NETLIFY_IDENTITY = "true"
 
