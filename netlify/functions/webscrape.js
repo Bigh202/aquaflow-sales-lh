@@ -36,6 +36,48 @@ function fetchUrl(urlStr, timeoutMs = 10000, depth = 0) {
   });
 }
 
+function isCloudflareEmail(s) {
+  return s.includes('cdn-cgi') || s.includes('email-protection') || s.includes('cloudflare');
+}
+
+// Extract real emails directly from raw HTML before tag stripping
+function extractEmailsFromHtml(html) {
+  const emails = new Set();
+
+  // mailto: links
+  const mailtoRe = /mailto:([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/gi;
+  let m;
+  while ((m = mailtoRe.exec(html)) !== null) {
+    if (!isCloudflareEmail(m[1])) emails.add(m[1].toLowerCase());
+  }
+
+  // JSON-LD structured data (business sites often embed real contact info here)
+  const jsonLdRe = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  while ((m = jsonLdRe.exec(html)) !== null) {
+    try {
+      const text = JSON.stringify(JSON.parse(m[1]));
+      const emailRe = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+      let em;
+      while ((em = emailRe.exec(text)) !== null) {
+        if (!isCloudflareEmail(em[0])) emails.add(em[0].toLowerCase());
+      }
+    } catch (e) { /* invalid JSON-LD */ }
+  }
+
+  return [...emails];
+}
+
+// Decode common email obfuscation patterns in plain text
+function decodeObfuscation(text) {
+  return text
+    .replace(/\s*\[at\]\s*/gi, '@')
+    .replace(/\s*\(at\)\s*/gi, '@')
+    .replace(/(?<!\w)AT(?!\w)/g, '@')
+    .replace(/\s*\[dot\]\s*/gi, '.')
+    .replace(/\s*\(dot\)\s*/gi, '.')
+    .replace(/(?<!\w)DOT(?!\w)/g, '.');
+}
+
 function stripHtml(html) {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, '')
@@ -70,9 +112,33 @@ function extractSubpageLinks(html, baseUrl) {
   return links.slice(0, 3);
 }
 
-function callClaude(apiKey, text, bizName, bizType) {
+// Generate common email pattern guesses from a person's name and domain
+function guessEmails(name, domain) {
+  if (!name || !domain) return [];
+  const parts = name.toLowerCase().replace(/[^a-z\s]/g, '').trim().split(/\s+/);
+  if (parts.length === 0) return [];
+  const first = parts[0];
+  const last = parts.length > 1 ? parts[parts.length - 1] : '';
+  if (!last) return [`${first}@${domain}`];
+  return [
+    `${first}@${domain}`,
+    `${first}.${last}@${domain}`,
+    `${first}${last}@${domain}`,
+    `${first[0]}${last}@${domain}`,
+  ];
+}
+
+function callClaude(apiKey, text, bizName, bizType, targetName, knownEmails) {
   return new Promise((resolve, reject) => {
-    const content = `Extract the most relevant decision maker contact from this ${bizType} business website content. Search aggressively for names: check signature blocks, contact forms, about pages, team pages, "Contact [Name]" patterns, email signatures, staff directories, and anywhere a person is mentioned with a title. Look for these roles in priority order: General Manager, Facilities Manager, Director of Operations, Property Manager, Owner, President, Director of Engineering, VP Operations, Plant Manager, Operations Manager, Chief Engineer. Return ONLY a JSON object: {name, title, email, phone}. Rules: if a name is found anywhere on the page paired with a relevant title, use it. If no name is found but a relevant title exists, return that title as the name field (e.g. name: "General Manager"). Only return {found: false} if absolutely no relevant role or person is present. If a field value is unknown use null. Business: ${bizName}. Content: ${text}`;
+    let content = `Extract the most relevant decision maker contact from this ${bizType} business website content. Search aggressively for names: check signature blocks, contact forms, about pages, team pages, "Contact [Name]" patterns, email signatures, staff directories, and anywhere a person is mentioned with a title. Look for these roles in priority order: General Manager, Facilities Manager, Director of Operations, Property Manager, Owner, President, Director of Engineering, VP Operations, Plant Manager, Operations Manager, Chief Engineer. Return ONLY a JSON object: {name, title, email, phone}. Rules: if a name is found anywhere on the page paired with a relevant title, use it. If no name is found but a relevant title exists, return that title as the name field (e.g. name: "General Manager"). Only return {found: false} if absolutely no relevant role or person is present. If a field value is unknown use null. IMPORTANT: If you see any email containing "cdn-cgi" or "email-protection", that is Cloudflare-protected and NOT a real email address — ignore it and return null for email.`;
+    if (targetName) {
+      content += ` The person we are looking for is "${targetName}". Focus specifically on finding their email address.`;
+    }
+    if (knownEmails && knownEmails.length > 0) {
+      content += ` These real email addresses were extracted directly from the page HTML: ${knownEmails.join(', ')}. Prefer these over anything else if they belong to the decision maker.`;
+    }
+    content += ` Business: ${bizName}. Content: ${text}`;
+
     const body = JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 500,
@@ -115,8 +181,8 @@ exports.handler = async (event) => {
   const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
   if (!ANTHROPIC_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: 'ANTHROPIC_KEY not set' }) };
 
-  let website, bizName, bizType;
-  try { ({ website, bizName, bizType } = JSON.parse(event.body)); }
+  let website, bizName, bizType, targetName;
+  try { ({ website, bizName, bizType, targetName } = JSON.parse(event.body)); }
   catch (e) { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON body' }) }; }
 
   if (!website) return { statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'No website URL provided' }) };
@@ -130,7 +196,10 @@ exports.handler = async (event) => {
     try { homepageHtml = await fetchUrl(baseUrl); }
     catch (e) { return { statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'Could not fetch website: ' + e.message }) }; }
 
-    const homepageText = stripHtml(homepageHtml).slice(0, 5000);
+    // Extract real emails from raw HTML before stripping tags
+    const knownEmails = extractEmailsFromHtml(homepageHtml);
+
+    const homepageText = decodeObfuscation(stripHtml(homepageHtml)).slice(0, 5000);
 
     // Step 2: Find and fetch relevant subpages
     const subpageUrls = extractSubpageLinks(homepageHtml, baseUrl);
@@ -138,7 +207,8 @@ exports.handler = async (event) => {
     for (const url of subpageUrls) {
       try {
         const html = await fetchUrl(url, 8000);
-        subpageTexts.push(stripHtml(html));
+        knownEmails.push(...extractEmailsFromHtml(html).filter(e => !knownEmails.includes(e)));
+        subpageTexts.push(decodeObfuscation(stripHtml(html)));
       } catch (e) { /* skip failed subpages */ }
     }
 
@@ -146,7 +216,7 @@ exports.handler = async (event) => {
     const combined = [homepageText, ...subpageTexts].join('\n\n').slice(0, 8000);
 
     // Step 3: Send to Claude for extraction
-    const { status, data: claudeData } = await callClaude(ANTHROPIC_KEY, combined, bizName || '', bizType || '');
+    const { status, data: claudeData } = await callClaude(ANTHROPIC_KEY, combined, bizName || '', bizType || '', targetName || null, knownEmails);
     if (status !== 200) {
       return { statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'Claude API error: HTTP ' + status }) };
     }
@@ -160,9 +230,24 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'Could not parse Claude response' }) };
     }
 
-    // Step 4: Return result
     if (extracted.found === false) {
       return { statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'No decision maker found on website' }) };
+    }
+
+    // Sanitize email — reject Cloudflare-protected values
+    let email = extracted.email || null;
+    if (email && isCloudflareEmail(email)) email = null;
+
+    // If Claude still found no email, try guessing from known domain + name
+    if (!email && extracted.name) {
+      try {
+        const domain = new URL(baseUrl).hostname.replace(/^www\./, '');
+        const guesses = guessEmails(extracted.name, domain);
+        // Include guesses in notes so Lauren can verify — don't auto-assign
+        if (guesses.length > 0) {
+          extracted.emailGuesses = guesses;
+        }
+      } catch (e) { /* skip */ }
     }
 
     return {
@@ -172,8 +257,9 @@ exports.handler = async (event) => {
         found: true,
         name: extracted.name || null,
         title: extracted.title || null,
-        email: extracted.email || null,
+        email,
         phone: extracted.phone || null,
+        emailGuesses: extracted.emailGuesses || null,
         source: 'Website',
       }),
     };

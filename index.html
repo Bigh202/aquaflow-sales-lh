@@ -1265,10 +1265,7 @@ function renderLeads(){
       <td><span class="bdg ${scoreCls}">${score}</span></td>
       <td><div style="font-weight:500">${l.biz}</div><div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">${l.city} · ${l.type}${l.rating?' · ⭐'+l.rating:''}</div></td>
       <td class="contact-cell">${contactCellHTML(l)}</td>
-      <td class="phone-cell">
-        <div style="font-family:'DM Mono',monospace;font-size:12px">${l.phone}</div>
-        <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>
-      </td>
+      <td class="phone-cell">${phoneCellHTML(l)}</td>
       <td><div style="font-family:'DM Mono',monospace;font-weight:500;color:var(--green)">$${l.size.toLocaleString()}/mo</div></td>
       <td>
         <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">$${Math.round(l.size*.3).toLocaleString()}/mo</div>
@@ -1287,6 +1284,30 @@ function renderLeads(){
   const selAll=document.getElementById('sel-all');
   if(selAll){selAll.onchange=()=>{document.querySelectorAll('.lead-cb').forEach(cb=>cb.checked=selAll.checked);updateBulkBar();};}
   c.onchange=e=>{if(e.target.classList.contains('lead-cb'))updateBulkBar();};
+}
+
+// Returns true if another enriched lead shares this lead's phone or email
+function isDuplicateContact(lead){
+  if(!lead.enriched)return false;
+  const phone=lead.phone?lead.phone.replace(/\D/g,''):'';
+  const email=lead.email?lead.email.toLowerCase():'';
+  return leads.some(l=>
+    l.id!==lead.id&&l.enriched&&(
+      (phone.length>=10&&l.phone&&l.phone.replace(/\D/g,'')===phone)||
+      (email&&l.email&&l.email.toLowerCase()===email)
+    )
+  );
+}
+
+// Helper: renders the phone/email cell with optional Find Email button
+function phoneCellHTML(l){
+  const hasRealName=l.contact&&!isGenericContact(l);
+  const findEmailBtn=hasRealName&&!l.email&&l.website
+    ?`<button class="btn btn-sm" style="font-size:10px;margin-top:3px;color:var(--accent);border-color:rgba(0,212,170,0.3)" onclick="findEmailForLead(${l.id})">Find Email</button>`
+    :'';
+  return`<div style="font-family:'DM Mono',monospace;font-size:12px">${l.phone}</div>
+    <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>
+    ${findEmailBtn}`;
 }
 
 // Helper: renders the contact cell (used in renderLeads and live row updates)
@@ -1311,7 +1332,10 @@ function contactCellHTML(l){
   const srcBadge=l.enriched&&l.enrichSource==='Website'
     ?'<span class="bdg bdg-p" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Website</span><br>'
     :'';
-  return`${srcBadge}
+  const dupeBadge=isDuplicateContact(l)
+    ?'<span class="bdg bdg-am" style="font-size:9px;margin-bottom:3px;display:inline-block">⚠ Same contact</span><br>'
+    :'';
+  return`${srcBadge}${dupeBadge}
     <div style="font-weight:500">${l.contact}</div>
     <div style="font-size:11px;color:var(--txt2)">${l.title}</div>
     ${linkedinLink}`;
@@ -1326,8 +1350,7 @@ function updateLeadRow(id){
   const cc=row.querySelector('.contact-cell');
   if(cc)cc.innerHTML=contactCellHTML(l);
   const pc=row.querySelector('.phone-cell');
-  if(pc)pc.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:12px">${l.phone}</div>
-    <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>`;
+  if(pc)pc.innerHTML=phoneCellHTML(l);
 }
 
 // Website enrichment — background mode (used post-scrape inline with progress)
@@ -1404,6 +1427,29 @@ async function enrichOneLead(lead){
   lead.enriching=false;
   updateLeadRow(lead.id);
   save();
+}
+
+async function findEmailForLead(id){
+  const lead=leads.find(l=>l.id===id);
+  if(!lead||!lead.website)return;
+  const row=document.querySelector(`tr[data-lid="${id}"]`);
+  const pc=row&&row.querySelector('.phone-cell');
+  if(pc)pc.innerHTML=`<div class="ai-spin" style="padding:2px 0"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:5px;font-size:11px">Searching...</span></div>`;
+  try{
+    const data=await callEnrichAPI('/.netlify/functions/webscrape',{
+      website:lead.website,bizName:lead.biz,bizType:lead.type,targetName:lead.contact,
+    }).catch(e=>({found:false,reason:e.message}));
+    if(data.found&&data.email){
+      lead.email=data.email;
+      save();
+      flash('✓ Email found for '+lead.contact);
+    }else{
+      flash('No email found for '+lead.contact);
+    }
+  }catch(e){
+    flash('Error: '+e.message);
+  }
+  updateLeadRow(lead.id);
 }
 
 // ===== DEBUG TOOLS =====
