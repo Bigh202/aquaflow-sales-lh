@@ -811,6 +811,7 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugTestApolloFirstLead()">Test Apollo (1st Lead)</button>
       <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugCheckProspeoKey()">Check Prospeo Key</button>
       <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugCheckHunterKey()">Check Hunter Key</button>
+      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugTestWebscrapeFirstLead()">Test Website Scraper (1st Lead)</button>
     </div>
     <div id="debug-out" style="display:none;margin-top:12px;background:var(--surf3);border:1px solid var(--bdr);border-radius:8px;padding:12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
   </div>
@@ -1316,7 +1317,9 @@ function contactCellHTML(l){
       ?'<span class="bdg bdg-b" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Hunter</span><br>'
       :l.enrichSource==='hunter-guess'
         ?'<span class="bdg bdg-am" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Hunter (guess)</span><br>'
-        :'<span class="bdg bdg-a" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Apollo</span><br>'
+        :l.enrichSource==='Website'
+          ?'<span class="bdg bdg-p" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Website</span><br>'
+          :'<span class="bdg bdg-a" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Apollo</span><br>'
     :'';
   return`${srcBadge}
     <div style="font-weight:500">${l.contact}</div>
@@ -1363,29 +1366,31 @@ async function callEnrichAPI(url,body){
   return resp.json();
 }
 
+function enrichStatusMsg(msg){
+  const el=document.getElementById('scr-msg');
+  if(el)el.textContent=msg;
+  console.log('[enrich]',msg);
+}
 async function enrichOneLead(lead){
   lead.enriching=true;
   updateLeadRow(lead.id);
   try{
-    const hunterPayload={biz:lead.biz,website:lead.website||''};
-
     // Step 1: Apollo people-search
+    enrichStatusMsg('Step 1: Checking Apollo for '+lead.biz+'...');
     let data=await callEnrichAPI('/.netlify/functions/apollo',{bizName:lead.biz,city:lead.city,type:lead.type})
       .catch(e=>{console.warn('[enrich]',lead.biz,'Apollo error:',e.message);return{found:false,reason:'error'};});
     console.log('[enrich]',lead.biz,'Apollo →',data.found?'✓ found':'✗ '+data.reason);
 
-    // Step 2: Hunter domain-search
+    // Step 2: Website scraper
     if(!data.found){
-      data=await callEnrichAPI('/.netlify/functions/hunter',{mode:'domain-search',...hunterPayload})
-        .catch(e=>{console.warn('[enrich]',lead.biz,'Hunter error:',e.message);return{found:false,reason:'error'};});
-      console.log('[enrich]',lead.biz,'Hunter →',data.found?'✓ found':'✗ '+data.reason);
+      enrichStatusMsg('Step 2: Scanning website for '+lead.biz+'...');
+      data=await callEnrichAPI('/.netlify/functions/webscrape',{website:lead.website||'',bizName:lead.biz,bizType:lead.type})
+        .catch(e=>{console.warn('[enrich]',lead.biz,'Webscrape error:',e.message);return{found:false,reason:'error'};});
+      console.log('[enrich]',lead.biz,'Website →',data.found?'✓ found':'✗ '+data.reason);
     }
 
-    // Step 3: Hunter email pattern guess
     if(!data.found){
-      data=await callEnrichAPI('/.netlify/functions/hunter',{mode:'email-guess',...hunterPayload})
-        .catch(e=>{console.warn('[enrich]',lead.biz,'Hunter guess error:',e.message);return{found:false,reason:'error'};});
-      console.log('[enrich]',lead.biz,'Hunter guess →',data.found?'✓ found':'✗ '+data.reason);
+      enrichStatusMsg('No contact found for '+lead.biz);
     }
 
     if(data.found){
@@ -1496,6 +1501,20 @@ async function debugCheckHunterKey(){
     }
   }catch(e){
     debugOut('Network error: '+e.message);
+  }
+}
+async function debugTestWebscrapeFirstLead(){
+  if(!leads.length){debugOut('No leads loaded — scrape some leads first.');return;}
+  const lead=leads[0];
+  debugOut('Testing Website Scraper for: '+lead.biz+'\nWebsite: '+(lead.website||'(none)')+'\nType: '+lead.type+'\n\nCalling webscrape...');
+  try{
+    const resp=await fetch('/.netlify/functions/webscrape',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({website:lead.website||'',bizName:lead.biz,bizType:lead.type})});
+    const raw=await resp.text();
+    let parsed;try{parsed=JSON.parse(raw);}catch(e){parsed=raw;}
+    const src=parsed.found?'\nSource: '+parsed.source:'';
+    debugOut('Lead: '+lead.biz+'\nWebsite: '+(lead.website||'(none)')+'\n\nHTTP Status: '+resp.status+src+'\n\nResponse:\n'+JSON.stringify(parsed,null,2));
+  }catch(e){
+    debugOut('Fetch error: '+e.message+'\n\nThis likely means the Netlify function is not deployed or unreachable.');
   }
 }
 // ===== END DEBUG TOOLS =====

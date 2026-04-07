@@ -3,6 +3,7 @@
 
 [functions]
   directory = "netlify/functions"
+  timeout = 26
 
 [template.environment]
   NETLIFY_IDENTITY = "true"
