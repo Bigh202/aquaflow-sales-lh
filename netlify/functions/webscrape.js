@@ -72,7 +72,7 @@ function extractSubpageLinks(html, baseUrl) {
 
 function callClaude(apiKey, text, bizName, bizType) {
   return new Promise((resolve, reject) => {
-    const content = `Extract the most relevant decision maker contact from this ${bizType} business website content. Look for: General Manager, Facilities Manager, Director of Operations, Property Manager, Owner, President, Director of Engineering, VP Operations, Plant Manager. Return ONLY a JSON object with these fields: {name, title, email, phone}. If a field is not found use null. If no relevant decision maker found at all return {found: false}. Business name: ${bizName}. Website content: ${text}`;
+    const content = `Extract the most relevant decision maker contact from this ${bizType} business website content. Search aggressively for names: check signature blocks, contact forms, about pages, team pages, "Contact [Name]" patterns, email signatures, staff directories, and anywhere a person is mentioned with a title. Look for these roles in priority order: General Manager, Facilities Manager, Director of Operations, Property Manager, Owner, President, Director of Engineering, VP Operations, Plant Manager, Operations Manager, Chief Engineer. Return ONLY a JSON object: {name, title, email, phone}. Rules: if a name is found anywhere on the page paired with a relevant title, use it. If no name is found but a relevant title exists, return that title as the name field (e.g. name: "General Manager"). Only return {found: false} if absolutely no relevant role or person is present. If a field value is unknown use null. Business: ${bizName}. Content: ${text}`;
     const body = JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 500,

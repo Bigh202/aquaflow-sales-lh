@@ -807,11 +807,8 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
     <h3 style="color:var(--amber);margin-bottom:4px">API Debug</h3>
     <p style="font-size:12px;color:var(--txt2);margin-bottom:10px">Test API keys and enrichment. Check browser console for step-by-step logs.</p>
     <div class="brow" style="margin-bottom:10px">
-      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugCheckApolloKey()">Check Apollo Key</button>
-      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugTestApolloFirstLead()">Test Apollo (1st Lead)</button>
-      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugCheckProspeoKey()">Check Prospeo Key</button>
-      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugCheckHunterKey()">Check Hunter Key</button>
       <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugTestWebscrapeFirstLead()">Test Website Scraper (1st Lead)</button>
+      <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="checkEnvVars()">Check Env Vars</button>
     </div>
     <div id="debug-out" style="display:none;margin-top:12px;background:var(--surf3);border:1px solid var(--bdr);border-radius:8px;padding:12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
   </div>
@@ -819,9 +816,7 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
     <h3>Environment</h3>
     <div style="background:var(--surf3);border:1px solid var(--bdr);border-radius:8px;padding:10px;font-size:11px;font-family:'DM Mono',monospace">
       <div style="color:var(--txt2);line-height:2" id="env-vars-display">
-        APOLLO_KEY — <span style="color:var(--txt3)">not checked</span><br>
-        HUNTER_KEY — <span style="color:var(--txt3)">not checked</span><br>
-        <span style="color:var(--txt3)">GOOGLE_MAPS_KEY, TWILIO_*, ANTHROPIC_API_KEY — see Netlify dashboard</span>
+        <span style="color:var(--txt3)">ANTHROPIC_KEY, GOOGLE_MAPS_KEY, TWILIO_* — see Netlify dashboard</span>
       </div>
     </div>
     <div class="brow"><button class="btn btn-sm" onclick="checkEnvVars()">Check Env Vars</button></div>
@@ -1206,13 +1201,14 @@ async function scrape(){
     flash('Error: '+err.message);
   }
   document.getElementById('prog').style.display='none';
-  // Run Apollo enrichment before showing leads — leads appear in table after enrichment
+  // Run website enrichment before showing leads — leads appear in table after enrichment
   if(leads.length){
-    document.getElementById('scr-msg').textContent='Enriching '+leads.length+' leads with Apollo...';
+    document.getElementById('scr-msg').textContent='Scanning websites for '+leads.length+' leads...';
     await enrichLeadsWithProgress([...leads]);
     const found=leads.filter(l=>l.enriched).length;
+    const emails=leads.filter(l=>l.email).length;
     const noContact=leads.filter(l=>l.noContactFound).length;
-    flash('✓ '+leads.length+' leads scraped — '+found+' contacts found'+(noContact?' · '+noContact+' with no contact':''));
+    flash('✓ '+leads.length+' leads scraped — '+found+' contacts · '+emails+' emails via website'+(noContact?' · '+noContact+' no contact':''));
   }
   document.getElementById('scr-load').style.display='none';
   stats();renderLeads();
@@ -1312,14 +1308,8 @@ function contactCellHTML(l){
   const linkedinLink=l.linkedin
     ?`<a href="${l.linkedin}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">💼 LinkedIn Profile</a>`
     :`<a href="https://www.google.com/search?q=${encodeURIComponent(liQuery)}" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:none">🔗 Find on LinkedIn</a>`;
-  const srcBadge=l.enriched
-    ?l.enrichSource==='hunter'
-      ?'<span class="bdg bdg-b" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Hunter</span><br>'
-      :l.enrichSource==='hunter-guess'
-        ?'<span class="bdg bdg-am" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Hunter (guess)</span><br>'
-        :l.enrichSource==='Website'
-          ?'<span class="bdg bdg-p" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Website</span><br>'
-          :'<span class="bdg bdg-a" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Apollo</span><br>'
+  const srcBadge=l.enriched&&l.enrichSource==='Website'
+    ?'<span class="bdg bdg-p" style="font-size:9px;margin-bottom:3px;display:inline-block">✓ Website</span><br>'
     :'';
   return`${srcBadge}
     <div style="font-weight:500">${l.contact}</div>
@@ -1340,7 +1330,7 @@ function updateLeadRow(id){
     <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>`;
 }
 
-// Apollo enrichment — background mode (used post-scrape inline with progress)
+// Website enrichment — background mode (used post-scrape inline with progress)
 async function enrichLeadsWithProgress(leadsToEnrich){
   const BATCH=3;const DELAY=400;
   const total=leadsToEnrich.length;let done=0;
@@ -1349,7 +1339,7 @@ async function enrichLeadsWithProgress(leadsToEnrich){
     await Promise.all(batch.map(l=>enrichOneLead(l)));
     done=Math.min(done+batch.length,total);
     const msgEl=document.getElementById('scr-msg');
-    if(msgEl)msgEl.textContent=`Enriching with Apollo... ${done}/${total} complete`;
+    if(msgEl)msgEl.textContent=`Scanning websites... ${done}/${total} complete`;
     if(i+BATCH<leadsToEnrich.length)await sleep(DELAY);
   }
   save();
@@ -1357,7 +1347,10 @@ async function enrichLeadsWithProgress(leadsToEnrich){
 // Kept for use outside scraper (e.g. re-enrich button)
 async function enrichLeads(leadsToEnrich){
   await enrichLeadsWithProgress(leadsToEnrich);
-  flash('✓ Decision maker enrichment complete');
+  const found=leadsToEnrich.filter(l=>l.enriched).length;
+  const emails=leadsToEnrich.filter(l=>l.email).length;
+  const noContact=leadsToEnrich.filter(l=>l.noContactFound).length;
+  flash(`✓ ${leadsToEnrich.length} leads · ${emails} emails found via website · ${noContact} no contact found`);
 }
 
 async function callEnrichAPI(url,body){
@@ -1375,34 +1368,32 @@ async function enrichOneLead(lead){
   lead.enriching=true;
   updateLeadRow(lead.id);
   try{
-    // Step 1: Apollo people-search
-    enrichStatusMsg('Step 1: Checking Apollo for '+lead.biz+'...');
-    let data=await callEnrichAPI('/.netlify/functions/apollo',{bizName:lead.biz,city:lead.city,type:lead.type})
-      .catch(e=>{console.warn('[enrich]',lead.biz,'Apollo error:',e.message);return{found:false,reason:'error'};});
-    console.log('[enrich]',lead.biz,'Apollo →',data.found?'✓ found':'✗ '+data.reason);
-
-    // Step 2: Website scraper
-    if(!data.found){
-      enrichStatusMsg('Step 2: Scanning website for '+lead.biz+'...');
-      data=await callEnrichAPI('/.netlify/functions/webscrape',{website:lead.website||'',bizName:lead.biz,bizType:lead.type})
-        .catch(e=>{console.warn('[enrich]',lead.biz,'Webscrape error:',e.message);return{found:false,reason:'error'};});
-      console.log('[enrich]',lead.biz,'Website →',data.found?'✓ found':'✗ '+data.reason);
-    }
-
-    if(!data.found){
-      enrichStatusMsg('No contact found for '+lead.biz);
-    }
+    enrichStatusMsg('Scanning website for '+lead.biz+'...');
+    const data=await callEnrichAPI('/.netlify/functions/webscrape',{website:lead.website||'',bizName:lead.biz,bizType:lead.type})
+      .catch(e=>{console.warn('[enrich]',lead.biz,'Webscrape error:',e.message);return{found:false,reason:'error'};});
+    console.log('[enrich]',lead.biz,'Website →',data.found?'✓ found':'✗ '+(data.reason||'not found'));
 
     if(data.found){
-      if(data.name&&data.name!=='')lead.contact=data.name;
+      // Use title as name fallback if name is null
+      const resolvedName=data.name||data.title||null;
+      if(resolvedName)lead.contact=resolvedName;
       if(data.title&&data.title!=='')lead.title=data.title;
       if(data.email&&data.email!=='')lead.email=data.email;
-      if(data.phone&&data.phone!=='')lead.phone=data.phone;
-      if(data.linkedin&&data.linkedin!=='')lead.linkedin=data.linkedin;
+      // Split ext. from dialpad number; keep full number in notes
+      if(data.phone&&data.phone!==''){
+        const extMatch=data.phone.match(/^(.*?)\s*(?:ext\.?|x)\s*\d+$/i);
+        if(extMatch){
+          lead.phone=extMatch[1].trim();
+          lead.notes=(lead.notes?lead.notes+'\n':'')+'Phone w/ ext: '+data.phone;
+        }else{
+          lead.phone=data.phone;
+        }
+      }
       lead.enriched=true;
-      lead.enrichSource=data.source||'Apollo';
+      lead.enrichSource='Website';
       lead.noContactFound=false;
     }else{
+      enrichStatusMsg('No contact found for '+lead.biz);
       lead.noContactFound=true;
       lead.enrichSource=null;
     }
@@ -1424,36 +1415,7 @@ function debugOut(msg){
 }
 async function debugEnrichFirstLead(){
   if(!leads.length){debugOut('No leads loaded — scrape some leads first.');return;}
-  await debugTestApolloFirstLead();
-}
-async function debugTestApolloFirstLead(){
-  if(!leads.length){debugOut('No leads loaded — scrape some leads first.');return;}
-  const lead=leads[0];
-  debugOut('Testing Apollo for: '+lead.biz+'\nCity: '+lead.city+'\nType: '+lead.type+'\n\nCalling Apollo...');
-  try{
-    const resp=await fetch('/.netlify/functions/apollo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bizName:lead.biz,city:lead.city,type:lead.type})});
-    const raw=await resp.text();
-    let parsed;try{parsed=JSON.parse(raw);}catch(e){parsed=raw;}
-    debugOut('Lead: '+lead.biz+'\nCity: '+lead.city+'\n\nHTTP Status: '+resp.status+'\n\nResponse:\n'+JSON.stringify(parsed,null,2));
-  }catch(e){
-    debugOut('Fetch error: '+e.message+'\n\nThis likely means the Netlify function is not deployed or unreachable.');
-  }
-}
-async function debugCheckApolloKey(){
-  debugOut('Checking APOLLO_KEY...');
-  try{
-    const resp=await fetch('/.netlify/functions/apollo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bizName:'Test Business',city:'Long Beach, CA',type:'hotel'})});
-    const data=await resp.json();
-    if(resp.status===500&&data.error==='APOLLO_KEY not set'){
-      debugOut('❌ APOLLO_KEY is NOT set in Netlify environment variables.\n\nFix: Go to Netlify → Site settings → Environment variables → Add APOLLO_KEY with your Apollo.io API key.');
-    }else if(!resp.ok){
-      debugOut('HTTP '+resp.status+' — unexpected error:\n'+JSON.stringify(data,null,2));
-    }else{
-      debugOut('✓ APOLLO_KEY appears to be set (function returned HTTP '+resp.status+').\n\nResponse:\n'+JSON.stringify(data,null,2));
-    }
-  }catch(e){
-    debugOut('Network error: '+e.message);
-  }
+  await debugTestWebscrapeFirstLead();
 }
 async function debugCheckProspeoKey(){
   debugOut('Sending test request to check if PROSPEO_KEY is set...');
@@ -1472,20 +1434,7 @@ async function debugCheckProspeoKey(){
   }
 }
 async function checkEnvVars(){
-  debugOut('Checking environment variables...');
-  const results={};
-  try{
-    const r=await fetch('/.netlify/functions/apollo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bizName:'Test',city:'',type:''})});
-    const d=await r.json();
-    results['APOLLO_KEY']=!(r.status===500&&d.error==='APOLLO_KEY not set');
-  }catch(e){results['APOLLO_KEY']=null;}
-  try{
-    const r=await fetch('/.netlify/functions/hunter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'domain-search',biz:'Test',website:'',domain:'hunter.io'})});
-    const d=await r.json();
-    results['HUNTER_KEY']=!(r.status===500&&d.error==='HUNTER_KEY not set');
-  }catch(e){results['HUNTER_KEY']=null;}
-  const lines=Object.entries(results).map(([k,v])=>`${v===true?'✓':v===false?'✗':'?'} ${k}`);
-  debugOut('Environment Variables:\n\n'+lines.join('\n')+'\n\nGOOGLE_MAPS_KEY, TWILIO_*, ANTHROPIC_API_KEY — check Netlify dashboard');
+  debugOut('Checking environment variables...\n\nANTHROPIC_KEY, GOOGLE_MAPS_KEY, TWILIO_* — check Netlify dashboard\n\nUse "Test Website Scraper" to verify ANTHROPIC_KEY is working.');
 }
 async function debugCheckHunterKey(){
   debugOut('Sending test request to check if HUNTER_KEY is set...');
