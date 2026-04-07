@@ -62,6 +62,10 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .bdg-gr{background:rgba(255,255,255,0.06);color:var(--txt2);border:1px solid var(--bdr)}
 .bdg-a{background:rgba(0,212,170,0.12);color:var(--accent);border:1px solid rgba(0,212,170,0.25)}
 .bdg-p{background:rgba(168,85,247,0.12);color:#c084fc;border:1px solid rgba(168,85,247,0.25)}
+.sms-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;color:#fff}
+.sms-qr{background:var(--surf2);border:1px solid var(--bdr);border-radius:16px;padding:5px 11px;font-size:11px;color:var(--txt2);cursor:pointer;white-space:nowrap;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+.sms-qr:hover{background:rgba(48,209,88,0.12);border-color:rgba(48,209,88,0.4);color:#30d158}
+@keyframes sms-flash{0%,100%{box-shadow:0 0 0 0 rgba(48,209,88,0)}50%{box-shadow:0 0 0 4px rgba(48,209,88,0.4)}}
 .cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .cat{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--bdr);color:var(--txt2);transition:all 0.15s;font-family:'DM Mono',monospace}
 .cat.on{background:rgba(0,212,170,0.1);color:var(--accent);border-color:rgba(0,212,170,0.35)}
@@ -628,32 +632,66 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   </div>
   <div id="dialer-list"></div>
   </div><!-- /dialer-queue-col -->
-  <!-- SMS Inbox Panel -->
-  <div id="sms-panel" style="width:300px;flex-shrink:0;background:var(--surf);border:1px solid var(--bdr2);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;max-height:75vh;position:sticky;top:16px">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+  <!-- SMS Inbox Panel — iPhone Messages style -->
+  <div id="sms-panel" style="width:320px;flex-shrink:0;background:var(--surf);border:1px solid var(--bdr2);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;max-height:75vh;position:sticky;top:16px">
+    <!-- Header: list view -->
+    <div id="sms-hdr-list" style="padding:14px 16px 12px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700">💬 SMS Inbox</span>
-        <span id="sms-unread-badge" style="display:none;background:var(--red);color:#fff;border-radius:10px;font-size:10px;font-family:'DM Mono',monospace;padding:1px 6px;line-height:1.6"></span>
+        <span style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800">Messages</span>
+        <span id="sms-unread-badge" style="display:none;background:#30d158;color:#000;border-radius:10px;font-size:10px;font-weight:700;padding:1px 7px;line-height:1.8"></span>
       </div>
-      <button class="btn btn-sm" onclick="loadSmsInbox()" style="font-size:13px;padding:4px 9px" title="Refresh">↻</button>
+      <button onclick="startSmsCompose()" style="background:none;border:none;cursor:pointer;color:#30d158;padding:2px 4px;line-height:1;font-size:19px" title="New Message">✏</button>
     </div>
-    <!-- Thread list view -->
-    <div id="sms-thread-list" style="overflow-y:auto;flex:1">
-      <div style="padding:20px;text-align:center;font-size:12px;color:var(--txt3);font-family:'DM Mono',monospace">Open Dialer tab to load</div>
-    </div>
-    <!-- Conversation view (hidden until a thread is selected) -->
-    <div id="sms-conversation" style="display:none;flex-direction:column;flex:1;overflow:hidden">
-      <div style="padding:10px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <button class="btn btn-sm" onclick="backToSmsThreads()" style="font-size:11px;padding:4px 8px">← Back</button>
-        <div style="min-width:0">
-          <div id="sms-conv-name" style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
-          <div id="sms-conv-phone" style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace"></div>
+    <!-- Header: conversation view -->
+    <div id="sms-hdr-conv" style="display:none;padding:10px 12px;border-bottom:1px solid var(--bdr);flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:6px">
+        <button onclick="backToSmsThreads()" style="background:none;border:none;cursor:pointer;color:#30d158;font-size:22px;line-height:1;padding:0 4px;font-weight:300">‹</button>
+        <div style="flex:1;min-width:0;text-align:center">
+          <div id="sms-conv-name" style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+          <div id="sms-conv-biz" style="font-size:10px;color:var(--txt3);margin-top:1px"></div>
         </div>
+        <button id="sms-call-btn" onclick="smsCallActiveLead()" style="background:rgba(48,209,88,0.1);border:none;cursor:pointer;color:#30d158;font-size:11px;font-weight:600;padding:5px 9px;border-radius:8px">📞 Call</button>
       </div>
-      <div id="sms-messages" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px"></div>
-      <div style="padding:10px 12px;border-top:1px solid var(--bdr);flex-shrink:0">
-        <textarea id="sms-compose" placeholder="Type a message..." style="width:100%;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:8px 10px;color:var(--txt);font-size:12px;font-family:'DM Sans',sans-serif;resize:none;height:56px;box-sizing:border-box;outline:none"></textarea>
-        <button class="btn btn-a btn-sm" id="sms-send-btn" style="width:100%;margin-top:6px;justify-content:center" onclick="sendSmsMessage()">Send SMS</button>
+    </div>
+    <!-- Header: compose view -->
+    <div id="sms-hdr-compose" style="display:none;padding:10px 12px;border-bottom:1px solid var(--bdr);flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="backToSmsThreads()" style="background:none;border:none;cursor:pointer;color:#30d158;font-size:22px;line-height:1;padding:0 4px;font-weight:300">‹</button>
+        <span style="font-size:12px;color:var(--txt2);font-weight:600;flex-shrink:0">To:</span>
+        <input id="sms-to-input" type="text" placeholder="Name or number..." autocomplete="off" oninput="filterSmsRecipients(this.value)"
+          style="flex:1;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:6px 10px;color:var(--txt);font-size:13px;outline:none">
+      </div>
+      <div id="sms-recipient-list" style="margin-top:6px;max-height:160px;overflow-y:auto"></div>
+    </div>
+    <!-- Thread list -->
+    <div id="sms-thread-list" style="overflow-y:auto;flex:1">
+      <div style="padding:24px;text-align:center;font-size:12px;color:var(--txt3)">Open Dialer to load messages</div>
+    </div>
+    <!-- Conversation messages -->
+    <div id="sms-conversation" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div id="sms-messages" style="flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:3px"></div>
+      <!-- Quick replies -->
+      <div style="padding:8px 10px 4px;display:flex;gap:6px;overflow-x:auto;flex-shrink:0;scrollbar-width:none">
+        <button class="sms-qr" onclick="smsQuickReply('Thanks for calling back!')">Thanks for calling back!</button>
+        <button class="sms-qr" onclick="smsQuickReply('Available for a quick call?')">Available for a quick call?</button>
+        <button class="sms-qr" onclick="smsQuickReply('Sending info now')">Sending info now</button>
+      </div>
+      <!-- Compose bar -->
+      <div style="padding:6px 10px 10px;display:flex;align-items:flex-end;gap:8px;flex-shrink:0">
+        <textarea id="sms-compose" placeholder="iMessage" rows="1"
+          style="flex:1;background:var(--surf2);border:1px solid var(--bdr);border-radius:20px;padding:9px 14px;color:var(--txt);font-size:13px;font-family:'DM Sans',sans-serif;resize:none;box-sizing:border-box;outline:none;line-height:1.4;overflow-y:hidden;min-height:38px"
+          oninput="smsAutoResize(this);updateSmsSendBtn()"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSmsMessage();}"></textarea>
+        <button id="sms-send-btn" onclick="sendSmsMessage()" disabled
+          style="width:32px;height:32px;border-radius:50%;background:#30d158;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.35;transition:opacity 0.15s;font-size:15px;font-weight:700;color:#000;padding:0">↑</button>
+      </div>
+    </div>
+    <!-- Compose new message body -->
+    <div id="sms-compose-view" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div style="padding:12px 10px;flex:1;display:flex;flex-direction:column;justify-content:flex-end">
+        <textarea id="sms-new-body" placeholder="iMessage"
+          style="width:100%;background:var(--surf2);border:1px solid var(--bdr);border-radius:20px;padding:10px 14px;color:var(--txt);font-size:13px;font-family:'DM Sans',sans-serif;resize:none;box-sizing:border-box;outline:none;min-height:44px"></textarea>
+        <button onclick="sendNewSms()" style="margin-top:8px;width:100%;background:#30d158;color:#000;border:none;border-radius:20px;padding:10px;font-size:13px;font-weight:700;cursor:pointer">Send</button>
       </div>
     </div>
   </div>
@@ -1460,119 +1498,209 @@ async function enrichOneLead(lead){
   save();
 }
 
-// ===== SMS INBOX =====
-let smsMessages=[],smsActiveThread=null,smsRefreshTimer=null;
+// ===== SMS INBOX — iPhone Messages style =====
+let smsMessages=[],smsActiveThread=null,smsRefreshTimer=null,smsSeenSids=new Set();
 
 function getLeadByPhone(phone){
+  if(!phone)return null;
   const norm=phone.replace(/\D/g,'');
-  return leads.find(l=>l.phone&&l.phone.replace(/\D/g,'')===norm);
+  return leads.find(l=>l.phone&&l.phone.replace(/\D/g,'')===norm)||null;
+}
+
+function smsIsOut(m){return m.direction&&m.direction.startsWith('outbound');}
+function smsOther(m){return smsIsOut(m)?m.to:m.from;}
+
+function smsInitials(name){
+  if(!name)return'?';
+  const parts=name.trim().split(/\s+/);
+  return parts.length>=2?(parts[0][0]+parts[parts.length-1][0]).toUpperCase():name.slice(0,2).toUpperCase();
+}
+
+function smsAvatarBg(phone){
+  const colors=['#30d158','#0a84ff','#ff9f0a','#bf5af2','#ff453a','#64d2ff'];
+  let h=0;for(let i=0;i<(phone||'').length;i++)h=(h*31+phone.charCodeAt(i))&0xffffff;
+  return colors[Math.abs(h)%colors.length];
 }
 
 function formatSmsTime(dateStr){
   if(!dateStr)return'';
-  const d=new Date(dateStr),now=new Date(),diff=now-d;
+  const d=new Date(dateStr),now=new Date();
+  const diff=now-d;
+  const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const yesterdayStart=new Date(todayStart-864e5);
+  const weekStart=new Date(todayStart-6*864e5);
   if(diff<60000)return'now';
-  if(diff<3600000)return Math.floor(diff/60000)+'m ago';
-  if(diff<86400000)return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  if(diff<3600000)return Math.floor(diff/60000)+'m';
+  if(d>=todayStart)return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  if(d>=yesterdayStart)return'Yesterday';
+  if(d>=weekStart)return d.toLocaleDateString([],{weekday:'short'});
   return d.toLocaleDateString([],{month:'short',day:'numeric'});
+}
+
+// Dialer tab badge
+function updateDialerTabBadge(count){
+  const tabs=document.querySelectorAll('.tab');
+  tabs.forEach(t=>{
+    if(t.textContent.includes('Dialer')){
+      const existing=t.querySelector('.sms-tab-dot');
+      if(count>0){
+        if(!existing){const dot=document.createElement('span');dot.className='sms-tab-dot';dot.style.cssText='display:inline-block;width:7px;height:7px;background:#30d158;border-radius:50%;margin-left:5px;vertical-align:middle';t.appendChild(dot);}
+      }else{if(existing)existing.remove();}
+    }
+  });
 }
 
 async function loadSmsInbox(showSpinner=true){
   if(showSpinner){
-    document.getElementById('sms-thread-list').innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--txt3);font-family:\'DM Mono\',monospace">Loading...</div>';
+    document.getElementById('sms-thread-list').innerHTML='<div style="padding:24px;text-align:center;font-size:12px;color:var(--txt3)">Loading...</div>';
   }
   try{
     const resp=await fetch('/.netlify/functions/sms-inbox');
     const data=await resp.json();
     if(data.error)throw new Error(data.error);
-    const prevCount=smsMessages.filter(m=>m.direction==='inbound').length;
+    const prevInboundSids=new Set(smsMessages.filter(m=>!smsIsOut(m)).map(m=>m.sid));
     smsMessages=data.messages||[];
-    const newCount=smsMessages.filter(m=>m.direction==='inbound').length;
-    if(newCount>prevCount&&prevCount>0)flash('💬 New SMS received');
+    const newInbound=smsMessages.filter(m=>!smsIsOut(m)&&!prevInboundSids.has(m.sid));
+    if(newInbound.length&&prevInboundSids.size){
+      const lead=getLeadByPhone(newInbound[0].from);
+      flash('💬 '+(lead?lead.contact:newInbound[0].from)+': '+newInbound[0].body.slice(0,40));
+      const panel=document.getElementById('sms-panel');
+      if(panel)panel.style.animation='sms-flash 0.6s ease';
+      setTimeout(()=>{if(panel)panel.style.animation='';},700);
+    }
     renderSmsThreads();
     if(smsActiveThread)renderSmsConversation(smsActiveThread);
   }catch(e){
-    document.getElementById('sms-thread-list').innerHTML=`<div style="padding:16px;font-size:12px;color:var(--red);font-family:'DM Mono',monospace">Error: ${e.message}</div>`;
+    document.getElementById('sms-thread-list').innerHTML=`<div style="padding:16px;font-size:12px;color:var(--red)">Error: ${e.message}</div>`;
   }
 }
 
 function renderSmsThreads(){
   const threads={};
   for(const msg of smsMessages){
-    const isOut=msg.direction&&msg.direction.startsWith('outbound');
-    const other=isOut?msg.to:msg.from;
+    const other=smsOther(msg);
     if(!other)continue;
-    if(!threads[other]){threads[other]={phone:other,messages:[]};}
-    threads[other].messages.push(msg);
+    const norm=other.replace(/\D/g,'');
+    if(!threads[norm]){threads[norm]={phone:other,norm,messages:[]};}
+    threads[norm].messages.push(msg);
   }
   const sorted=Object.values(threads).sort((a,b)=>new Date(b.messages[0].dateSent)-new Date(a.messages[0].dateSent));
+  const unreadCount=smsMessages.filter(m=>!smsIsOut(m)&&!smsSeenSids.has(m.sid)).length;
   const badge=document.getElementById('sms-unread-badge');
-  if(!badge)return;
-  const totalInbound=sorted.reduce((n,t)=>n+t.messages.filter(m=>m.direction==='inbound').length,0);
-  if(totalInbound>0){badge.style.display='inline';badge.textContent=totalInbound;}else{badge.style.display='none';}
+  if(badge){badge.style.display=unreadCount>0?'inline':'none';badge.textContent=unreadCount;}
+  updateDialerTabBadge(unreadCount);
   if(!sorted.length){
-    document.getElementById('sms-thread-list').innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--txt3);font-family:\'DM Mono\',monospace">No messages yet</div>';
+    document.getElementById('sms-thread-list').innerHTML='<div style="padding:32px;text-align:center;font-size:12px;color:var(--txt3)">No messages yet</div>';
     return;
   }
   document.getElementById('sms-thread-list').innerHTML=sorted.map(t=>{
     const lead=getLeadByPhone(t.phone);
     const name=lead?lead.contact:t.phone;
-    const biz=lead?`<div style="font-size:10px;color:var(--txt3)">${lead.biz}</div>`:'';
+    const biz=lead?`<div style="font-size:10px;color:var(--txt3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lead.biz}</div>`:'';
     const latest=t.messages[0];
-    const isOut=latest.direction&&latest.direction.startsWith('outbound');
-    const arrow=isOut?'<span style="color:var(--txt3)">↗</span>':'<span style="color:var(--green)">↙</span>';
-    const preview=(latest.body||'').slice(0,55)+(latest.body&&latest.body.length>55?'…':'');
-    return`<div onclick="openSmsThread('${t.phone.replace(/'/g,"\\'")}');event.stopPropagation()" style="padding:12px 14px;border-bottom:1px solid var(--bdr);cursor:pointer" onmouseover="this.style.background='var(--surf2)'" onmouseout="this.style.background=''">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
-        <div style="font-weight:600;font-size:13px">${arrow} ${name}</div>
-        <div style="font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace;flex-shrink:0;margin-left:8px">${formatSmsTime(latest.dateSent)}</div>
+    const isOut=smsIsOut(latest);
+    const hasUnread=t.messages.some(m=>!smsIsOut(m)&&!smsSeenSids.has(m.sid));
+    const preview=(isOut?'You: ':'')+((latest.body||'').slice(0,52)+(latest.body&&latest.body.length>52?'…':''));
+    const bg=hasUnread?'rgba(48,209,88,0.05)':'';
+    const initials=lead?smsInitials(name):smsInitials(t.phone);
+    const avatarBg=lead?smsAvatarBg(t.phone):'#3a3a3c';
+    const safePh=t.phone.replace(/'/g,"\\'");
+    return`<div onclick="openSmsThread('${safePh}')" style="padding:11px 14px;border-bottom:1px solid var(--bdr);cursor:pointer;display:flex;align-items:center;gap:10px;background:${bg};transition:background 0.12s" onmouseover="this.style.background='var(--surf2)'" onmouseout="this.style.background='${bg}'">
+      <div style="position:relative;flex-shrink:0">
+        <div class="sms-avatar" style="background:${avatarBg}">${initials}</div>
+        ${hasUnread?'<div style="position:absolute;top:-1px;left:-1px;width:11px;height:11px;background:#30d158;border-radius:50%;border:2px solid var(--surf)"></div>':''}
       </div>
-      ${biz}
-      <div style="font-size:11px;color:var(--txt2);margin-top:2px">${preview}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px">
+          <div style="font-weight:${hasUnread?'700':'500'};font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+          <div style="font-size:10px;color:var(--txt3);flex-shrink:0">${formatSmsTime(latest.dateSent)}</div>
+        </div>
+        ${biz}
+        <div style="font-size:11px;color:${hasUnread?'var(--txt)':'var(--txt3)'};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:${hasUnread?'500':'400'}">${preview}</div>
+      </div>
     </div>`;
   }).join('');
 }
 
 function openSmsThread(phone){
   smsActiveThread=phone;
+  // Mark all inbound in this thread as seen
+  const norm=phone.replace(/\D/g,'');
+  smsMessages.filter(m=>!smsIsOut(m)&&(m.from||'').replace(/\D/g,'')===norm).forEach(m=>smsSeenSids.add(m.sid));
+  // Switch views
   document.getElementById('sms-thread-list').style.display='none';
-  const conv=document.getElementById('sms-conversation');
-  conv.style.display='flex';
+  document.getElementById('sms-hdr-list').style.display='none';
+  document.getElementById('sms-compose-view').style.display='none';
+  document.getElementById('sms-hdr-compose').style.display='none';
+  document.getElementById('sms-hdr-conv').style.display='block';
+  document.getElementById('sms-conversation').style.display='flex';
   const lead=getLeadByPhone(phone);
   document.getElementById('sms-conv-name').textContent=lead?lead.contact:phone;
-  document.getElementById('sms-conv-phone').textContent=lead?phone+' · '+lead.biz:phone;
+  document.getElementById('sms-conv-biz').textContent=lead?lead.biz:'';
   renderSmsConversation(phone);
+  renderSmsThreads(); // refresh unread count
 }
 
 function renderSmsConversation(phone){
   const norm=phone.replace(/\D/g,'');
-  const msgs=smsMessages.filter(m=>{
-    const isOut=m.direction&&m.direction.startsWith('outbound');
-    const other=(isOut?m.to:m.from)||'';
-    return other.replace(/\D/g,'')===norm;
-  }).sort((a,b)=>new Date(a.dateSent)-new Date(b.dateSent));
+  const msgs=smsMessages.filter(m=>(smsOther(m)||'').replace(/\D/g,'')===norm)
+    .sort((a,b)=>new Date(a.dateSent)-new Date(b.dateSent));
   const c=document.getElementById('sms-messages');
   if(!c)return;
+  let prevDate='';
   c.innerHTML=msgs.map(m=>{
-    const isOut=m.direction&&m.direction.startsWith('outbound');
+    const isOut=smsIsOut(m);
+    const d=new Date(m.dateSent);
+    const dateLabel=d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+    const showDate=dateLabel!==prevDate;prevDate=dateLabel;
+    const dateDivider=showDate?`<div style="text-align:center;font-size:10px;color:var(--txt3);margin:8px 0 4px;font-family:'DM Mono',monospace">${dateLabel}</div>`:'';
+    const bubbleR=isOut?'18px 18px 4px 18px':'18px 18px 18px 4px';
+    const bg=isOut?'var(--accent)':'var(--surf3)';
+    const col=isOut?'#000':'var(--txt)';
     const align=isOut?'flex-end':'flex-start';
-    const bg=isOut?'rgba(0,212,170,0.12)':'var(--surf2)';
-    const col=isOut?'var(--accent)':'var(--txt)';
-    return`<div style="display:flex;justify-content:${align}">
-      <div style="max-width:88%;background:${bg};border:1px solid var(--bdr);border-radius:10px;padding:7px 10px">
-        <div style="font-size:12px;color:${col};word-break:break-word">${(m.body||'').replace(/</g,'&lt;')}</div>
-        <div style="font-size:9px;color:var(--txt3);font-family:'DM Mono',monospace;margin-top:4px;text-align:right">${formatSmsTime(m.dateSent)}</div>
+    return`${dateDivider}<div style="display:flex;justify-content:${align};margin:1px 0">
+      <div style="max-width:82%;background:${bg};border-radius:${bubbleR};padding:8px 12px">
+        <div style="font-size:13px;color:${col};word-break:break-word;line-height:1.4">${(m.body||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+        <div style="font-size:9px;color:${isOut?'rgba(0,0,0,0.5)':'var(--txt3)'};margin-top:3px;text-align:right">${formatSmsTime(m.dateSent)}</div>
       </div>
     </div>`;
   }).join('');
   c.scrollTop=c.scrollHeight;
+  // Reset compose height
+  const ta=document.getElementById('sms-compose');
+  if(ta){ta.style.height='38px';}
+  updateSmsSendBtn();
 }
 
 function backToSmsThreads(){
   smsActiveThread=null;
   document.getElementById('sms-conversation').style.display='none';
+  document.getElementById('sms-compose-view').style.display='none';
+  document.getElementById('sms-hdr-conv').style.display='none';
+  document.getElementById('sms-hdr-compose').style.display='none';
+  document.getElementById('sms-hdr-list').style.display='flex';
   document.getElementById('sms-thread-list').style.display='block';
-  document.getElementById('sms-compose').value='';
+  const c=document.getElementById('sms-compose');if(c)c.value='';
+  renderSmsThreads();
+}
+
+function updateSmsSendBtn(){
+  const ta=document.getElementById('sms-compose');
+  const btn=document.getElementById('sms-send-btn');
+  if(!ta||!btn)return;
+  const hasText=ta.value.trim().length>0;
+  btn.disabled=!hasText;
+  btn.style.opacity=hasText?'1':'0.35';
+}
+
+function smsAutoResize(ta){
+  ta.style.height='auto';
+  ta.style.height=Math.min(ta.scrollHeight,120)+'px';
+}
+
+function smsQuickReply(text){
+  const ta=document.getElementById('sms-compose');
+  if(ta){ta.value=text;smsAutoResize(ta);updateSmsSendBtn();ta.focus();}
 }
 
 async function sendSmsMessage(){
@@ -1581,34 +1709,100 @@ async function sendSmsMessage(){
   const message=compose.value.trim();
   if(!message)return;
   const btn=document.getElementById('sms-send-btn');
-  btn.disabled=true;btn.textContent='Sending...';
+  btn.disabled=true;btn.style.opacity='0.35';
   try{
     const resp=await fetch('/.netlify/functions/send-sms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:smsActiveThread,message})});
     const data=await resp.json();
     if(data.success){
-      compose.value='';
+      compose.value='';compose.style.height='38px';
       await loadSmsInbox(false);
     }else{
       flash('SMS failed: '+(data.error||'Unknown error'));
+      updateSmsSendBtn();
     }
   }catch(e){
     flash('SMS error: '+e.message);
+    updateSmsSendBtn();
   }
-  btn.disabled=false;btn.textContent='Send SMS';
+}
+
+function smsCallActiveLead(){
+  if(!smsActiveThread)return;
+  const raw=smsActiveThread.replace(/\D/g,'');
+  dialpadNum=raw.length===10?'+1'+raw:raw.length===11&&raw[0]==='1'?'+'+raw:smsActiveThread;
+  document.getElementById('dialpad-display').textContent=dialpadNum;
+  document.getElementById('dialpad-widget').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function startSmsCompose(){
+  document.getElementById('sms-thread-list').style.display='none';
+  document.getElementById('sms-hdr-list').style.display='none';
+  document.getElementById('sms-conversation').style.display='none';
+  document.getElementById('sms-hdr-conv').style.display='none';
+  document.getElementById('sms-hdr-compose').style.display='block';
+  document.getElementById('sms-compose-view').style.display='flex';
+  document.getElementById('sms-recipient-list').innerHTML='';
+  document.getElementById('sms-to-input').value='';
+  setTimeout(()=>document.getElementById('sms-to-input').focus(),30);
+}
+
+function filterSmsRecipients(q){
+  const el=document.getElementById('sms-recipient-list');
+  if(!q.trim()){el.innerHTML='';return;}
+  const ql=q.toLowerCase();
+  const matches=leads.filter(l=>(l.contact&&l.contact.toLowerCase().includes(ql))||(l.biz&&l.biz.toLowerCase().includes(ql))||(l.phone&&l.phone.includes(q))).slice(0,6);
+  if(!matches.length){el.innerHTML='<div style="font-size:12px;color:var(--txt3);padding:6px 2px">No leads match</div>';return;}
+  el.innerHTML=matches.map(l=>`<div onclick="selectSmsRecipient('${l.phone.replace(/'/g,"\\'")}','${(l.contact).replace(/'/g,"\\'")}','${(l.biz).replace(/'/g,"\\'")}' )" style="padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--surf2)'" onmouseout="this.style.background=''">
+    <div class="sms-avatar" style="width:30px;height:30px;font-size:11px;background:${smsAvatarBg(l.phone)}">${smsInitials(l.contact)}</div>
+    <div><div style="font-size:13px;font-weight:500">${l.contact}</div><div style="font-size:11px;color:var(--txt3)">${l.biz} · ${l.phone}</div></div>
+  </div>`).join('');
+}
+
+function selectSmsRecipient(phone,name,biz){
+  // Check if there's an existing thread; if so jump to it
+  const existing=smsMessages.find(m=>(smsOther(m)||'').replace(/\D/g,'')===phone.replace(/\D/g,''));
+  if(existing){openSmsThread(phone);return;}
+  // Otherwise start a fresh thread
+  smsActiveThread=phone;
+  document.getElementById('sms-hdr-compose').style.display='none';
+  document.getElementById('sms-compose-view').style.display='none';
+  document.getElementById('sms-hdr-conv').style.display='block';
+  document.getElementById('sms-conversation').style.display='flex';
+  document.getElementById('sms-conv-name').textContent=name;
+  document.getElementById('sms-conv-biz').textContent=biz;
+  document.getElementById('sms-messages').innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--txt3)">Start the conversation</div>';
+  const ta=document.getElementById('sms-compose');if(ta){ta.value='';ta.focus();}
+  updateSmsSendBtn();
+}
+
+async function sendNewSms(){
+  const phone=smsActiveThread;
+  const body=document.getElementById('sms-new-body');
+  if(!phone||!body||!body.value.trim())return;
+  const message=body.value.trim();
+  try{
+    const resp=await fetch('/.netlify/functions/send-sms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:phone,message})});
+    const data=await resp.json();
+    if(data.success){body.value='';await loadSmsInbox(false);openSmsThread(phone);}
+    else flash('SMS failed: '+(data.error||'Unknown error'));
+  }catch(e){flash('SMS error: '+e.message);}
 }
 
 function openSmsForLead(id){
   const lead=leads.find(l=>l.id===id);
   if(!lead||!lead.phone){flash('No phone number for this lead');return;}
   openSmsThread(lead.phone);
-  const suggest=`Hi ${lead.contact}, Lauren from AquaFlow here — just left you a voicemail. Worth a quick chat about cutting ${lead.biz}'s water bill by 30%?`;
-  setTimeout(()=>{const el=document.getElementById('sms-compose');if(el)el.value=suggest;},30);
+  const suggest=`Hi ${lead.contact.split(' ')[0]}, Lauren from AquaFlow here — just left you a voicemail. Worth a quick chat about cutting ${lead.biz}'s water bill by 30%?`;
+  setTimeout(()=>{
+    const ta=document.getElementById('sms-compose');
+    if(ta){ta.value=suggest;smsAutoResize(ta);updateSmsSendBtn();}
+  },30);
 }
 
 function startSmsRefresh(){
   stopSmsRefresh();
   loadSmsInbox(true);
-  smsRefreshTimer=setInterval(()=>loadSmsInbox(false),30000);
+  smsRefreshTimer=setInterval(()=>loadSmsInbox(false),20000);
 }
 function stopSmsRefresh(){
   if(smsRefreshTimer){clearInterval(smsRefreshTimer);smsRefreshTimer=null;}
