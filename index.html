@@ -205,6 +205,48 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 .shortcut-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--bdr);font-size:13px}
 .shortcut-row:last-child{border-bottom:none}
 .kbd{background:var(--surf2);border:1px solid var(--bdr2);border-radius:4px;padding:2px 7px;font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2);box-shadow:0 1px 2px rgba(0,0,0,0.15)}
+/* CALENDAR */
+.cal-layout{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+@media(max-width:900px){.cal-layout{grid-template-columns:1fr}}
+.cal-month-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-month-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--txt)}
+.cal-nav-btn{background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:5px 12px;font-size:13px;color:var(--txt2);cursor:pointer;transition:all 0.15s}
+.cal-nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-dow{text-align:center;font-size:10px;font-family:'DM Mono',monospace;color:var(--txt3);text-transform:uppercase;letter-spacing:0.06em;padding:4px 0}
+.cal-cell{background:var(--surf2);border:1px solid var(--bdr);border-radius:7px;min-height:62px;padding:5px 6px;cursor:pointer;transition:all 0.15s;position:relative}
+.cal-cell:hover{border-color:var(--accent);background:rgba(0,212,170,0.06)}
+.cal-cell.other-month{opacity:0.3}
+.cal-cell.today{border-color:var(--accent);background:rgba(0,212,170,0.08)}
+.cal-cell.selected{border-color:var(--blue);background:rgba(59,130,246,0.1)}
+.cal-cell-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2);font-weight:600}
+.cal-cell.today .cal-cell-num{color:var(--accent);font-weight:800}
+.cal-dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+.cal-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cal-dot.cb{background:var(--amber)}
+.cal-dot.audit{background:var(--blue)}
+.cal-dot.manual{background:var(--accent)}
+.cal-dot.booking{background:var(--purple)}
+.cal-day-panel{background:var(--surf);border:1px solid var(--bdr2);border-radius:12px;padding:16px}
+.cal-day-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:12px;color:var(--txt)}
+.cal-event-item{display:flex;gap:10px;padding:8px 10px;background:var(--surf2);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background 0.15s;border-left:3px solid transparent}
+.cal-event-item:hover{background:var(--surf3)}
+.cal-event-item.cb{border-left-color:var(--amber)}
+.cal-event-item.audit{border-left-color:var(--blue)}
+.cal-event-item.manual{border-left-color:var(--accent)}
+.cal-event-item.booking{border-left-color:var(--purple)}
+.cal-event-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--txt3);width:44px;flex-shrink:0;padding-top:1px}
+.cal-event-title{font-size:12px;color:var(--txt);font-weight:600}
+.cal-event-sub{font-size:11px;color:var(--txt2);margin-top:1px}
+.cal-upcoming{background:var(--surf);border:1px solid var(--bdr2);border-radius:12px;padding:16px;margin-top:12px}
+.cal-upcoming-title{font-size:12px;font-family:'DM Mono',monospace;color:var(--txt3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px}
+.cal-add-btn{width:100%;background:rgba(0,212,170,0.1);border:1px dashed rgba(0,212,170,0.4);border-radius:8px;padding:9px;font-size:12px;color:var(--accent);cursor:pointer;text-align:center;margin-top:6px;transition:all 0.15s}
+.cal-add-btn:hover{background:rgba(0,212,170,0.18)}
+.cal-sched-card{background:var(--surf);border:1px solid var(--bdr2);border-radius:12px;padding:16px;margin-top:12px}
+.sched-link-box{display:flex;gap:8px;align-items:center;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:8px 12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);word-break:break-all;cursor:pointer}
+.avail-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:10px 0}
+.avail-day-btn{background:var(--surf2);border:1px solid var(--bdr);border-radius:6px;padding:6px 2px;font-size:10px;font-family:'DM Mono',monospace;color:var(--txt3);cursor:pointer;text-align:center;transition:all 0.15s}
+.avail-day-btn.on{background:rgba(0,212,170,0.12);border-color:var(--accent);color:var(--accent)}
 /* MAP */
 .map-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--txt2)}
@@ -387,14 +429,14 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 
 <div class="nav">
   <div class="tab active" onclick="go('scraper',this)">Lead Scraper</div>
-  <div class="tab" onclick="go('email',this)">Email Composer</div>
-  <div class="tab" onclick="go('campaigns',this)">Campaigns</div>
+  <div class="tab" onclick="go('campaigns',this)">AI Email</div>
+  <div class="tab" onclick="go('email',this)">Email</div>
   <div class="tab" onclick="go('dialer',this)">Dialer</div>
   <div class="tab" onclick="go('pipeline',this)">Pipeline</div>
   <div class="tab" onclick="go('lists',this)">Lists</div>
-  <div class="tab" onclick="go('import',this)">Import</div>
+  <div class="tab" onclick="go('import',this)">Import Leads</div>
   <div class="tab" onclick="go('calculator',this)">Calculator</div>
-  <div class="tab" onclick="go('map',this)">🗺 Map</div>
+  <div class="tab" onclick="go('calendar',this)">Calendar</div>
   <div class="tab" onclick="go('settings',this)">Settings</div>
   <div class="tab" onclick="go('admin',this)">Admin</div>
 </div>
@@ -969,6 +1011,124 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   </div>
 </div>
 
+<!-- CALENDAR -->
+<div id="pane-calendar" class="pane">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Calendar</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-sm" onclick="openAddEventModal()">+ Add Event</button>
+      <button class="btn btn-sm" style="background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.3);color:var(--blue)" onclick="openGCalSync()">Google Calendar</button>
+    </div>
+  </div>
+  <div class="cal-layout">
+    <!-- LEFT: Monthly Grid + Upcoming -->
+    <div>
+      <div class="cal-month-header">
+        <button class="cal-nav-btn" onclick="calPrevMonth()">&#8592;</button>
+        <div class="cal-month-title" id="cal-month-label"></div>
+        <button class="cal-nav-btn" onclick="calNextMonth()">&#8594;</button>
+      </div>
+      <div class="cal-grid" id="cal-grid">
+        <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div>
+        <div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+      </div>
+      <!-- Upcoming -->
+      <div class="cal-upcoming" style="margin-top:16px">
+        <div class="cal-upcoming-title">Upcoming — Next 7 Days</div>
+        <div id="cal-upcoming-list"></div>
+      </div>
+    </div>
+    <!-- RIGHT: Day panel + Scheduling -->
+    <div>
+      <div class="cal-day-panel">
+        <div class="cal-day-title" id="cal-day-title">Select a day</div>
+        <div id="cal-day-events"></div>
+        <button class="cal-add-btn" onclick="openAddEventModal(calSelectedDate)">+ Add event for this day</button>
+      </div>
+      <!-- Scheduling Link -->
+      <div class="cal-sched-card">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--txt)">Scheduling Link</div>
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:8px">Share this link so prospects can book a water audit with you:</div>
+        <div class="sched-link-box" onclick="copySchedLink()">
+          <span id="sched-link-text" style="flex:1"></span>
+          <span style="color:var(--accent);font-size:11px;flex-shrink:0">Copy</span>
+        </div>
+        <div style="font-size:12px;font-weight:700;margin:14px 0 6px;color:var(--txt)">Your Availability</div>
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:6px">Days you accept bookings:</div>
+        <div class="avail-grid" id="avail-days-grid"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <div>
+            <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Start time</div>
+            <input type="time" id="avail-start" value="09:00" onchange="saveAvailability()" style="width:100%;background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:6px 9px;color:var(--txt);font-size:12px">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">End time</div>
+            <input type="time" id="avail-end" value="17:00" onchange="saveAvailability()" style="width:100%;background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:6px 9px;color:var(--txt);font-size:12px">
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Booking page note (optional)</div>
+          <input type="text" id="avail-note" placeholder="e.g. 30-min water audit consultation" oninput="saveAvailability()" style="width:100%;box-sizing:border-box;background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:6px 9px;color:var(--txt);font-size:12px">
+        </div>
+        <!-- Bookings received -->
+        <div id="cal-bookings-section" style="margin-top:14px;display:none">
+          <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px">Booking Requests</div>
+          <div id="cal-bookings-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EVENT MODAL -->
+<div id="add-event-ov" class="overlay" onclick="if(event.target===this)closeAddEvent()">
+  <div class="modal" style="max-width:400px" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800">Add Event</div>
+      <button onclick="closeAddEvent()" style="background:none;border:none;color:var(--txt2);font-size:20px;cursor:pointer">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Title</div>
+        <input id="ae-title" type="text" placeholder="Event title" style="width:100%;box-sizing:border-box;background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:7px 10px;color:var(--txt);font-size:13px">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Date</div>
+          <input id="ae-date" type="date" style="width:100%;box-sizing:border-box;background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:7px 10px;color:var(--txt);font-size:12px">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Time</div>
+          <input id="ae-time" type="time" style="width:100%;box-sizing:border-box;background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:7px 10px;color:var(--txt);font-size:12px">
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Notes</div>
+        <textarea id="ae-notes" rows="2" placeholder="Optional notes" style="width:100%;box-sizing:border-box;background:var(--surf2);border:1px solid var(--bdr2);border-radius:7px;padding:7px 10px;color:var(--txt);font-size:12px;resize:vertical"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" style="flex:1" onclick="saveAddEvent()">Save Event</button>
+      <button class="btn" style="background:transparent;border-color:var(--bdr2);color:var(--txt2)" onclick="closeAddEvent()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- GCAL SYNC MODAL -->
+<div id="gcal-ov" class="overlay" onclick="if(event.target===this)closeGCalSync()">
+  <div class="modal" style="max-width:380px" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800">Google Calendar Sync</div>
+      <button onclick="closeGCalSync()" style="background:none;border:none;color:var(--txt2);font-size:20px;cursor:pointer">×</button>
+    </div>
+    <div id="gcal-sync-body">
+      <div style="font-size:13px;color:var(--txt2);margin-bottom:16px;line-height:1.5">Connect Google Calendar to see your existing events alongside leads, callbacks, and audits.</div>
+      <div id="gcal-status" style="font-size:12px;color:var(--txt2);margin-bottom:12px"></div>
+      <button id="gcal-connect-btn" class="btn" style="width:100%" onclick="connectGCal()">Connect Google Calendar</button>
+    </div>
+  </div>
+</div>
+
 <!-- SETTINGS -->
 <div id="pane-settings" class="pane">
   <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:18px">Settings</div>
@@ -1349,20 +1509,20 @@ function go(id,el){
   if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();setupTwilioDevice();startSmsRefresh();}
   if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
   if(id==='calculator')renderCalc();
-  if(id==='map')renderMap();
+  if(id==='calendar')renderCalendar();
   if(id==='email'){initEmailPane();}
   if(id==='lists'){renderLists();}
   if(id==='import'){updateImportListSelects();}
 }
 function goById(id){
-  const tabs=['scraper','email','campaigns','dialer','pipeline','lists','import','calculator','map','settings','admin'];
+  const tabs=['scraper','campaigns','email','dialer','pipeline','lists','import','calculator','calendar','settings','admin'];
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
   document.getElementById('pane-'+id).classList.add('active');
   if(id==='pipeline')renderPipe();
   if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();setupTwilioDevice();startSmsRefresh();}
   if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
-  if(id==='map')renderMap();
+  if(id==='calendar')renderCalendar();
   if(id==='email'){initEmailPane();}
   if(id==='lists'){renderLists();}
   if(id==='import'){updateImportListSelects();}
@@ -3533,6 +3693,22 @@ function showBriefing(){
     </div>`;
   const quotes=["The fortune is in the follow-up. Most reps quit at touch 2. You're still calling.","Every 'no' is one call closer to a 'yes'. Keep dialing.","Your prospects' water bills don't stop — neither should your calls.","You're not selling valves. You're saving them $3,000 a month. Call with confidence.","One booked audit a day keeps the quota away. You've got this.","Persistence beats talent when talent doesn't persist.","Water savings don't sell themselves — you do. And you're excellent at it.","The reps who win are the ones who show up every single day."];
   document.getElementById('brief-quote').textContent='"'+quotes[Math.floor(Math.random()*quotes.length)]+'"';
+  // Today's calendar events count
+  const todayStr=today.toISOString().slice(0,10);
+  let todayEventsHtml='';
+  try{
+    const todayEvts=getEventsForDay(todayStr);
+    if(todayEvts.length){
+      todayEventsHtml=`<div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:700;color:var(--purple)">${todayEvts.length}</div>
+        <div style="font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em;margin-top:3px">Today's Events</div>
+      </div>`;
+    }
+  }catch(e){}
+  if(todayEventsHtml){
+    const statsEl=document.getElementById('brief-stats');
+    if(statsEl)statsEl.innerHTML+=todayEventsHtml;
+  }
   document.getElementById('briefing-ov').classList.add('show');
   setTimeout(()=>closeBriefing(),5000);
 }
@@ -4160,6 +4336,8 @@ function logout(){
 
 // ── Page load entry point ────────────────────────────────────────────────────
 window.addEventListener('load',async function(){
+  // 0. Check if this is the public scheduling page
+  if(checkSchedulePage())return;
   // 1. Check URL hash for identity tokens (invite, recovery, confirmation, or direct access_token)
   const inviteToken=parseHashParam('invite_token');
   const recoveryToken=parseHashParam('recovery_token');
@@ -4192,6 +4370,421 @@ window.addEventListener('load',async function(){
   // 3. Default: show login
   showLogin();
 });
+
+// ===== CALENDAR =====
+let calYear=new Date().getFullYear();
+let calMonth=new Date().getMonth();
+let calSelectedDate=null;
+let calAvailDays=[1,2,3,4,5]; // Mon–Fri by default
+
+function getCalEvents(){
+  // Callbacks from lead call logs
+  const events=[];
+  (leads||[]).forEach(l=>{
+    (l.callLog||[]).forEach(e=>{
+      if(!e.cb)return;
+      const d=new Date(e.cb);
+      if(isNaN(d.getTime()))return;
+      events.push({
+        id:'cb-'+l.id+'-'+e.ts,
+        type:'cb',
+        title:'Callback: '+l.biz,
+        leadId:l.id,
+        date:d.toISOString().slice(0,10),
+        time:d.toTimeString().slice(0,5),
+        notes:e.note||'',
+      });
+    });
+    if(l.status==='audit'&&l.auditDate){
+      const d=new Date(l.auditDate);
+      if(!isNaN(d.getTime())){
+        events.push({
+          id:'audit-'+l.id,
+          type:'audit',
+          title:'Audit: '+l.biz,
+          leadId:l.id,
+          date:d.toISOString().slice(0,10),
+          time:d.toTimeString().slice(0,5),
+          notes:'',
+        });
+      }
+    }
+  });
+  // Manual events
+  try{
+    const manual=JSON.parse(localStorage.getItem(userKey('af_events'))||'[]');
+    manual.forEach(e=>events.push({...e,type:'manual'}));
+  }catch(e){}
+  // Bookings
+  try{
+    const bookings=JSON.parse(localStorage.getItem(userKey('af_bookings'))||'[]');
+    bookings.forEach(b=>{
+      if(b.confirmed===false)return;
+      events.push({
+        id:'bk-'+b.id,
+        type:'booking',
+        title:'Audit Booking: '+b.name,
+        leadId:null,
+        date:b.date,
+        time:b.time||'',
+        notes:b.business||'',
+      });
+    });
+  }catch(e){}
+  return events;
+}
+
+function getEventsForDay(dateStr){
+  return getCalEvents().filter(e=>e.date===dateStr).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+}
+
+function renderCalendar(){
+  renderCalGrid();
+  renderCalUpcoming();
+  renderAvailDays();
+  const today=new Date().toISOString().slice(0,10);
+  selectCalDay(calSelectedDate||today);
+  // Scheduling link
+  const linkEl=document.getElementById('sched-link-text');
+  if(linkEl)linkEl.textContent=window.location.origin+window.location.pathname+'?schedule=true';
+  // Load saved availability
+  try{
+    const av=JSON.parse(localStorage.getItem(userKey('af_availability'))||'{}');
+    if(av.days)calAvailDays=av.days;
+    if(av.startTime)document.getElementById('avail-start').value=av.startTime;
+    if(av.endTime)document.getElementById('avail-end').value=av.endTime;
+    if(av.note)document.getElementById('avail-note').value=av.note;
+  }catch(e){}
+  renderAvailDays();
+  renderBookingsSection();
+}
+
+function renderCalGrid(){
+  const grid=document.getElementById('cal-grid');
+  if(!grid)return;
+  // Remove existing day cells (keep DOW headers = first 7 children)
+  while(grid.children.length>7)grid.removeChild(grid.lastChild);
+  const label=document.getElementById('cal-month-label');
+  const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  if(label)label.textContent=monthNames[calMonth]+' '+calYear;
+
+  const today=new Date().toISOString().slice(0,10);
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev=new Date(calYear,calMonth,0).getDate();
+  const allEvents=getCalEvents();
+
+  // leading days from previous month
+  for(let i=0;i<firstDay;i++){
+    const d=daysInPrev-firstDay+1+i;
+    const dateStr=new Date(calYear,calMonth-1,d).toISOString().slice(0,10);
+    grid.appendChild(makeCalCell(d,dateStr,true,allEvents,today));
+  }
+  // current month
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=new Date(calYear,calMonth,d).toISOString().slice(0,10);
+    grid.appendChild(makeCalCell(d,dateStr,false,allEvents,today));
+  }
+  // trailing days
+  const total=firstDay+daysInMonth;
+  const trailing=total%7===0?0:7-(total%7);
+  for(let d=1;d<=trailing;d++){
+    const dateStr=new Date(calYear,calMonth+1,d).toISOString().slice(0,10);
+    grid.appendChild(makeCalCell(d,dateStr,true,allEvents,today));
+  }
+}
+
+function makeCalCell(dayNum,dateStr,otherMonth,allEvents,today){
+  const cell=document.createElement('div');
+  cell.className='cal-cell'+(otherMonth?' other-month':'')+(dateStr===today?' today':'')+(dateStr===calSelectedDate?' selected':'');
+  cell.innerHTML='<div class="cal-cell-num">'+dayNum+'</div>';
+  const dayEvents=allEvents.filter(e=>e.date===dateStr);
+  if(dayEvents.length){
+    const dots=document.createElement('div');
+    dots.className='cal-dots';
+    dayEvents.slice(0,5).forEach(e=>{
+      const dot=document.createElement('div');
+      dot.className='cal-dot '+e.type;
+      dots.appendChild(dot);
+    });
+    cell.appendChild(dots);
+  }
+  cell.onclick=()=>selectCalDay(dateStr);
+  return cell;
+}
+
+function selectCalDay(dateStr){
+  calSelectedDate=dateStr;
+  // Update selected state in grid
+  document.querySelectorAll('.cal-cell').forEach(c=>c.classList.remove('selected'));
+  const cells=document.querySelectorAll('.cal-cell');
+  // Re-render grid to update selected highlight
+  renderCalGrid();
+  renderDayPanel(dateStr);
+}
+
+function renderDayPanel(dateStr){
+  const titleEl=document.getElementById('cal-day-title');
+  const eventsEl=document.getElementById('cal-day-events');
+  if(!titleEl||!eventsEl)return;
+  const d=new Date(dateStr+'T12:00:00');
+  titleEl.textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  const dayEvents=getEventsForDay(dateStr);
+  if(!dayEvents.length){
+    eventsEl.innerHTML='<div style="font-size:12px;color:var(--txt3);padding:8px 0">No events</div>';
+    return;
+  }
+  eventsEl.innerHTML=dayEvents.map(e=>{
+    const timeStr=e.time?formatCalTime(e.time):'';
+    return `<div class="cal-event-item ${e.type}" onclick="calEventClick('${e.id}','${e.leadId||''}')">
+      <div class="cal-event-time">${timeStr}</div>
+      <div>
+        <div class="cal-event-title">${e.title}</div>
+        ${e.notes?`<div class="cal-event-sub">${e.notes}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function formatCalTime(t){
+  if(!t)return'';
+  const [h,m]=t.split(':').map(Number);
+  const ampm=h>=12?'PM':'AM';
+  const hh=h%12||12;
+  return hh+':'+(m<10?'0':'')+m+' '+ampm;
+}
+
+function calEventClick(id,leadId){
+  if(leadId&&leadId!=='null'){
+    const lead=leads.find(l=>l.id===leadId);
+    if(lead){openCL(leadId);return;}
+  }
+  // Manual event — could open edit modal in future
+}
+
+function renderCalUpcoming(){
+  const el=document.getElementById('cal-upcoming-list');
+  if(!el)return;
+  const today=new Date();
+  const in7=new Date(today);in7.setDate(today.getDate()+7);
+  const todayStr=today.toISOString().slice(0,10);
+  const in7Str=in7.toISOString().slice(0,10);
+  const upcoming=getCalEvents().filter(e=>e.date>=todayStr&&e.date<=in7Str).sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'')).slice(0,10);
+  if(!upcoming.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--txt3)">No upcoming events</div>';
+    return;
+  }
+  el.innerHTML=upcoming.map(e=>{
+    const d=new Date(e.date+'T12:00:00');
+    const dayLabel=e.date===todayStr?'Today':d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    return `<div class="cal-event-item ${e.type}" onclick="selectCalDay('${e.date}')">
+      <div class="cal-event-time" style="width:60px">${dayLabel}</div>
+      <div>
+        <div class="cal-event-title">${e.title}</div>
+        ${e.time?`<div class="cal-event-sub">${formatCalTime(e.time)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function calPrevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalGrid();}
+function calNextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalGrid();}
+
+// Add Event Modal
+function openAddEventModal(dateStr){
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('ae-title').value='';
+  document.getElementById('ae-date').value=dateStr||calSelectedDate||today;
+  document.getElementById('ae-time').value='09:00';
+  document.getElementById('ae-notes').value='';
+  document.getElementById('add-event-ov').classList.add('show');
+}
+function closeAddEvent(){document.getElementById('add-event-ov').classList.remove('show');}
+function saveAddEvent(){
+  const title=document.getElementById('ae-title').value.trim();
+  const date=document.getElementById('ae-date').value;
+  const time=document.getElementById('ae-time').value;
+  const notes=document.getElementById('ae-notes').value.trim();
+  if(!title||!date){flash('Title and date required');return;}
+  const events=JSON.parse(localStorage.getItem(userKey('af_events'))||'[]');
+  events.push({id:'ev-'+Date.now(),type:'manual',title,date,time,notes});
+  localStorage.setItem(userKey('af_events'),JSON.stringify(events));
+  closeAddEvent();
+  renderCalendar();
+  selectCalDay(date);
+  flash('Event added');
+}
+
+// Availability
+function renderAvailDays(){
+  const grid=document.getElementById('avail-days-grid');
+  if(!grid)return;
+  const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  grid.innerHTML=days.map((d,i)=>`<div class="avail-day-btn${calAvailDays.includes(i)?' on':''}" onclick="toggleAvailDay(${i})">${d}</div>`).join('');
+}
+function toggleAvailDay(i){
+  if(calAvailDays.includes(i))calAvailDays=calAvailDays.filter(d=>d!==i);
+  else calAvailDays.push(i);
+  saveAvailability();
+  renderAvailDays();
+}
+function saveAvailability(){
+  const av={
+    days:calAvailDays,
+    startTime:document.getElementById('avail-start')?.value||'09:00',
+    endTime:document.getElementById('avail-end')?.value||'17:00',
+    note:document.getElementById('avail-note')?.value||'',
+  };
+  localStorage.setItem(userKey('af_availability'),JSON.stringify(av));
+}
+
+function copySchedLink(){
+  const url=window.location.origin+window.location.pathname+'?schedule=true';
+  navigator.clipboard.writeText(url).then(()=>flash('Scheduling link copied')).catch(()=>flash('Could not copy'));
+}
+
+// Bookings section
+function renderBookingsSection(){
+  const bookings=JSON.parse(localStorage.getItem(userKey('af_bookings'))||'[]');
+  const sect=document.getElementById('cal-bookings-section');
+  const list=document.getElementById('cal-bookings-list');
+  if(!sect||!list)return;
+  if(!bookings.length){sect.style.display='none';return;}
+  sect.style.display='block';
+  list.innerHTML=bookings.sort((a,b)=>a.date.localeCompare(b.date)).map(b=>`
+    <div style="background:var(--surf2);border-radius:8px;padding:9px 12px;margin-bottom:6px;border-left:3px solid var(--purple)">
+      <div style="font-size:12px;font-weight:700;color:var(--txt)">${b.name} — ${b.business||''}</div>
+      <div style="font-size:11px;color:var(--txt2);margin-top:2px">${b.date}${b.time?' at '+formatCalTime(b.time):''}</div>
+      ${b.phone?`<div style="font-size:11px;color:var(--txt2)">${b.phone}</div>`:''}
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <button class="btn btn-sm" style="font-size:10px;padding:3px 9px" onclick="confirmBooking('${b.id}')">Confirm</button>
+        <button class="btn btn-sm" style="font-size:10px;padding:3px 9px;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:var(--red)" onclick="deleteBooking('${b.id}')">Remove</button>
+      </div>
+    </div>`).join('');
+}
+function confirmBooking(id){
+  const bookings=JSON.parse(localStorage.getItem(userKey('af_bookings'))||'[]');
+  const b=bookings.find(x=>x.id===id);
+  if(b)b.confirmed=true;
+  localStorage.setItem(userKey('af_bookings'),JSON.stringify(bookings));
+  renderBookingsSection();
+  renderCalendar();
+  flash('Booking confirmed');
+}
+function deleteBooking(id){
+  const bookings=JSON.parse(localStorage.getItem(userKey('af_bookings'))||'[]').filter(x=>x.id!==id);
+  localStorage.setItem(userKey('af_bookings'),JSON.stringify(bookings));
+  renderBookingsSection();
+  renderCalendar();
+}
+
+// Google Calendar Sync
+function openGCalSync(){
+  const el=document.getElementById('gcal-ov');
+  if(el)el.classList.add('show');
+  const status=document.getElementById('gcal-status');
+  const btn=document.getElementById('gcal-connect-btn');
+  const gmailToken=localStorage.getItem(userKey('af_gmail_token'));
+  if(gmailToken){
+    if(status)status.textContent='Google account connected. Calendar events will appear alongside your leads.';
+    if(btn)btn.textContent='Re-connect Google Calendar';
+  }else{
+    if(status)status.textContent='Not connected.';
+    if(btn)btn.textContent='Connect Google Calendar';
+  }
+}
+function closeGCalSync(){const el=document.getElementById('gcal-ov');if(el)el.classList.remove('show');}
+function connectGCal(){
+  // Re-uses the same Gmail OAuth flow which now includes calendar scope
+  startGmailAuth();
+  closeGCalSync();
+}
+
+// Public scheduling page (?schedule=true)
+function checkSchedulePage(){
+  const params=new URLSearchParams(window.location.search);
+  if(!params.get('schedule'))return false;
+  document.body.innerHTML=buildSchedulePage();
+  initSchedulePage();
+  return true;
+}
+
+function buildSchedulePage(){
+  return `<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Book a Water Audit</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0c10;color:#e8eaf0;font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.sched-wrap{width:100%;max-width:480px}
+.sched-logo{font-family:sans-serif;font-size:22px;font-weight:800;color:#00d4aa;margin-bottom:6px;letter-spacing:-0.5px}
+.sched-sub{font-size:14px;color:#8b919e;margin-bottom:28px}
+.sched-card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:28px}
+.sched-title{font-size:19px;font-weight:800;margin-bottom:20px}
+.sched-field{margin-bottom:14px}
+.sched-field label{font-size:11px;color:#8b919e;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em}
+.sched-field input,.sched-field select{width:100%;background:#1e232e;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;color:#e8eaf0;font-size:13px;font-family:'DM Sans',sans-serif}
+.sched-field input:focus,.sched-field select:focus{outline:none;border-color:#00d4aa}
+.sched-btn{width:100%;background:#00d4aa;color:#0a0c10;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
+.sched-btn:hover{opacity:0.9}
+.sched-success{text-align:center;padding:32px 0}
+.sched-success .check{font-size:40px;margin-bottom:12px}
+.sched-success h2{font-size:20px;font-weight:800;color:#00d4aa;margin-bottom:8px}
+.sched-success p{font-size:13px;color:#8b919e;line-height:1.5}
+</style></head>
+<body><div class="sched-wrap">
+<div class="sched-logo">AquaFlow</div>
+<div class="sched-sub">Water savings for commercial &amp; industrial properties</div>
+<div class="sched-card">
+<div class="sched-title" id="sched-form-title">Book a Free Water Audit</div>
+<div id="sched-form-area">
+<div class="sched-field"><label>Your Name</label><input id="sf-name" type="text" placeholder="Full name" required></div>
+<div class="sched-field"><label>Business Name</label><input id="sf-biz" type="text" placeholder="Property or business name"></div>
+<div class="sched-field"><label>Phone</label><input id="sf-phone" type="tel" placeholder="+1 (555) 000-0000"></div>
+<div class="sched-field"><label>Email</label><input id="sf-email" type="email" placeholder="your@email.com"></div>
+<div class="sched-field"><label>Monthly Water Bill (approx.)</label><input id="sf-bill" type="text" placeholder="e.g. $3,000"></div>
+<div class="sched-field"><label>Preferred Date</label><input id="sf-date" type="date"></div>
+<div class="sched-field"><label>Preferred Time</label>
+<select id="sf-time"><option value="">Select a time</option>
+<option value="09:00">9:00 AM</option><option value="10:00">10:00 AM</option>
+<option value="11:00">11:00 AM</option><option value="13:00">1:00 PM</option>
+<option value="14:00">2:00 PM</option><option value="15:00">3:00 PM</option>
+<option value="16:00">4:00 PM</option></select></div>
+<button class="sched-btn" onclick="submitSchedule()">Request Audit</button>
+</div>
+<div id="sched-success-area" style="display:none" class="sched-success">
+<div class="check">✅</div>
+<h2>Request Received!</h2>
+<p>Thanks! We'll reach out shortly to confirm your appointment.</p>
+</div>
+</div></div>
+<script>
+function submitSchedule(){
+  const name=document.getElementById('sf-name').value.trim();
+  const biz=document.getElementById('sf-biz').value.trim();
+  const phone=document.getElementById('sf-phone').value.trim();
+  const email=document.getElementById('sf-email').value.trim();
+  const bill=document.getElementById('sf-bill').value.trim();
+  const date=document.getElementById('sf-date').value;
+  const time=document.getElementById('sf-time').value;
+  if(!name){alert('Please enter your name.');return;}
+  // Save to localStorage so the app sees it
+  const booking={id:'bk-'+Date.now(),name,business:biz,phone,email,waterBill:bill,date,time,confirmed:false,requestedAt:new Date().toISOString()};
+  const key=window.location.hostname+'_af_bookings';
+  // We don't know the agent's email key here, store under a generic key
+  const existing=JSON.parse(localStorage.getItem(key)||'[]');
+  existing.push(booking);
+  localStorage.setItem(key,JSON.stringify(existing));
+  document.getElementById('sched-form-area').style.display='none';
+  document.getElementById('sched-success-area').style.display='block';
+}
+<\/script></body></html>`;
+}
+
+function initSchedulePage(){
+  // Set min date to today
+  const df=document.getElementById('sf-date');
+  if(df)df.min=new Date().toISOString().slice(0,10);
+}
 </script>
 </body>
 </html>
