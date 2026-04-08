@@ -168,6 +168,8 @@ function callClaude(apiKey, text, bizName, bizType, targetName, knownEmails) {
   });
 }
 
+const HANDLER_TIMEOUT_MS = 25000;
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -187,14 +189,35 @@ exports.handler = async (event) => {
 
   if (!website) return { statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'No website URL provided' }) };
 
+  const timeoutPromise = new Promise(resolve =>
+    setTimeout(() => resolve({ statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'Scrape timed out (25s)' }) }), HANDLER_TIMEOUT_MS)
+  );
+
+  return Promise.race([timeoutPromise, runScrape(event, headers, ANTHROPIC_KEY, website, bizName, bizType, targetName)]);
+};
+
+async function runScrape(event, headers, ANTHROPIC_KEY, website, bizName, bizType, targetName) {
+
   let baseUrl = website.trim();
   if (!/^https?:\/\//i.test(baseUrl)) baseUrl = 'https://' + baseUrl;
 
   try {
-    // Step 1: Fetch homepage
+    // Step 1: Fetch homepage (retry once with https if http fails)
     let homepageHtml;
-    try { homepageHtml = await fetchUrl(baseUrl); }
-    catch (e) { return { statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'Could not fetch website: ' + e.message }) }; }
+    try {
+      homepageHtml = await fetchUrl(baseUrl);
+    } catch (e) {
+      // If http:// failed, try https://
+      if (baseUrl.startsWith('http://')) {
+        try { homepageHtml = await fetchUrl(baseUrl.replace('http://', 'https://')); }
+        catch (e2) { return { statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'Could not fetch website: ' + e2.message }) }; }
+      } else {
+        // Retry once after 2s
+        await new Promise(r => setTimeout(r, 2000));
+        try { homepageHtml = await fetchUrl(baseUrl); }
+        catch (e2) { return { statusCode: 200, headers, body: JSON.stringify({ found: false, reason: 'Could not fetch website: ' + e2.message }) }; }
+      }
+    }
 
     // Extract real emails from raw HTML before stripping tags
     const knownEmails = extractEmailsFromHtml(homepageHtml);

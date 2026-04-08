@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#00d4aa">
+<link rel="manifest" href="/manifest.json">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 <title>AquaFlow Sales OS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script>/* Twilio Voice SDK 2.10.0 - self-hosted */
@@ -266,6 +270,51 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 .ac-item{padding:9px 11px;font-size:13px;cursor:pointer;color:var(--txt);border-bottom:1px solid var(--bdr)}
 .ac-item:last-child{border-bottom:none}
 .ac-item:hover,.ac-item.hov{background:rgba(0,212,170,0.08);color:var(--accent)}
+/* Email composer two-panel */
+#pane-email.active{overflow:hidden;padding:0}
+#email-grid{display:flex;height:calc(100vh - 130px)}
+#email-left{width:38%;overflow-y:auto;padding:20px;border-right:1px solid var(--bdr);box-sizing:border-box;flex-shrink:0}
+#email-right{flex:1;overflow:hidden;display:flex;flex-direction:column}
+#email-gen-out{background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;padding:14px;margin-top:14px}
+#email-gen-subj{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);font-weight:600;margin-bottom:8px;line-height:1.5;word-break:break-word}
+#email-gen-body{font-size:13px;color:var(--txt);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:280px;overflow-y:auto}
+@media(max-width:900px){#email-grid{flex-direction:column;height:auto}#pane-email.active{overflow:auto}#email-left{width:100%;border-right:none;border-bottom:1px solid var(--bdr)}#email-right{height:600px}}
+/* Gmail client */
+#gmail-connect{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;padding:40px;text-align:center}
+#gmail-topbar{padding:10px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--surf2)}
+#gmail-body{flex:1;display:flex;overflow:hidden;min-height:0}
+#gmail-folders{width:18%;border-right:1px solid var(--bdr);overflow-y:auto;padding:8px 0;flex-shrink:0}
+.gfolder{padding:9px 14px;font-size:12px;cursor:pointer;color:var(--txt2);display:flex;align-items:center;justify-content:space-between;border-radius:0;transition:background 0.12s}
+.gfolder:hover{background:rgba(0,212,170,0.06);color:var(--txt)}
+.gfolder.sel{background:rgba(0,212,170,0.12);color:var(--accent)}
+#gmail-list{width:35%;border-right:1px solid var(--bdr);overflow-y:auto;flex-shrink:0}
+.gmail-row{padding:12px 14px;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background 0.1s}
+.gmail-row:hover{background:rgba(0,212,170,0.05)}
+.gmail-row.unread{background:rgba(255,255,255,0.03)}
+.gmail-row.sel{background:rgba(0,212,170,0.08)}
+#gmail-pane{flex:1;overflow-y:auto;padding:0}
+.gmail-skeleton{height:48px;background:linear-gradient(90deg,var(--surf2) 25%,var(--surf3) 50%,var(--surf2) 75%);background-size:200%;animation:shimmer 1.4s infinite;border-radius:6px;margin:8px 12px}
+@keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+/* Lists tab */
+#pane-lists.active{overflow:hidden;padding:0}
+#lists-grid{display:flex;height:calc(100vh - 130px)}
+#lists-sidebar{width:25%;border-right:1px solid var(--bdr);overflow-y:auto;padding:0;flex-shrink:0}
+#lists-main{flex:1;overflow-y:auto;padding:20px}
+.list-item{padding:12px 16px;border-bottom:1px solid var(--bdr);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background 0.1s}
+.list-item:hover{background:rgba(0,212,170,0.06)}
+.list-item.sel{background:rgba(0,212,170,0.1);border-right:2px solid var(--accent)}
+.list-count{background:var(--surf3);color:var(--txt3);font-size:10px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:10px}
+.src-badge{font-size:9px;padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;margin-left:4px;vertical-align:middle}
+.src-scraped{background:rgba(100,116,139,0.15);color:var(--txt3)}
+@media(max-width:768px){#lists-grid{flex-direction:column;height:auto}#pane-lists.active{overflow:auto}#lists-sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--bdr)}}
+/* Import card */
+.import-tabs{display:flex;border-bottom:1px solid var(--bdr);margin-bottom:16px}
+.import-tab{padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--txt2);transition:color 0.15s;font-family:'Syne',sans-serif}
+.import-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+#import-dropzone{border:2px dashed var(--bdr2);border-radius:10px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.15s;background:var(--surf2)}
+#import-dropzone:hover,#import-dropzone.over{border-color:var(--accent);background:rgba(0,212,170,0.05)}
+.import-preview{overflow-x:auto;max-height:200px;overflow-y:auto;margin-bottom:10px}
+.col-badge{background:rgba(0,212,170,0.1);color:var(--accent);font-size:9px;padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace}
 </style>
 </head>
 <body>
@@ -341,9 +390,10 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   <div class="tab" onclick="go('email',this)">Email Composer</div>
   <div class="tab" onclick="go('dialer',this)">Dialer</div>
   <div class="tab" onclick="go('pipeline',this)">Pipeline</div>
+  <div class="tab" onclick="go('lists',this)">Lists</div>
   <div class="tab" onclick="go('calculator',this)">Calculator</div>
-  <div class="tab" onclick="go('settings',this)">Settings</div>
   <div class="tab" onclick="go('map',this)">🗺 Map</div>
+  <div class="tab" onclick="go('settings',this)">Settings</div>
   <div class="tab" onclick="go('admin',this)">Admin</div>
 </div>
 
@@ -446,6 +496,78 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
     </div>
   </div>
 
+  <!-- Import Leads card -->
+  <div class="card" id="import-card">
+    <div class="ctitle">Import Leads</div>
+    <div class="import-tabs">
+      <div class="import-tab active" id="itab-batch" onclick="switchImportTab('batch')">📂 Batch Import (Excel / CSV)</div>
+      <div class="import-tab" id="itab-manual" onclick="switchImportTab('manual')">✏️ Manual Entry</div>
+    </div>
+    <!-- Batch Import -->
+    <div id="import-batch-panel">
+      <div id="import-dropzone" onclick="document.getElementById('import-file-in').click()" ondragover="importDragOver(event)" ondragleave="importDragLeave(event)" ondrop="importDrop(event)">
+        <div style="font-size:32px;margin-bottom:8px">📂</div>
+        <div style="font-size:13px;color:var(--txt)">Drop Excel or CSV file here or <span style="color:var(--accent);font-weight:600">click to browse</span></div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px;font-family:'DM Mono',monospace">.xlsx, .xls, .csv</div>
+      </div>
+      <input type="file" id="import-file-in" accept=".xlsx,.xls,.csv" style="display:none" onchange="importFileSelected(this.files[0])">
+      <div id="import-preview-area" style="display:none;margin-top:14px">
+        <div id="import-preview-info" style="font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace;margin-bottom:8px"></div>
+        <div class="import-preview" id="import-preview-table"></div>
+        <div id="import-col-map" style="margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-a" id="import-do-btn" onclick="doImport()">📥 Import</button>
+          <button class="btn" onclick="resetImport()">Clear</button>
+          <div id="import-result" style="font-size:12px;font-family:'DM Mono',monospace;color:var(--green)"></div>
+        </div>
+        <div id="import-list-prompt" style="display:none;margin-top:10px;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:12px">
+          <div style="font-size:12px;color:var(--txt2);margin-bottom:8px">Add imported leads to a list?</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="import-list-sel" style="background:var(--surf3);border:1px solid var(--bdr2);color:var(--txt);padding:6px 10px;border-radius:6px;font-size:12px"></select>
+            <button class="btn btn-sm btn-a" onclick="importAddToList()">Add to List</button>
+            <button class="btn btn-sm" onclick="document.getElementById('import-list-prompt').style.display='none'">Skip</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Manual Entry -->
+    <div id="import-manual-panel" style="display:none">
+      <div class="fr c3" style="margin-bottom:10px">
+        <div class="fld"><label>Business Name *</label><input id="man-biz" placeholder="Torrance Golf Club"></div>
+        <div class="fld"><label>Business Type</label>
+          <select id="man-type">
+            <option value="Golf course">Golf Course</option><option value="Hotel">Hotel</option>
+            <option value="Restaurant">Restaurant</option><option value="Commercial real estate">Commercial Real Estate</option>
+            <option value="Car wash">Car Wash</option><option value="Hospital">Hospital</option>
+            <option value="Manufacturing">Manufacturing</option><option value="University">University</option>
+            <option value="Apartment complex">Apartment Complex</option><option value="Sports facility">Sports Facility</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="fld"><label>City</label><input id="man-city" placeholder="Long Beach"></div>
+      </div>
+      <div class="fr c3" style="margin-bottom:10px">
+        <div class="fld"><label>Contact Name</label><input id="man-contact" placeholder="Mike Torres"></div>
+        <div class="fld"><label>Title</label><input id="man-title" placeholder="Director of Facilities"></div>
+        <div class="fld"><label>Phone</label><input id="man-phone" placeholder="(310) 555-0100" type="tel"></div>
+      </div>
+      <div class="fr c3" style="margin-bottom:10px">
+        <div class="fld"><label>Email</label><input id="man-email" placeholder="contact@business.com" type="email"></div>
+        <div class="fld"><label>Est. Monthly Water Bill ($)</label><input id="man-bill" placeholder="5000" type="number" min="0"></div>
+        <div class="fld"><label>Website</label><input id="man-web" placeholder="business.com"></div>
+      </div>
+      <div class="fld" style="margin-bottom:12px"><label>Notes</label><textarea id="man-notes" rows="2" placeholder="Any additional notes..."></textarea></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-a" onclick="addManualLead()">➕ Add Lead</button>
+        <div style="font-size:12px;color:var(--txt2)">Add to list:</div>
+        <select id="man-list-sel" style="background:var(--surf3);border:1px solid var(--bdr2);color:var(--txt);padding:6px 10px;border-radius:6px;font-size:12px">
+          <option value="">None</option>
+        </select>
+        <div id="man-result" style="font-size:12px;font-family:'DM Mono',monospace;color:var(--green)"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="scr-load"><div class="big-spin"></div><div style="color:var(--txt2);font-size:13px;font-family:'DM Mono',monospace" id="scr-msg">Searching...</div></div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
     <span style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.07em">Quality:</span>
@@ -471,105 +593,101 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
     <button class="btn btn-sm btn-a" onclick="bulkMove(document.getElementById('bulk-stage').value)">Apply Stage</button>
     <button class="btn btn-sm" onclick="bulkExport()">Export CSV</button>
     <button class="btn btn-sm btn-b" onclick="bulkEmail()">Send Auto-Email</button>
+    <select id="bulk-list-sel" style="background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);padding:5px 8px;border-radius:6px;font-size:12px"></select>
+    <button class="btn btn-sm" onclick="bulkAddToList()">+ Add to List</button>
   </div>
   <div id="leads-wrap"></div>
 </div>
 
 <!-- EMAIL -->
 <div id="pane-email" class="pane">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
-    <div>
-      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Email Composer</div>
-      <div style="font-size:12px;color:var(--txt2);margin-top:2px">AI-personalized cold outreach per lead</div>
-    </div>
-    <button class="btn btn-sm" onclick="showQueue()">📋 Send Queue (<span id="qhdr">0</span>)</button>
-  </div>
-  <div class="open-rate-bar" id="open-rate-bar">
-    <span style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace">EMAIL TRACKING:</span>
-    <div class="or-stat"><div class="or-v" id="or-rate">0%</div><div class="or-l">Open Rate (Week)</div></div>
-    <div class="or-stat"><div class="or-v" id="or-opened">0</div><div class="or-l">Opened</div></div>
-    <div class="or-stat"><div class="or-v" id="or-tracked">0</div><div class="or-l">Tracked</div></div>
-    <div class="or-stat"><div class="or-v" id="or-sent">0</div><div class="or-l">Sent This Week</div></div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <div class="ctitle">📄 Quick Templates</div>
-    <div class="tmpl-tabs" id="tmpl-tabs"></div>
-    <div class="tmpl-list" id="tmpl-list"></div>
-    <div style="font-size:11px;color:var(--txt3);margin-top:8px;font-family:'DM Mono',monospace">Click a template to load it into the composer. Templates are auto-filled with your lead info.</div>
-  </div>
-  <div class="tip"><strong>Best angle:</strong> Free water audit, no commitment. AquaFlow 6-month money-back + lifetime warranty closes the trust gap. Golf: irrigation. Hotels: HVAC + laundry. Hospitals: cooling + sterilization. CRE: NOI improvement.</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-    <div>
-      <div class="card">
-        <div class="ctitle">Contact Details</div>
-        <div class="fr c2">
-          <div class="fld"><label>Name</label><input id="en" placeholder="Mike Torres"></div>
-          <div class="fld"><label>Title</label><input id="et" placeholder="Director of Facilities"></div>
-        </div>
-        <div class="fr c2">
-          <div class="fld"><label>Business</label><input id="eb" placeholder="Torrance Golf Club"></div>
-          <div class="fld"><label>Type</label>
-            <select id="ety">
-              <option>Golf course</option><option>Hotel</option><option>Restaurant / chain</option>
-              <option>Commercial real estate</option><option>Car wash</option>
-              <option>Hospital / medical center</option><option>Manufacturing / processing plant</option>
-              <option>School / university</option><option>Apartment complex</option>
-              <option>Sports facility</option><option>Grocery / supermarket chain</option>
-            </select>
+  <div id="email-grid">
+    <!-- LEFT: AI Generator 38% -->
+    <div id="email-left">
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:16px;color:var(--txt)">AI Email Generator</div>
+      <div class="fld" style="margin-bottom:10px"><label>Contact Name</label><input id="en" placeholder="Mike Torres"></div>
+      <div class="fld" style="margin-bottom:10px"><label>Title</label><input id="et" placeholder="Director of Facilities"></div>
+      <div class="fld" style="margin-bottom:10px"><label>Business</label><input id="eb" placeholder="Torrance Golf Club"></div>
+      <div class="fld" style="margin-bottom:10px"><label>Business Type</label>
+        <select id="ety">
+          <option>Golf course</option><option>Hotel</option><option>Restaurant / chain</option>
+          <option>Commercial real estate</option><option>Car wash</option>
+          <option>Hospital / medical center</option><option>Manufacturing / processing plant</option>
+          <option>School / university</option><option>Apartment complex</option>
+          <option>Sports facility</option><option>Grocery / supermarket chain</option>
+        </select>
+      </div>
+      <div class="fld" style="margin-bottom:10px"><label>Monthly Water Bill</label><input id="ebi" placeholder="$4,000/mo"></div>
+      <div class="fld" style="margin-bottom:10px"><label>Recipient Email</label><input id="ee" placeholder="contact@business.com" type="email"></div>
+      <div class="fld" style="margin-bottom:10px"><label>Email Type</label>
+        <select id="est">
+          <option value="cold">Cold Outreach</option>
+          <option value="fu1">Follow-up #1</option>
+          <option value="fu2">Follow-up #2</option>
+          <option value="bp">Break-up</option>
+          <option value="audit">Audit Confirmation</option>
+        </select>
+      </div>
+      <div class="fld" style="margin-bottom:14px"><label>Tone</label>
+        <select id="eto">
+          <option value="professional">Professional</option>
+          <option value="consultative">Consultative</option>
+          <option value="executive">Executive</option>
+          <option value="roi">ROI-focused</option>
+          <option value="casual">Casual</option>
+        </select>
+      </div>
+      <div class="brow" style="margin-bottom:0">
+        <button class="btn btn-a" style="flex:1;justify-content:center" onclick="genEmail()">✨ Generate Email</button>
+        <button class="btn" onclick="clearEForm()">Clear</button>
+      </div>
+      <!-- Generated output -->
+      <div id="email-gen-out" style="display:none">
+        <div id="email-gen-spin" style="display:none"><div class="ai-spin" style="margin-bottom:8px"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:6px;font-size:12px">Writing your email...</span></div></div>
+        <div id="email-gen-content" style="display:none">
+          <div id="email-gen-subj"></div>
+          <div id="email-gen-body"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="copyGeneratedEmail()">📋 Copy</button>
+            <button class="btn btn-sm btn-a" onclick="openInGmailClient()">📨 Open in Gmail Client →</button>
+            <button class="btn btn-sm" onclick="markContacted()" style="color:var(--txt2)">Mark Contacted</button>
           </div>
-        </div>
-        <div class="fr c2">
-          <div class="fld"><label>Monthly Water Bill</label><input id="ebi" placeholder="$4,000/mo"></div>
-          <div class="fld"><label>Email</label><input id="ee" placeholder="contact@business.com"></div>
-        </div>
-        <div class="fr c2">
-          <div class="fld"><label>Tone</label>
-            <select id="eto">
-              <option>Professional & direct</option><option>Consultative / value-focused</option>
-              <option>Brief & executive-level</option><option>ROI-forward</option><option>Friendly & casual</option>
-            </select>
-          </div>
-          <div class="fld"><label>Email Type</label>
-            <select id="est">
-              <option value="cold">Cold outreach #1</option>
-              <option value="fu1">Follow-up #1 (day 4)</option>
-              <option value="fu2">Follow-up #2 (day 9)</option>
-              <option value="bp">Break-up (day 14)</option>
-              <option value="audit">Audit confirmation</option>
-            </select>
-          </div>
-        </div>
-        <div class="fld" style="margin-bottom:10px"><label>Notes / Context</label><textarea id="enotes" rows="2" placeholder="Referral from John, mentioned high summer bills, met at trade show..."></textarea></div>
-        <div class="brow">
-          <button class="btn btn-a" onclick="genEmail()">✨ Generate Email</button>
-          <button class="btn" onclick="clearEForm()">Clear</button>
         </div>
       </div>
     </div>
-    <div>
-      <div class="card" id="eout" style="display:none">
-        <div class="ctitle">Generated Email</div>
-        <div id="e-gen" style="display:none"><div class="ai-spin"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:4px">Writing your email...</span></div></div>
-        <div id="e-content" style="display:none">
-          <div class="eprev">
-            <div class="esubj" id="esubj"></div>
-            <div class="ebody" id="ebody"></div>
-          </div>
-          <div class="brow">
-            <button class="btn btn-a btn-sm" onclick="copyEmail()">Copy</button>
-            <button class="btn btn-sm btn-b" onclick="sendEmailNow()">📨 Send Now</button>
-            <button class="btn btn-sm" onclick="addQueue()">+ Queue</button>
-            <button class="btn btn-sm" onclick="openGmail()">Gmail ↗</button>
-            <button class="btn btn-sm" onclick="markContacted()">Mark Contacted</button>
-          </div>
-        </div>
+
+    <!-- RIGHT: Gmail Client 62% -->
+    <div id="email-right">
+      <!-- Not connected -->
+      <div id="gmail-connect">
+        <div style="font-size:48px;line-height:1;color:var(--accent)">✉</div>
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--txt)">Connect Gmail</div>
+        <div style="font-size:13px;color:var(--txt2);max-width:320px">Read and send emails from lauren@aquaflowsales.com without leaving the app.</div>
+        <button class="btn btn-a" style="padding:12px 28px;font-size:14px" onclick="connectGmail()">Connect Gmail →</button>
       </div>
-      <div class="card" id="qcard" style="display:none">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div class="ctitle" style="margin:0">Send Queue (<span id="qcount">0</span>)</div>
-          <button class="btn btn-sm" onclick="exportQueue()">Export</button>
+      <!-- Connected: top bar + 3-col -->
+      <div id="gmail-client" style="display:none;flex-direction:column;height:100%">
+        <div id="gmail-topbar">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div id="gmail-avatar" style="width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#000;flex-shrink:0">G</div>
+            <span id="gmail-account" style="font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace"></span>
+            <a href="#" onclick="disconnectGmail();return false;" style="font-size:11px;color:var(--txt3);text-decoration:none">Disconnect</a>
+          </div>
+          <button class="btn btn-sm btn-a" onclick="showGmailCompose({})">✏ Compose</button>
         </div>
-        <div id="qlist"></div>
+        <div id="gmail-body">
+          <div id="gmail-folders">
+            <div class="gfolder sel" data-folder="inbox" onclick="switchGmailFolder('inbox',this)">Inbox <span id="gmail-unread-badge" style="display:none;background:#3b82f6;color:#fff;border-radius:10px;font-size:9px;font-weight:700;padding:1px 6px;line-height:1.8">0</span></div>
+            <div class="gfolder" data-folder="sent" onclick="switchGmailFolder('sent',this)">Sent</div>
+            <div class="gfolder" data-folder="starred" onclick="switchGmailFolder('starred',this)">Starred</div>
+            <div class="gfolder" data-folder="drafts" onclick="switchGmailFolder('drafts',this)">Drafts</div>
+            <div style="border-top:1px solid var(--bdr);margin:6px 0"></div>
+            <div class="gfolder" onclick="fetchGmailFolder(activeGmailFolder)" style="color:var(--accent)">↺ Refresh</div>
+            <div id="gmail-synced" style="font-size:10px;color:var(--txt3);padding:6px 14px;font-family:'DM Mono',monospace"></div>
+          </div>
+          <div id="gmail-list"><div style="padding:20px;text-align:center;color:var(--txt3);font-size:12px">Loading...</div></div>
+          <div id="gmail-pane"><div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--txt3);font-size:13px;gap:8px"><div style="font-size:32px">✉</div>Select an email to read</div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -580,7 +698,10 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   <!-- Power Dialer countdown bar — full width above grid -->
   <div id="pd-bar" style="display:none;align-items:center;justify-content:space-between;background:rgba(0,212,170,0.08);border:1px solid var(--accent);border-radius:10px;padding:12px 16px;margin-bottom:16px">
     <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--accent)">⚡ Next: <strong id="pd-next-name"></strong> — calling in <span id="pd-countdown">3</span>s</div>
-    <button class="btn btn-sm" onclick="cancelPowerDialer()" style="color:var(--red);flex-shrink:0">Cancel</button>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button class="btn btn-sm" id="pd-pause-btn" onclick="togglePauseDialer()" style="color:var(--amber)">⏸ Pause</button>
+      <button class="btn btn-sm" onclick="cancelPowerDialer()" style="color:var(--red)">Cancel</button>
+    </div>
   </div>
 
   <!-- True side-by-side grid: 55% left / 45% right -->
@@ -789,12 +910,22 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   <div class="pipe" id="pipe-board"></div>
 </div>
 
-<!-- SEQUENCES -->
-<div id="pane-sequences" class="pane">
-  <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px">Email Sequences</div>
-  <div style="font-size:12px;color:var(--txt2);margin-bottom:14px">5-touch cadences — 14-day window per lead</div>
-  <div class="tip"><strong>Key stat:</strong> Average B2B deal closes on touch 5–8. Most reps quit after 1–2. Your biggest competitive edge is just following through.</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" id="seq-grid"></div>
+<!-- LISTS -->
+<div id="pane-lists" class="pane">
+  <div id="lists-grid">
+    <!-- Sidebar 25% -->
+    <div id="lists-sidebar">
+      <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);flex-shrink:0">
+        <span style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800">My Lists</span>
+        <button class="btn btn-sm btn-a" onclick="createNewList()" style="padding:4px 10px;font-size:11px">+ New</button>
+      </div>
+      <div id="lists-sidebar-inner"></div>
+    </div>
+    <!-- Main 75% -->
+    <div id="lists-main">
+      <div id="lists-main-inner" style="color:var(--txt3);text-align:center;padding:40px 20px;font-size:13px">Select a list to view leads</div>
+    </div>
+  </div>
 </div>
 
 <!-- CALCULATOR -->
@@ -1156,7 +1287,8 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 <script>
 
 let leads=[],queue=[],cfg={};
-let selCallId=null,selPipeId=null,curEmailId=null;
+let lists=[],archive=[];
+let selCallId=null,selPipeId=null,curEmailId=null,activeListId=null;
 let lastLat=null,lastLng=null,lastLocText='';
 let activeCall={id:null,leadId:null,status:null};
 let twilioDevice=null,twilioConn=null,twilioReady=false,twilioSetupStarted=false;
@@ -1164,6 +1296,7 @@ let powerDialerActive=false,powerDialerQueue=[],powerDialerIdx=-1,powerDialerCou
 let currentUser=null;
 let leadQuality=localStorage.getItem('af_lead_quality')||'has_contact';
 let dialpadNum='';
+let gmailTokens=null,activeGmailFolder='inbox',gmailMessages=[],gmailSyncTime=null,gmailRefreshTimer=null;
 
 function loadLocCache(){
   lastLat=parseFloat(localStorage.getItem('af_lastLat'))||null;
@@ -1181,6 +1314,8 @@ function saveLocCache(){
 function userKey(k){return currentUser?k+'_'+currentUser.email:k;}
 function save(){localStorage.setItem(userKey('af_leads'),JSON.stringify(leads));localStorage.setItem(userKey('af_q'),JSON.stringify(queue));}
 function saveCfg(){localStorage.setItem(userKey('af_cfg'),JSON.stringify(cfg));}
+function saveLists(){localStorage.setItem(userKey('af_lists'),JSON.stringify(lists));updateImportListSelects();}
+function saveArchive(){localStorage.setItem(userKey('af_archive'),JSON.stringify(archive));}
 
 // Clock
 setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});},1000);
@@ -1196,10 +1331,11 @@ function go(id,el){
   if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
   if(id==='calculator')renderCalc();
   if(id==='map')renderMap();
-  if(id==='email'){renderTemplates();updateOpenRateBar();}
+  if(id==='email'){initEmailPane();}
+  if(id==='lists'){renderLists();}
 }
 function goById(id){
-  const tabs=['scraper','email','dialer','pipeline','calculator','settings','map','admin'];
+  const tabs=['scraper','email','dialer','pipeline','lists','calculator','map','settings','admin'];
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
   document.getElementById('pane-'+id).classList.add('active');
@@ -1207,7 +1343,8 @@ function goById(id){
   if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();setupTwilioDevice();startSmsRefresh();}
   if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
   if(id==='map')renderMap();
-  if(id==='email'){renderTemplates();updateOpenRateBar();}
+  if(id==='email'){initEmailPane();}
+  if(id==='lists'){renderLists();}
 }
 
 function flash(msg){
@@ -1325,7 +1462,7 @@ function isGenericContact(l){return!l.contact||GENERIC_CONTACTS.includes(l.conta
 
 function setLeadQuality(q){
   leadQuality=q;
-  localStorage.setItem('af_lead_quality',q);
+  localStorage.setItem(userKey('af_lead_quality'),q);
   renderLeads();
 }
 
@@ -1361,7 +1498,7 @@ function renderLeads(){
       return`<tr data-lid="${l.id}">
       <td><input type="checkbox" class="lead-cb" data-id="${l.id}"></td>
       <td><span class="bdg ${scoreCls}">${score}</span></td>
-      <td><div style="font-weight:500">${l.biz}</div><div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">${l.city} · ${l.type}${l.rating?' · ⭐'+l.rating:''}</div></td>
+      <td><div style="font-weight:500">${l.biz}</div><div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">${l.city} · ${l.type}${l.rating?' · ⭐'+l.rating:''}</div><div style="margin-top:2px">${sourceBadge(l)}</div></td>
       <td class="contact-cell">${contactCellHTML(l)}</td>
       <td class="phone-cell">${phoneCellHTML(l)}</td>
       <td><div style="font-family:'DM Mono',monospace;font-weight:500;color:var(--green)">$${l.size.toLocaleString()}/mo</div></td>
@@ -1374,6 +1511,7 @@ function renderLeads(){
         <button class="btn btn-call btn-sm" onclick="showCallPrep(${l.id})">📞</button>
         <button class="btn btn-sm" onclick="prefillEmail(${l.id})">✉</button>
         <button class="btn btn-sm" onclick="showResearch(${l.id})" style="color:var(--txt2)" title="Research">🔍</button>
+        <button class="btn btn-sm" onclick="addLeadToListPrompt(${l.id})" style="color:var(--txt2)" title="Add to list">☰</button>
         <button class="btn btn-sm" onclick="editLead(${l.id})" style="color:var(--txt2)">✏</button>
         <button class="btn btn-sm" onclick="rmLead(${l.id})" style="color:var(--txt3)">✕</button>
       </div></td>
@@ -1483,7 +1621,6 @@ async function callEnrichAPI(url,body){
 function enrichStatusMsg(msg){
   const el=document.getElementById('scr-msg');
   if(el)el.textContent=msg;
-  console.log('[enrich]',msg);
 }
 async function enrichOneLead(lead){
   lead.enriching=true;
@@ -1492,7 +1629,6 @@ async function enrichOneLead(lead){
     enrichStatusMsg('Scanning website for '+lead.biz+'...');
     const data=await callEnrichAPI('/.netlify/functions/webscrape',{website:lead.website||'',bizName:lead.biz,bizType:lead.type})
       .catch(e=>{console.warn('[enrich]',lead.biz,'Webscrape error:',e.message);return{found:false,reason:'error'};});
-    console.log('[enrich]',lead.biz,'Website →',data.found?'✓ found':'✗ '+(data.reason||'not found'));
 
     if(data.found){
       // Use title as name fallback if name is null
@@ -1924,7 +2060,13 @@ async function debugTestWebscrapeFirstLead(){
 // ===== END DEBUG TOOLS =====
 
 function rmLead(id){leads=leads.filter(l=>l.id!==id);save();stats();renderLeads();}
-function clearLeads(){if(confirm('Clear all leads?')){leads=[];save();stats();renderLeads();}}
+function clearLeads(){
+  if(!leads.length)return;
+  if(confirm('Move all '+leads.length+' leads to Archive?')){
+    archive=archive.concat(leads.map(l=>({...l,archivedAt:new Date().toLocaleDateString()})));
+    leads=[];save();saveArchive();stats();renderLeads();flash('Leads archived — view them in Lists → Archive');
+  }
+}
 function editContact(id){
   const l=leads.find(x=>x.id===id);
   const name=prompt('Contact name:',l.contact);if(name)l.contact=name;
@@ -1954,25 +2096,31 @@ function prefillEmail(id){
   goById('email');
 }
 
+// ===== EMAIL COMPOSER =====
+function initEmailPane(){
+  renderEmailConnectState();
+  if(gmailConnected()&&gmailMessages.length===0){fetchGmailFolder('inbox');}
+}
+
 async function genEmail(){
-  // Anthropic key stored server-side in Netlify
   const name=document.getElementById('en').value||'there';
   const title=document.getElementById('et').value||'Facilities Manager';
   const biz=document.getElementById('eb').value||'your company';
   const type=document.getElementById('ety').value;
   const tone=document.getElementById('eto').value;
   const bill=document.getElementById('ebi').value;
-  const notes=document.getElementById('enotes').value;
   const seq=document.getElementById('est').value;
   const rn=cfg.name||'Lauren Hatwan';
   const rp=cfg.phone||'(562) 555-0194';
   const re=cfg.email||'lauren@aquaflowsales.com';
+  const toneMap={professional:'professional and direct',consultative:'consultative and value-focused',executive:'brief and executive-level',roi:'ROI-forward',casual:'friendly and casual'};
   const seqMap={cold:'a first-touch cold outreach email (under 175 words)',fu1:'follow-up #1 (2nd touch day 4, reference not hearing back, under 90 words)',fu2:'follow-up #2 (3rd touch day 9, add industry water insight, under 90 words)',bp:'friendly break-up email (day 14, keep door open, under 70 words)',audit:'confirmation email for scheduled free water audit'};
-  const prompt=`You are a B2B sales rep for AquaFlow (aquaflow.com) — a patented water-saving valve saving businesses 10-30% on water+sewer bills by compressing trapped air before the meter. USA-made, NSF/ANSI certified, installs under 1 hour, no disruption, no maintenance, lifetime warranty, 6-month money-back guarantee.\n\nWrite ${seqMap[seq]} to ${name}, ${title} at ${biz} (a ${type}).${bill?' Monthly water bill: '+bill+'.':''}${notes?' Context: '+notes:''}\n\nTone: ${tone}.\nRules:\n- No hollow openers\n- Sharp hook relevant to their industry\n- CTA = free water audit or 10-min call\n- Sign off: ${rn} | AquaFlow — Long Beach/LA | ${rp} | ${re}\n\nFormat:\nSubject: [subject]\n\n[body]`;
+  const prompt=`You are a B2B sales rep for AquaFlow (aquaflow.com) — a patented water-saving valve saving businesses 10-30% on water+sewer bills by compressing trapped air before the meter. USA-made, NSF/ANSI certified, installs under 1 hour, no disruption, no maintenance, lifetime warranty, 6-month money-back guarantee.\n\nWrite ${seqMap[seq]} to ${name}, ${title} at ${biz} (a ${type}).${bill?' Monthly water bill: '+bill+'.':''}\n\nTone: ${toneMap[tone]||tone}.\nRules:\n- No hollow openers\n- Sharp hook relevant to their industry\n- CTA = free water audit or 10-min call\n- Sign off: ${rn} | AquaFlow — Long Beach/LA | ${rp} | ${re}\n\nFormat:\nSubject: [subject]\n\n[body]`;
 
-  document.getElementById('eout').style.display='block';
-  document.getElementById('e-gen').style.display='block';
-  document.getElementById('e-content').style.display='none';
+  const out=document.getElementById('email-gen-out');
+  const spin=document.getElementById('email-gen-spin');
+  const content=document.getElementById('email-gen-content');
+  out.style.display='block';spin.style.display='flex';content.style.display='none';
 
   try{
     const resp=await fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}]})});
@@ -1981,58 +2129,584 @@ async function genEmail(){
     const text=data.content.map(i=>i.text||'').join('\n');
     const sm=text.match(/Subject:\s*(.+)/i);
     const body=text.replace(/Subject:\s*.+\n?/i,'').trim();
-    document.getElementById('esubj').textContent=sm?'Subject: '+sm[1]:'';
-    document.getElementById('ebody').textContent=body;
-    document.getElementById('e-gen').style.display='none';
-    document.getElementById('e-content').style.display='block';
+    document.getElementById('email-gen-subj').textContent=sm?'Subject: '+sm[1]:'';
+    document.getElementById('email-gen-body').textContent=body;
+    spin.style.display='none';content.style.display='block';
   }catch(e){
-    document.getElementById('e-gen').innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>';
+    spin.innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>';
   }
 }
 
-function copyEmail(){navigator.clipboard.writeText(document.getElementById('esubj').textContent+'\n\n'+document.getElementById('ebody').textContent).then(()=>flash('Copied!'));}
-function openGmail(){
-  const s=document.getElementById('esubj').textContent.replace('Subject: ','');
-  const b=document.getElementById('ebody').textContent;
+function copyGeneratedEmail(){
+  const s=document.getElementById('email-gen-subj').textContent;
+  const b=document.getElementById('email-gen-body').textContent;
+  navigator.clipboard.writeText(s+'\n\n'+b).then(()=>flash('Copied!'));
+}
+
+function openInGmailClient(){
+  const s=document.getElementById('email-gen-subj').textContent.replace(/^Subject:\s*/i,'');
+  const b=document.getElementById('email-gen-body').textContent;
   const to=document.getElementById('ee').value||'';
-  window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(to)}&su=${encodeURIComponent(s)}&body=${encodeURIComponent(b)}`,'_blank');
+  if(!gmailConnected()){flash('Connect Gmail first →');return;}
+  showGmailCompose({to,subject:s,body:b});
 }
-function addQueue(){
-  queue.push({id:Date.now(),biz:document.getElementById('eb').value||'Unknown',name:document.getElementById('en').value,email:document.getElementById('ee').value,subject:document.getElementById('esubj').textContent.replace('Subject: ',''),body:document.getElementById('ebody').textContent,type:document.getElementById('est').value,status:'queued',date:new Date().toLocaleDateString()});
-  save();document.getElementById('qcard').style.display='block';renderQueue();flash('Added to queue');
-}
-function showQueue(){document.getElementById('qcard').style.display='block';renderQueue();}
-function renderQueue(){
-  document.getElementById('qcount').textContent=queue.length;
-  document.getElementById('qhdr').textContent=queue.length;
-  const c=document.getElementById('qlist');
-  if(!queue.length){c.innerHTML='<div style="color:var(--txt3);text-align:center;padding:16px;font-size:12px">Queue empty</div>';return;}
-  c.innerHTML=queue.map((q,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--bdr);gap:10px;flex-wrap:wrap">
-    <div style="flex:1;min-width:0">
-      <div style="font-weight:500;font-size:13px">${q.biz} — ${q.name}</div>
-      <div style="font-size:11px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.subject}</div>
-      <div style="margin-top:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <label class="open-track" onclick="toggleTrack(${i})">
-          <div class="open-dot ${q.tracked?(q.opened?'opened':'tracked'):''}"></div>
-          <span>${q.opened?'📬 Opened '+q.openedAt:q.tracked?'👁 Tracking':'Track opens'}</span>
-        </label>
-        ${q.tracked&&!q.opened?`<button class="btn btn-sm" onclick="markOpened(${i})" style="font-size:10px;padding:3px 7px">Mark Opened</button>`:''}
-      </div>
-    </div>
-    <div style="display:flex;gap:5px;flex-shrink:0">
-      ${q.status==='sent'?'<span class="bdg bdg-g">Sent</span>':'<span class="bdg bdg-am">Queued</span>'}
-      <button class="btn btn-sm btn-a" onclick="openGmailQ(${i})">Gmail ↗</button>
-      <button class="btn btn-sm" onclick="sentQ(${i})">✓</button>
-      <button class="btn btn-sm" onclick="rmQ(${i})" style="color:var(--txt3)">✕</button>
-    </div>
-  </div>`).join('');
-}
-function openGmailQ(i){const q=queue[i];window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(q.email||'')}&su=${encodeURIComponent(q.subject)}&body=${encodeURIComponent(q.body)}`,'_blank');}
-function sentQ(i){queue[i].status='sent';save();renderQueue();}
-function rmQ(i){queue.splice(i,1);save();renderQueue();}
-function exportQueue(){const rows=[['Business','Contact','Email','Subject','Status','Date']];queue.forEach(q=>rows.push([q.biz,q.name,q.email,q.subject,q.status,q.date]));dlCSV(rows,'email_queue.csv');}
-function clearEForm(){['en','et','eb','ee','ebi','enotes'].forEach(id=>document.getElementById(id).value='');curEmailId=null;}
+
+function clearEForm(){['en','et','eb','ee','ebi'].forEach(id=>document.getElementById(id).value='');curEmailId=null;document.getElementById('email-gen-out').style.display='none';}
 function markContacted(){if(curEmailId){const l=leads.find(x=>x.id===curEmailId);if(l){l.status='contacted';save();flash('Marked contacted');}}}
+
+// ===== GMAIL CLIENT =====
+function gmailConnected(){return!!(gmailTokens&&gmailTokens.access_token);}
+function loadGmailTokens(){
+  if(!currentUser)return;
+  const stored=localStorage.getItem('af_gmail_'+currentUser.email);
+  if(stored)try{gmailTokens=JSON.parse(stored);}catch(e){}
+}
+function saveGmailTokens(t){
+  gmailTokens=t;
+  if(currentUser)localStorage.setItem('af_gmail_'+currentUser.email,JSON.stringify(t));
+}
+function disconnectGmail(){
+  gmailTokens=null;
+  if(currentUser)localStorage.removeItem('af_gmail_'+currentUser.email);
+  if(gmailRefreshTimer){clearInterval(gmailRefreshTimer);gmailRefreshTimer=null;}
+  renderEmailConnectState();flash('Gmail disconnected');
+}
+async function connectGmail(){
+  try{
+    const resp=await fetch('/.netlify/functions/gmail-auth');
+    const data=await resp.json();
+    if(data.error){flash('Error: '+data.error);return;}
+    window.location.href=data.url;
+  }catch(e){flash('Error: '+e.message);}
+}
+async function ensureGmailToken(){
+  if(!gmailTokens)return false;
+  if(Date.now()<gmailTokens.expiry-60000)return true;
+  // Refresh
+  try{
+    const resp=await fetch('/.netlify/functions/gmail-api?action=refresh',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+gmailTokens.refresh_token},
+      body:JSON.stringify({refreshToken:gmailTokens.refresh_token}),
+    });
+    const data=await resp.json();
+    if(data.access_token){gmailTokens.access_token=data.access_token;gmailTokens.expiry=data.expiry;saveGmailTokens(gmailTokens);return true;}
+  }catch(e){}
+  return false;
+}
+async function gmailApiCall(action,extraParams,body,method){
+  if(!await ensureGmailToken())return{error:'Not authenticated'};
+  const url='/.netlify/functions/gmail-api?action='+action+(extraParams?'&'+extraParams:'');
+  const opts={method:method||'GET',headers:{'Authorization':'Bearer '+gmailTokens.access_token}};
+  if(body){opts.method='POST';opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body);}
+  const resp=await fetch(url,opts);
+  return resp.json();
+}
+function renderEmailConnectState(){
+  const connect=document.getElementById('gmail-connect');
+  const client=document.getElementById('gmail-client');
+  if(!connect||!client)return;
+  if(gmailConnected()){
+    connect.style.display='none';client.style.display='flex';
+    const email=currentUser?currentUser.email:'';
+    const init=email?email[0].toUpperCase():'G';
+    const av=document.getElementById('gmail-avatar');if(av){av.textContent=init;}
+    const ac=document.getElementById('gmail-account');if(ac){ac.textContent=email;}
+  }else{
+    connect.style.display='flex';client.style.display='none';
+  }
+}
+async function fetchGmailFolder(folder){
+  if(!gmailConnected())return;
+  activeGmailFolder=folder;
+  const list=document.getElementById('gmail-list');
+  if(list)list.innerHTML=['','','','',''].map(()=>'<div class="gmail-skeleton"></div>').join('');
+  const pane=document.getElementById('gmail-pane');
+  if(pane)pane.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--txt3);font-size:13px">Select an email</div>';
+  try{
+    const data=await gmailApiCall(folder);
+    if(data.error){if(list)list.innerHTML='<div style="padding:20px;color:var(--red);font-size:12px">'+data.error+'</div>';return;}
+    gmailMessages=data.messages||[];
+    renderGmailList();
+    gmailSyncTime=new Date();
+    const synced=document.getElementById('gmail-synced');
+    if(synced)synced.textContent='Just synced';
+  }catch(e){if(list)list.innerHTML='<div style="padding:20px;color:var(--red);font-size:12px">'+e.message+'</div>';}
+}
+function switchGmailFolder(folder,el){
+  document.querySelectorAll('.gfolder').forEach(f=>f.classList.remove('sel'));
+  if(el)el.classList.add('sel');
+  fetchGmailFolder(folder);
+}
+function renderGmailList(){
+  const list=document.getElementById('gmail-list');
+  if(!list)return;
+  if(!gmailMessages.length){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--txt3);font-size:12px">No messages</div>';return;}
+  const unread=gmailMessages.filter(m=>!m.isRead).length;
+  const badge=document.getElementById('gmail-unread-badge');
+  if(badge){badge.style.display=unread>0?'inline':'none';badge.textContent=unread;}
+  list.innerHTML=gmailMessages.map(m=>{
+    const from=m.from.replace(/<[^>]+>/,'').replace(/"/g,'').trim();
+    const date=formatGmailDate(m.date);
+    return`<div class="gmail-row${m.isRead?'':' unread'}" data-id="${m.id}" onclick="readGmailMessage('${m.id}',this)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-bottom:2px">
+        <div style="font-size:12px;font-weight:${m.isRead?'400':'600'};color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${escHtml(from)}</div>
+        <div style="font-size:10px;color:var(--txt3);flex-shrink:0;font-family:'DM Mono',monospace">${date}</div>
+      </div>
+      <div style="font-size:12px;color:${m.isRead?'var(--txt2)':'var(--txt)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px">${escHtml(m.subject)}</div>
+      <div style="font-size:11px;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(m.snippet||'')}</div>
+    </div>`;
+  }).join('');
+}
+async function readGmailMessage(id,rowEl){
+  document.querySelectorAll('.gmail-row').forEach(r=>r.classList.remove('sel'));
+  if(rowEl)rowEl.classList.add('sel');
+  const pane=document.getElementById('gmail-pane');
+  if(!pane)return;
+  pane.innerHTML='<div style="padding:20px"><div class="gmail-skeleton" style="height:60px"></div><div class="gmail-skeleton" style="height:200px;margin-top:12px"></div></div>';
+  try{
+    const data=await gmailApiCall('read','id='+id);
+    if(data.error){pane.innerHTML='<div style="padding:20px;color:var(--red)">'+data.error+'</div>';return;}
+    // Mark as read in local list
+    const msg=gmailMessages.find(m=>m.id===id);if(msg)msg.isRead=true;
+    // Lead match
+    const fromEmail=(data.from.match(/<([^>]+)>/)||[,''])[1].toLowerCase()||data.from.toLowerCase();
+    const matchedLead=leads.find(l=>l.email&&l.email.toLowerCase()===fromEmail);
+    const leadPin=matchedLead?`<div style="background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:12px">
+      📌 <strong>${escHtml(matchedLead.biz)}</strong> — ${escHtml(matchedLead.contact)}
+      <button class="btn btn-sm" onclick="prefillEmail(${matchedLead.id})" style="margin-left:auto">View Lead</button>
+    </div>`:'';
+    const bodyHtml=data.isHtml
+      ?`<iframe srcdoc="${escHtml(data.body)}" style="width:100%;border:none;min-height:300px;background:#fff" onload="this.style.height=(this.contentDocument.body.scrollHeight+20)+'px'"></iframe>`
+      :`<pre style="white-space:pre-wrap;font-family:inherit;font-size:13px;color:var(--txt);line-height:1.7">${escHtml(data.body)}</pre>`;
+    pane.innerHTML=`<div style="padding:16px">
+      ${leadPin}
+      <div style="font-size:18px;font-weight:700;color:var(--txt);margin-bottom:10px">${escHtml(data.subject)}</div>
+      <div style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace;margin-bottom:4px">From: ${escHtml(data.from)}</div>
+      <div style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace;margin-bottom:4px">To: ${escHtml(data.to)}</div>
+      <div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;margin-bottom:16px">${escHtml(data.date)}</div>
+      <div style="border-top:1px solid var(--bdr);padding-top:16px;margin-bottom:16px">${bodyHtml}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="showGmailCompose({to:'${escHtml(data.from)}',subject:'Re: ${escHtml(data.subject)}',threadId:'${data.threadId}',inReplyTo:'${data.messageId||''}',references:'${data.references||data.messageId||''}'})">↩ Reply</button>
+        <button class="btn btn-sm" onclick="showGmailCompose({subject:'Fwd: ${escHtml(data.subject)}'})">↪ Forward</button>
+      </div>
+    </div>`;
+  }catch(e){pane.innerHTML='<div style="padding:20px;color:var(--red)">'+e.message+'</div>';}
+}
+function showGmailCompose(opts){
+  if(!gmailConnected()){flash('Connect Gmail first');return;}
+  const pane=document.getElementById('gmail-pane');
+  if(!pane)return;
+  const {to='',subject='',body='',threadId='',inReplyTo='',references=''}=opts;
+  pane.innerHTML=`<div style="padding:16px;display:flex;flex-direction:column;height:100%;box-sizing:border-box">
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--txt)">New Message</div>
+    <div class="fld" style="margin-bottom:10px"><label>To</label><input id="gc-to" value="${escHtml(to)}" placeholder="recipient@email.com"></div>
+    <div class="fld" style="margin-bottom:10px"><label>Subject</label><input id="gc-subject" value="${escHtml(subject)}"></div>
+    <div class="fld" style="flex:1;display:flex;flex-direction:column;margin-bottom:10px"><label>Message</label>
+      <textarea id="gc-body" style="flex:1;min-height:180px;resize:none" placeholder="Type your message...">${escHtml(body)}</textarea>
+    </div>
+    <input type="hidden" id="gc-thread" value="${escHtml(threadId)}">
+    <input type="hidden" id="gc-reply-to" value="${escHtml(inReplyTo)}">
+    <input type="hidden" id="gc-refs" value="${escHtml(references)}">
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-a" onclick="sendGmailMessage()">Send →</button>
+      <button class="btn" onclick="fetchGmailFolder(activeGmailFolder)">Discard</button>
+    </div>
+  </div>`;
+}
+async function sendGmailMessage(){
+  const to=document.getElementById('gc-to').value;
+  const subject=document.getElementById('gc-subject').value;
+  const body=document.getElementById('gc-body').value;
+  const threadId=document.getElementById('gc-thread').value;
+  const inReplyTo=document.getElementById('gc-reply-to').value;
+  const references=document.getElementById('gc-refs').value;
+  if(!to||!subject||!body){flash('Fill in To, Subject, and Message');return;}
+  const btn=event.target;btn.textContent='Sending...';btn.disabled=true;
+  try{
+    const from=currentUser?currentUser.email:'me';
+    const action=inReplyTo?'reply':'send';
+    const data=await gmailApiCall(action,'',{to,subject,body:body,from,threadId:threadId||undefined,inReplyTo:inReplyTo||undefined,references:references||undefined},'POST');
+    if(data.error){flash('Error: '+data.error);btn.textContent='Send →';btn.disabled=false;return;}
+    flash('Email sent ✓');
+    // Mark lead contacted if email matches
+    const matchedLead=leads.find(l=>l.email&&l.email.toLowerCase()===to.toLowerCase());
+    if(matchedLead&&curEmailId===matchedLead.id){matchedLead.status='contacted';save();}
+    fetchGmailFolder(activeGmailFolder);
+  }catch(e){flash('Error: '+e.message);btn.textContent='Send →';btn.disabled=false;}
+}
+function formatGmailDate(dateStr){
+  if(!dateStr)return'';
+  const d=new Date(dateStr);
+  if(isNaN(d))return dateStr.slice(0,10)||'';
+  const now=new Date();
+  const diff=now-d;
+  if(diff<86400000&&d.getDate()===now.getDate())return d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  if(diff<604800000)return d.toLocaleDateString('en-US',{weekday:'short'});
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function startGmailAutoRefresh(){
+  if(gmailRefreshTimer)clearInterval(gmailRefreshTimer);
+  gmailRefreshTimer=setInterval(()=>{
+    if(document.getElementById('pane-email').classList.contains('active')&&gmailConnected()){
+      fetchGmailFolder(activeGmailFolder);
+      const synced=document.getElementById('gmail-synced');
+      if(synced&&gmailSyncTime){const m=Math.round((Date.now()-gmailSyncTime)/60000);synced.textContent=m<=0?'Just synced':m+'m ago';}
+    }
+  },60000);
+}
+
+// ===== ADMIN TAB VISIBILITY =====
+function applyAdminTabVisibility(){
+  const email=(currentUser&&currentUser.email)||'';
+  const isAdmin=email.includes('bigh202')||email.toLowerCase().includes('admin');
+  document.querySelectorAll('.tab').forEach(t=>{
+    if(t.textContent.trim()==='Admin')t.style.display=isAdmin?'':'none';
+  });
+}
+
+// ===== POWER DIALER PAUSE =====
+let powerDialerPaused=false;
+function togglePauseDialer(){
+  powerDialerPaused=!powerDialerPaused;
+  const btn=document.getElementById('pd-pause-btn');
+  if(powerDialerPaused){
+    if(powerDialerCountdownTimer){clearInterval(powerDialerCountdownTimer);powerDialerCountdownTimer=null;}
+    if(btn){btn.textContent='▶ Resume';btn.style.color='var(--green)';}
+    flash('Power Dialer paused');
+  }else{
+    if(btn){btn.textContent='⏸ Pause';btn.style.color='var(--amber)';}
+    powerDialerNext();
+    flash('Power Dialer resumed');
+  }
+}
+
+// ===== LEAD IMPORT SYSTEM =====
+let importedRows=[];let importColMap={};
+
+function switchImportTab(tab){
+  document.getElementById('import-batch-panel').style.display=tab==='batch'?'block':'none';
+  document.getElementById('import-manual-panel').style.display=tab==='manual'?'block':'none';
+  document.querySelectorAll('.import-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('itab-'+tab).classList.add('active');
+}
+
+function updateImportListSelects(){
+  const opts='<option value="">None</option>'+lists.map(l=>`<option value="${l.id}">${escHtml(l.name)}</option>`).join('');
+  const manSel=document.getElementById('man-list-sel');
+  if(manSel)manSel.innerHTML=opts;
+}
+
+function importDragOver(e){e.preventDefault();document.getElementById('import-dropzone').classList.add('over');}
+function importDragLeave(e){document.getElementById('import-dropzone').classList.remove('over');}
+function importDrop(e){e.preventDefault();importDragLeave(e);if(e.dataTransfer.files[0])importFileSelected(e.dataTransfer.files[0]);}
+
+function importFileSelected(file){
+  if(!file)return;
+  const ext=file.name.split('.').pop().toLowerCase();
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    let rows=[];
+    try{
+      if(ext==='csv'){
+        rows=parseCSV(ev.target.result);
+      }else{
+        if(!window.XLSX){flash('SheetJS not loaded — refresh and try again');return;}
+        const wb=XLSX.read(ev.target.result,{type:'binary'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      }
+    }catch(err){flash('Could not parse file: '+err.message);return;}
+    if(!rows||rows.length<2){flash('File appears empty');return;}
+    importedRows=rows;
+    buildImportPreview(rows);
+  };
+  if(ext==='csv')reader.readAsText(file);
+  else reader.readAsBinaryString(file);
+}
+
+function parseCSV(text){
+  const lines=text.split(/\r?\n/);
+  return lines.filter(l=>l.trim()).map(line=>{
+    const cells=[];let cur='';let inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){inQ=!inQ;}
+      else if(c===','&&!inQ){cells.push(cur.trim());cur='';}
+      else{cur+=c;}
+    }
+    cells.push(cur.trim());
+    return cells;
+  });
+}
+
+const IMPORT_FIELD_ALIASES={
+  biz:['business','company','organization','biz','business name','company name'],
+  phone:['phone','phone number','tel','telephone','mobile','cell'],
+  email:['email','email address','e-mail','mail'],
+  contact:['contact','name','contact name','full name','person'],
+  title:['title','job title','position','role'],
+  city:['city','location','area'],
+  size:['water bill','monthly bill','bill amount','monthly water bill','bill','water cost'],
+  notes:['notes','comments','note','comment','description'],
+  website:['website','web','url','site'],
+};
+
+function detectColumn(header){
+  const h=(header||'').toLowerCase().trim();
+  for(const[field,aliases]of Object.entries(IMPORT_FIELD_ALIASES)){
+    if(aliases.includes(h))return field;
+  }
+  return '';
+}
+
+function buildImportPreview(rows){
+  const headers=rows[0];
+  const dataRows=rows.slice(1).filter(r=>r.some(c=>c!==''&&c!==null&&c!==undefined));
+  importColMap={};
+  headers.forEach((h,i)=>{importColMap[i]=detectColumn(h);});
+
+  // Build preview table (5 rows)
+  const prev5=dataRows.slice(0,5);
+  let html=`<table class="tbl" style="font-size:11px"><thead><tr>`;
+  html+=headers.map((h,i)=>{
+    const mapped=importColMap[i];
+    return`<th>${escHtml(h||'')}${mapped?`<br><span class="col-badge">${mapped}</span>`:''}</th>`;
+  }).join('');
+  html+=`</tr></thead><tbody>`;
+  prev5.forEach(r=>{html+=`<tr>${headers.map((_,i)=>`<td>${escHtml(String(r[i]||''))}</td>`).join('')}</tr>`;});
+  html+=`</tbody></table>`;
+  document.getElementById('import-preview-table').innerHTML=html;
+
+  // Unmapped columns → show dropdown
+  let mapHtml='';
+  headers.forEach((h,i)=>{
+    if(!importColMap[i]&&h&&h.trim()){
+      mapHtml+=`<span style="font-size:12px;color:var(--txt2);margin-right:6px">${escHtml(h)}:</span>
+      <select style="background:var(--surf3);border:1px solid var(--bdr2);color:var(--txt);padding:4px 8px;border-radius:6px;font-size:11px;margin-right:12px;margin-bottom:6px" onchange="importColMap[${i}]=this.value">
+        <option value="">— skip —</option>
+        ${Object.keys(IMPORT_FIELD_ALIASES).map(f=>`<option value="${f}">${f}</option>`).join('')}
+      </select>`;
+    }
+  });
+  const mapDiv=document.getElementById('import-col-map');
+  if(mapHtml){mapDiv.innerHTML='<div style="font-size:11px;color:var(--txt3);font-family:\'DM Mono\',monospace;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.07em">Map columns:</div><div>'+mapHtml+'</div>';}
+  else{mapDiv.innerHTML='';}
+
+  const count=dataRows.length;
+  document.getElementById('import-preview-info').textContent=file_name_hint(rows)+count+' leads ready to import';
+  document.getElementById('import-do-btn').textContent='📥 Import '+count+' Leads';
+
+  // Populate list dropdown
+  const listOpts='<option value="">None</option>'+lists.map(l=>`<option value="${l.id}">${escHtml(l.name)}</option>`).join('');
+  document.getElementById('import-list-sel').innerHTML=listOpts;
+
+  document.getElementById('import-preview-area').style.display='block';
+  document.getElementById('import-result').textContent='';
+}
+
+function file_name_hint(rows){return '';}
+
+function doImport(){
+  if(!importedRows.length)return;
+  const headers=importedRows[0];
+  const dataRows=importedRows.slice(1).filter(r=>r.some(c=>c!==''&&c!==null&&c!==undefined));
+  let added=0,skipped=0;
+  const newIds=[];
+  dataRows.forEach(row=>{
+    const obj={};
+    headers.forEach((_,i)=>{const field=importColMap[i];if(field)obj[field]=String(row[i]||'').trim();});
+    if(!obj.biz)return;
+    const lead={
+      id:Date.now()+Math.random(),
+      biz:obj.biz,type:obj.type||'',city:obj.city||'',
+      contact:obj.contact||'Owner / Manager',title:obj.title||'',
+      phone:obj.phone||'',email:obj.email||'',
+      website:obj.website||'',
+      size:parseFloat(obj.size)||0,
+      notes:obj.notes||'',
+      status:'cold',source:'import',
+      created:new Date().toLocaleDateString(),enriched:false,
+    };
+    if(isDuplicate(lead,leads)){skipped++;return;}
+    leads.push(lead);added++;newIds.push(lead.id);
+  });
+  save();stats();renderLeads();
+  document.getElementById('import-result').textContent=`✓ Imported ${added} leads · ${skipped} duplicate${skipped!==1?'s':''} skipped`;
+  if(newIds.length&&lists.length){
+    document.getElementById('import-list-prompt').style.display='block';
+    document.getElementById('import-list-prompt').dataset.ids=JSON.stringify(newIds);
+  }
+  flash('Imported '+added+' leads');
+}
+
+function importAddToList(){
+  const sel=document.getElementById('import-list-sel');
+  const prompt=document.getElementById('import-list-prompt');
+  if(!sel.value){flash('Select a list');return;}
+  const ids=JSON.parse(prompt.dataset.ids||'[]');
+  addLeadsToList(sel.value,ids);
+  prompt.style.display='none';
+}
+
+function resetImport(){
+  importedRows=[];importColMap={};
+  document.getElementById('import-preview-area').style.display='none';
+  document.getElementById('import-result').textContent='';
+  document.getElementById('import-list-prompt').style.display='none';
+  document.getElementById('import-file-in').value='';
+}
+
+function addManualLead(){
+  const biz=(document.getElementById('man-biz').value||'').trim();
+  if(!biz){flash('Business name required');return;}
+  const lead={
+    id:Date.now()+Math.random(),
+    biz,
+    type:document.getElementById('man-type').value||'',
+    city:(document.getElementById('man-city').value||'').trim(),
+    contact:(document.getElementById('man-contact').value||'').trim()||'Owner / Manager',
+    title:(document.getElementById('man-title').value||'').trim(),
+    phone:(document.getElementById('man-phone').value||'').trim(),
+    email:(document.getElementById('man-email').value||'').trim(),
+    website:(document.getElementById('man-web').value||'').trim(),
+    size:parseFloat(document.getElementById('man-bill').value)||0,
+    notes:(document.getElementById('man-notes').value||'').trim(),
+    status:'cold',source:'manual',
+    created:new Date().toLocaleDateString(),enriched:false,
+  };
+  leads.push(lead);save();stats();renderLeads();
+  const listSel=document.getElementById('man-list-sel');
+  if(listSel.value)addLeadsToList(listSel.value,[lead.id]);
+  document.getElementById('man-result').textContent='✓ '+biz+' added';
+  ['man-biz','man-contact','man-title','man-phone','man-email','man-bill','man-web','man-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('man-type').value='Golf course';
+  document.getElementById('man-city').value='';
+  setTimeout(()=>{const r=document.getElementById('man-result');if(r)r.textContent='';},3000);
+}
+
+// ===== LISTS TAB =====
+function renderLists(){
+  const sidebar=document.getElementById('lists-sidebar-inner');
+  if(!sidebar)return;
+  // Update bulk list dropdown too
+  const bulkSel=document.getElementById('bulk-list-sel');
+  if(bulkSel)bulkSel.innerHTML='<option value="">Add to list...</option>'+lists.map(l=>`<option value="${l.id}">${escHtml(l.name)}</option>`).join('')+'<option value="__new">+ New List...</option>';
+
+  sidebar.innerHTML='';
+  // Pinned: All Leads
+  const allItem=makeListItem('⭐ All Leads',leads.length,'__all',activeListId==='__all');
+  // Pinned: Archive
+  const archItem=makeListItem('📥 Archive',archive.length,'__archive',activeListId==='__archive');
+  sidebar.appendChild(allItem);sidebar.appendChild(archItem);
+  if(lists.length){
+    const div=document.createElement('div');div.style='border-top:1px solid var(--bdr);margin:4px 0';sidebar.appendChild(div);
+  }
+  lists.forEach(list=>{
+    sidebar.appendChild(makeListItem(list.name,list.leadIds.length,list.id,activeListId===list.id,true,list.id));
+  });
+  // If no list selected, show empty state
+  if(!activeListId){document.getElementById('lists-main-inner').innerHTML='<div style="color:var(--txt3);text-align:center;padding:40px 20px;font-size:13px">Select a list to view leads</div>';}
+  else{renderListLeads(activeListId);}
+}
+function makeListItem(name,count,id,sel,deletable,listId){
+  const div=document.createElement('div');
+  div.className='list-item'+(sel?' sel':'');
+  div.innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px">${escHtml(name)}</span>
+    <span class="list-count">${count}</span>
+  </div>
+  ${deletable?`<button onclick="event.stopPropagation();deleteList('${listId}')" style="background:none;border:none;color:var(--txt3);cursor:pointer;font-size:14px;padding:0 2px;line-height:1" title="Delete list">×</button>`:''}`;
+  div.onclick=()=>{activeListId=id;renderLists();};
+  return div;
+}
+function renderListLeads(listId){
+  const main=document.getElementById('lists-main-inner');
+  if(!main)return;
+  let leadsToShow=[];
+  let isArchive=false;
+  if(listId==='__all'){leadsToShow=[...leads];}
+  else if(listId==='__archive'){leadsToShow=[...archive];isArchive=true;}
+  else{
+    const list=lists.find(l=>l.id===listId);
+    if(!list){main.innerHTML='<div style="color:var(--txt3)">List not found</div>';return;}
+    leadsToShow=leads.filter(l=>list.leadIds.includes(l.id));
+  }
+  if(!leadsToShow.length){
+    main.innerHTML='<div style="color:var(--txt3);text-align:center;padding:40px 20px;font-size:13px">'+(isArchive?'No archived leads. Leads move here when you Clear All from scraper.':'No leads in this list yet.')+
+      (listId!=='__all'&&listId!=='__archive'?'<br><br><button class="btn btn-sm" onclick="goById(\'scraper\')">Go to Lead Scraper →</button>':'')+
+    '</div>';return;
+  }
+  main.innerHTML=`<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table class="tbl">
+    <thead><tr><th>Business</th><th>Contact</th><th>Phone / Email</th><th>Water Bill</th><th>Status</th><th>Source</th><th>Actions</th></tr></thead>
+    <tbody>${leadsToShow.map(l=>`<tr>
+      <td><div style="font-weight:500">${escHtml(l.biz)}</div><div style="font-size:11px;color:var(--txt3)">${escHtml(l.city||'')} · ${escHtml(l.type||'')}</div></td>
+      <td><div>${escHtml(l.contact||'')}</div><div style="font-size:11px;color:var(--txt2)">${escHtml(l.title||'')}</div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:12px">${escHtml(l.phone||'')}</div><div style="font-size:11px;color:var(--txt2)">${escHtml(l.email||'')}</div></td>
+      <td style="font-family:'DM Mono',monospace;color:var(--green)">$${(l.size||0).toLocaleString()}/mo</td>
+      <td>${sbadge(l.status)}</td>
+      <td>${sourceBadge(l)}</td>
+      <td>${isArchive
+        ?`<button class="btn btn-sm" onclick="restoreFromArchive(${l.id})">Restore</button>`
+        :(listId!=='__all'?`<button class="btn btn-sm" onclick="removeLeadFromList('${listId}',${l.id})" style="color:var(--txt3)">Remove</button>`:
+          `<button class="btn btn-sm" onclick="prefillEmail(${l.id})">✉</button>`)
+      }</td>
+    </tr>`).join('')}</tbody></table></div></div>`;
+}
+function sourceBadge(l){
+  if(l.source==='Google Maps')return'<span class="src-badge src-scraped">🔍 Scraped</span>';
+  if(l.source==='import')return'<span class="src-badge" style="background:rgba(59,130,246,0.12);color:#3b82f6">📥 Import</span>';
+  if(l.source==='manual')return'<span class="src-badge" style="background:rgba(168,85,247,0.12);color:#a855f7">✏️ Manual</span>';
+  return'<span class="src-badge src-scraped">✏ Manual</span>';
+}
+function createNewList(name){
+  const n=name||prompt('List name:');
+  if(!n||!n.trim())return null;
+  const list={id:Date.now().toString(),name:n.trim(),created:new Date().toLocaleDateString(),leadIds:[]};
+  lists.push(list);saveLists();
+  activeListId=list.id;renderLists();flash('List created: '+list.name);
+  return list.id;
+}
+function deleteList(id){
+  if(!confirm('Delete this list?'))return;
+  lists=lists.filter(l=>l.id!==id);saveLists();
+  if(activeListId===id)activeListId=null;renderLists();
+}
+function addLeadsToList(listId,leadIds){
+  const list=lists.find(l=>l.id===listId);if(!list)return;
+  leadIds.forEach(id=>{if(!list.leadIds.includes(id))list.leadIds.push(id);});
+  saveLists();flash(leadIds.length+' lead(s) added to "'+list.name+'"');
+}
+function removeLeadFromList(listId,leadId){
+  const list=lists.find(l=>l.id===listId);if(!list)return;
+  list.leadIds=list.leadIds.filter(id=>id!==leadId);saveLists();renderListLeads(listId);renderLists();
+}
+function bulkAddToList(){
+  const ids=getSelectedIds();
+  if(!ids.length){flash('Select leads first');return;}
+  const sel=document.getElementById('bulk-list-sel');
+  let listId=sel.value;
+  if(!listId){flash('Choose a list');return;}
+  if(listId==='__new'){listId=createNewList();if(!listId)return;}
+  addLeadsToList(listId,ids);
+}
+function addLeadToListPrompt(leadId){
+  if(!lists.length){if(confirm('No lists yet. Create one now?')){const id=createNewList();if(id)addLeadsToList(id,[leadId]);}return;}
+  const opts=lists.map((l,i)=>`${i+1}. ${l.name}`).join('\n');
+  const ans=prompt('Add to which list?\n'+opts+'\n\nEnter number or "new" for a new list:');
+  if(!ans)return;
+  if(ans.trim().toLowerCase()==='new'){const id=createNewList();if(id)addLeadsToList(id,[leadId]);return;}
+  const idx=parseInt(ans)-1;
+  if(isNaN(idx)||idx<0||idx>=lists.length){flash('Invalid selection');return;}
+  addLeadsToList(lists[idx].id,[leadId]);
+}
+function restoreFromArchive(id){
+  const lead=archive.find(l=>l.id===id);if(!lead)return;
+  archive=archive.filter(l=>l.id!==id);
+  delete lead.archivedAt;
+  leads.push(lead);save();saveArchive();
+  renderListLeads(activeListId);renderLists();flash('Lead restored: '+lead.biz);
+}
 
 // DIALER
 function renderDialer(){
@@ -2143,20 +2817,6 @@ function exportPipe(){
   dlCSV(rows,'pipeline.csv');
 }
 
-// SEQUENCES
-const SEQS={'Golf courses':['Day 1 — Cold: Irrigation cost angle. Avg course uses 50M+ gal/yr.','Day 4 — Follow-up: Upcoming dry season / LADWP rate hike angle.','Day 9 — Follow-up 2: "A course similar to yours saved $X/mo."','Day 12 — Value add: Free water audit checklist.','Day 16 — Break-up: Keep door open before summer irrigation season.'],'Hotels':['Day 1 — Cold: HVAC + laundry + pool angle. Hotels are top 10 CA water users.','Day 4 — Follow-up: Peak season occupancy driving water spend.','Day 9 — Follow-up 2: ROI calc — bill × 30% × 12 months.','Day 12 — Value add: ESG/sustainability angle for corporate guests.','Day 16 — Break-up: Offer post-peak-season review.'],'Restaurants':['Day 1 — Cold: Kitchen + dishwasher + ice machines. CA surcharges.','Day 4 — Follow-up: Multi-location savings multiplier.','Day 9 — Follow-up 2: NSF certified — health dept approved.','Day 12 — Value add: CA drought surcharge summer forecast.','Day 16 — Break-up: Short, no pressure.'],'CRE / Property Mgmt':['Day 1 — Cold: Reduce OpEx, improve NOI, lower CAM charges.','Day 4 — Follow-up: Easy sell to ownership — you look like a hero.','Day 9 — Follow-up 2: LEED points + green building angle.','Day 12 — Value add: Portfolio audit offer.','Day 16 — Break-up: Free portfolio water analysis report.'],'Hospitals':['Day 1 — Cold: 570 gal/day per staffed bed. Cooling + sterilization.','Day 4 — Follow-up: Sustainability + compliance reporting.','Day 9 — Follow-up 2: Similar hospital case study.','Day 12 — Value add: NSF/ANSI potable water certified — patient safe.','Day 16 — Break-up: Loop in Facilities Director if no response.']};
-function renderSeq(){
-  document.getElementById('seq-grid').innerHTML=Object.entries(SEQS).map(([type,steps])=>`
-    <div class="card"><div class="ctitle">${type}</div>
-    ${steps.map((s,i)=>`<div class="seq-step"><div class="seq-num">${i+1}</div><div style="font-size:12px;line-height:1.6;color:var(--txt2)">${s}</div></div>`).join('')}
-    <button class="btn btn-sm btn-a" onclick="quickSeq('${type.split('/')[0].trim()}')">Generate All 5 Emails ↗</button></div>`).join('');
-}
-function quickSeq(type){
-  const map={'Golf courses':'Golf course','Hotels':'Hotel','Restaurants':'Restaurant / chain','CRE':'Commercial real estate','Hospitals':'Hospital / medical center'};
-  document.getElementById('ety').value=map[type]||'Golf course';
-  goById('email');flash('Type set — fill in contact and generate!');
-}
-
 // SETTINGS
 function copyTwilioUrl(id){
   const val=document.getElementById(id).value;
@@ -2261,31 +2921,7 @@ function importLeads(){
   };
   inp.click();
 }
-function nukeData(){if(confirm('Delete ALL data?')){leads=[];queue=[];save();stats();renderLeads();flash('Cleared');}}
-
-// SEND EMAIL NOW (single email from composer)
-async function sendEmailNow(){
-  const to=document.getElementById('ee').value;
-  if(!to||!to.includes('@')){flash('Add an email address first');return;}
-  const subject=document.getElementById('esubj').textContent.replace('Subject: ','');
-  const body=document.getElementById('ebody').textContent;
-  if(!subject||!body){flash('Generate an email first');return;}
-  const btn=event.target;
-  btn.textContent='Sending...';btn.disabled=true;
-  try{
-    const resp=await fetch('/.netlify/functions/sendemail',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({to,subject,body,leadId:curEmailId,leadBiz:document.getElementById('eb').value})});
-    const data=await resp.json();
-    if(data.success){
-      flash('Email sent to '+to+' ✓');
-      if(curEmailId){const l=leads.find(x=>x.id===curEmailId);if(l){l.status='contacted';save();}}
-      btn.textContent='✓ Sent';
-    } else {
-      flash('Send failed: '+(data.error||'Unknown error'));
-      btn.textContent='📨 Send Now';btn.disabled=false;
-    }
-  }catch(e){flash('Error: '+e.message);btn.textContent='📨 Send Now';btn.disabled=false;}
-}
+function nukeData(){if(confirm('Delete ALL data including archive and lists?')){leads=[];queue=[];lists=[];archive=[];save();saveLists();saveArchive();stats();renderLeads();flash('All data cleared');}}
 
 // AUTO-EMAIL CAMPAIGN
 function previewAutoEmail(){
@@ -2500,7 +3136,7 @@ function clearFilters(){
   document.getElementById('f-city').value='';
   document.getElementById('f-minbill').value=0;
   document.getElementById('f-minbill-val').textContent='$0';
-  leadQuality='has_contact';localStorage.setItem('af_lead_quality','has_contact');
+  leadQuality='has_contact';localStorage.setItem(userKey('af_lead_quality'),'has_contact');
   renderLeads();
 }
 function populateFilterDropdowns(){
@@ -2716,6 +3352,9 @@ function initApp(user){
   leads=JSON.parse(localStorage.getItem(userKey('af_leads'))||'null')||[];
   queue=JSON.parse(localStorage.getItem(userKey('af_q'))||'[]');
   cfg=JSON.parse(localStorage.getItem(userKey('af_cfg'))||'{}');
+  lists=JSON.parse(localStorage.getItem(userKey('af_lists'))||'[]');
+  archive=JSON.parse(localStorage.getItem(userKey('af_archive'))||'[]');
+  loadGmailTokens();
   const displayName=cfg.name||(user.user_metadata&&user.user_metadata.full_name)||user.email;
   document.getElementById('rep-name').textContent=displayName;
   if(cfg.name)document.getElementById('cfg-name').value=cfg.name;
@@ -2728,13 +3367,35 @@ function initApp(user){
   if(cfg.defaultRadius)document.getElementById('cfg-radius').value=cfg.defaultRadius;
   if(cfg.defaultResults)document.getElementById('cfg-results').value=cfg.defaultResults;
   if(cfg.defaultQuality)document.getElementById('cfg-quality').value=cfg.defaultQuality;
+  leadQuality=localStorage.getItem(userKey('af_lead_quality'))||'has_contact';
   loadLocCache();
-  stats();renderLeads();renderQueue();renderDailyStats();populateFilterDropdowns();
-  renderTemplates();updateOpenRateBar();
+  updateImportListSelects();
+  applyAdminTabVisibility();
+  stats();renderLeads();renderDailyStats();populateFilterDropdowns();
   initTheme();initKeyboard();initAutosave();
+  startGmailAutoRefresh();
   setTimeout(()=>showBriefing(),800);
+  // Check for Gmail OAuth callback (?code=...&state=gmail)
+  const urlParams=new URLSearchParams(window.location.search);
+  if(urlParams.get('state')==='gmail'&&urlParams.get('code')){
+    const code=urlParams.get('code');
+    history.replaceState({},'',window.location.pathname);
+    (async()=>{
+      try{
+        const resp=await fetch('/.netlify/functions/gmail-callback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+        const data=await resp.json();
+        if(data.error){flash('Gmail auth error: '+data.error);return;}
+        saveGmailTokens(data);
+        flash('Gmail connected! ✓');
+        const emailTab=Array.from(document.querySelectorAll('.tab')).find(t=>t.textContent.trim()==='Email Composer');
+        go('email',emailTab||null);
+        initEmailPane();
+        fetchGmailFolder('inbox');
+      }catch(e){flash('Gmail auth error: '+e.message);}
+    })();
+  }
   // Check for calculator bill param
-  const billParam=new URLSearchParams(window.location.search).get('bill');
+  const billParam=urlParams.get('bill');
   if(billParam){
     document.getElementById('calc-bill').value=billParam;
     const calcTab=Array.from(document.querySelectorAll('.tab')).find(t=>t.textContent.trim()==='Calculator');
@@ -2822,90 +3483,6 @@ function initKeyboard(){
 }
 
 // ===== FEATURE: EMAIL TEMPLATES =====
-const EMAIL_TEMPLATES={
-  'Golf course':[
-    {name:'Irrigation Cost Angle',subj:'Cut [Business] irrigation costs 30%',body:'Hi [Name],\n\nGolf courses are one of the biggest water users in California — most use 50+ million gallons per year.\n\nAquaFlow\'s patented valve installs before your meter and reduces water+sewer bills by 10–30% by compressing trapped air. No disruption to your course, installs in under an hour.\n\n[Business] could be saving $[Savings]/month — that\'s real money back in grounds operations.\n\nWorth a 10-minute conversation? I\'ll do a free water analysis, no strings.\n\n[Rep]'},
-    {name:'Dry Season Urgency',subj:'Before summer irrigation season at [Business]',body:'Hi [Name],\n\nWith summer coming, irrigation costs at [Business] are about to spike.\n\nWe\'ve been helping courses in the LA area lock in 20–30% water savings before the dry season. AquaFlow installs in under an hour, lifetime warranty, 6-month money-back guarantee.\n\n$[Savings]/month in savings — every month.\n\nFree water analysis, no commitment. 10 minutes?\n\n[Rep]'},
-    {name:'Peer Comparison',subj:'How similar courses cut their water bill 28%',body:'Hi [Name],\n\nA golf course similar to [Business] in the South Bay recently cut their water and sewer bill by 28% using AquaFlow.\n\nInstalls under 1 hour. No maintenance. Lifetime warranty. We guarantee savings or refund.\n\n[Business] could be looking at $[Savings]/month in savings.\n\nHappy to schedule a free 10-minute analysis?\n\n[Rep]'},
-    {name:'Annual ROI',subj:'$[Annual] back in [Business]\'s budget',body:'Hi [Name],\n\n$[Annual] a year.\n\nThat\'s the estimated annual savings for a facility with [Business]\'s water usage using AquaFlow\'s valve system.\n\n10–30% reduction on water+sewer. No disruption. No maintenance. 6-month money-back guarantee.\n\nFree water analysis — 10 minutes, no commitment.\n\n[Rep]'},
-    {name:'Break-up',subj:'Closing the loop — [Business]',body:'Hi [Name],\n\nI\'ve reached out a couple of times about reducing [Business]\'s water bills — just closing the loop.\n\nIf the timing isn\'t right, totally understood. We\'re here when it makes sense. Free analysis is always available.\n\nBest of luck with the season,\n[Rep]'}
-  ],
-  'Hotel':[
-    {name:'HVAC + Laundry Angle',subj:'Hotels lose 30%+ on water — here\'s the fix',body:'Hi [Name],\n\nHotels are among the top 10 commercial water users in California. HVAC, laundry, pools, and guest rooms all add up fast.\n\nAquaFlow\'s valve reduces water+sewer costs by 10–30%, installs in under an hour, and requires zero maintenance.\n\n[Business] could save $[Savings]/month.\n\nFree 10-minute water analysis. No commitment.\n\n[Rep]'},
-    {name:'Peak Season',subj:'Peak season at [Business] — water costs optimized?',body:'Hi [Name],\n\nWith occupancy climbing, [Business]\'s water and sewer costs are climbing with it.\n\nWe\'ve helped hotels across the LA area cut water costs by 20–30% using AquaFlow — installs before the meter in under an hour.\n\n$[Savings]/month is worth a 10-minute conversation.\n\nFree analysis, no obligation?\n\n[Rep]'},
-    {name:'ESG / Sustainability',subj:'Sustainable ops at [Business] — easy water win',body:'Hi [Name],\n\nMore corporate travelers are choosing hotels with strong sustainability credentials.\n\nAquaFlow helps properties like [Business] reduce water consumption by 10–30% — improves ESG metrics, reduces sewer charges, saves $[Savings]/month.\n\nNSF/ANSI certified, installs in under an hour.\n\nFree water analysis?\n\n[Rep]'},
-    {name:'ROI Clear',subj:'ROI in 60 days — [Business] water savings',body:'Hi [Name],\n\nShort version: AquaFlow saves hotels 10–30% on water+sewer bills.\n\nFor [Business]: $[Savings]/month — $[Annual]/year. Installs in under an hour, lifetime warranty, 6-month money-back guarantee.\n\nFree analysis to confirm your numbers. Worth 10 minutes?\n\n[Rep]'},
-    {name:'Break-up',subj:'Last note — [Business]',body:'Hi [Name],\n\nJust following up one last time on the water savings opportunity at [Business].\n\nIf it\'s not the right time, no worries. Free water analysis is always available.\n\nWishing you a great season.\n\n[Rep]'}
-  ],
-  'Restaurant / chain':[
-    {name:'Kitchen Usage',subj:'Restaurant water costs — easy 20% cut',body:'Hi [Name],\n\nRestaurants are some of the heaviest water users per sq ft — kitchen, dishwashers, ice machines.\n\nAquaFlow reduces water+sewer bills by 10–30%, is NSF/ANSI certified (health dept approved), installs in under an hour.\n\n[Business] could save $[Savings]/month.\n\nFree water analysis — 10 minutes, no commitment?\n\n[Rep]'},
-    {name:'Multi-Location Multiplier',subj:'If you have multiple locations — this multiplies',body:'Hi [Name],\n\nFor restaurant groups, the real story is the multiplier effect.\n\nIf each location saves $[Savings]/month with AquaFlow, across multiple locations that adds up fast.\n\nInstalls in under an hour per location. Worth a quick call?\n\n[Rep]'},
-    {name:'CA Drought Surcharges',subj:'CA water surcharges are coming — [Business]',body:'Hi [Name],\n\nCalifornia water agencies are implementing drought surcharges that will hit restaurants this summer.\n\nNow\'s the time to reduce baseline consumption. AquaFlow cuts water+sewer costs by 10–30%.\n\nFree analysis for [Business]? Takes 10 minutes.\n\n[Rep]'},
-    {name:'NSF Certified Safe',subj:'NSF certified water savings — [Business]',body:'Hi [Name],\n\nFor any food service operation, compliance is non-negotiable.\n\nAquaFlow is NSF/ANSI 372 certified — safe for potable water, fully health department compliant. Cuts water+sewer bills by 10–30%.\n\n[Business] could save $[Savings]/month.\n\n[Rep]'},
-    {name:'Break-up',subj:'Closing the loop on water savings',body:'Hi [Name],\n\nFinal note on cutting [Business]\'s water costs.\n\nOffer for a free analysis is open any time.\n\n[Rep]'}
-  ],
-  'Commercial real estate':[
-    {name:'NOI Improvement',subj:'Improve [Business] NOI — water savings',body:'Hi [Name],\n\nFor commercial property managers, every dollar of OpEx reduction goes straight to NOI.\n\nAquaFlow reduces water+sewer costs by 10–30%, lowering CAM charges and improving asset value.\n\n$[Savings]/month per property.\n\nFree portfolio analysis — 10 minutes, no commitment?\n\n[Rep]'},
-    {name:'Make Ownership Happy',subj:'Easy water win for [Business] ownership',body:'Hi [Name],\n\nProperty managers who bring proactive cost savings to ownership look great.\n\nAquaFlow cuts water+sewer costs by 10–30%, lifetime warranty, 6-month money-back.\n\nAt [Business]\'s scale: $[Savings]/month — and you get the credit.\n\nFree water analysis?\n\n[Rep]'},
-    {name:'LEED / Green Building',subj:'LEED points + water savings — [Business]',body:'Hi [Name],\n\nAquaFlow can contribute to LEED certifications while reducing water+sewer costs by 10–30%.\n\nFor [Business]: a sustainability story AND $[Savings]/month in real savings.\n\nFree analysis?\n\n[Rep]'},
-    {name:'Portfolio Audit Offer',subj:'Portfolio water audit for [Business]',body:'Hi [Name],\n\nHappy to do a full portfolio water analysis for [Business] — map savings opportunity across all your properties.\n\nAquaFlow saves 10–30% per asset. Installs in under an hour, lifetime warranty.\n\nNo cost for the analysis. Worth 20 minutes?\n\n[Rep]'},
-    {name:'Break-up',subj:'Closing loop — portfolio analysis offer',body:'Hi [Name],\n\nJust closing the loop on the water savings analysis for [Business].\n\nFree portfolio audit is open any time. No pressure.\n\nBest,\n[Rep]'}
-  ],
-  'Hospital / medical center':[
-    {name:'Usage Facts Hook',subj:'Hospital water costs — 570 gal/day per bed',body:'Hi [Name],\n\nThe average hospital uses 570 gallons per staffed bed per day — cooling towers, sterilization, HVAC all driving enormous consumption.\n\nAquaFlow cuts water+sewer costs by 10–30%. NSF/ANSI certified — fully safe for healthcare settings.\n\n[Business] could save $[Savings]/month.\n\nFree water analysis — 10 minutes, no commitment?\n\n[Rep]'},
-    {name:'Compliance + Sustainability',subj:'Sustainability reporting at [Business] — water',body:'Hi [Name],\n\nHospital sustainability reporting increasingly includes water usage. AquaFlow reduces consumption by 10–30% — improving metrics while saving $[Savings]/month.\n\nNSF/ANSI certified, installs in under an hour, zero disruption.\n\nFree analysis?\n\n[Rep]'},
-    {name:'Case Study Approach',subj:'Similar hospital saved 26% on water',body:'Hi [Name],\n\nA regional hospital in Southern California recently reduced water and sewer bills by 26% using AquaFlow.\n\nNSF certified, installs under an hour, 6-month money-back guarantee.\n\nFor [Business]: approximately $[Savings]/month in savings.\n\nFree water analysis?\n\n[Rep]'},
-    {name:'Facilities Director',subj:'Quick note for Facilities — [Business]',body:'Hi [Name],\n\nReaching out about reducing [Business]\'s water and sewer costs.\n\nAquaFlow is NSF/ANSI certified, installs in under an hour with zero disruption, saves 10–30%. Lifetime warranty, 6-month money-back.\n\nEstimated savings: $[Savings]/month.\n\nFree analysis — 10 minutes?\n\n[Rep]'},
-    {name:'Break-up',subj:'Closing the loop — [Business] water savings',body:'Hi [Name],\n\nLast note on the water savings opportunity at [Business].\n\nFree analysis is always on the table.\n\nBest,\n[Rep]'}
-  ]
-};
-let activeTemplateType='Golf course';
-
-function renderTemplates(){
-  const types=Object.keys(EMAIL_TEMPLATES);
-  document.getElementById('tmpl-tabs').innerHTML=types.map(t=>`<div class="tmpl-tab${t===activeTemplateType?' on':''}" onclick="setTemplateType('${t.replace(/'/g,"\\'")}')">${t}</div>`).join('');
-  const tmpls=EMAIL_TEMPLATES[activeTemplateType]||[];
-  document.getElementById('tmpl-list').innerHTML=tmpls.map((t,i)=>`
-    <div class="tmpl-item" onclick="loadTemplate(${i})">
-      <div style="flex:1">
-        <div class="tmpl-item-name">${t.name}</div>
-        <div class="tmpl-item-prev">${t.subj}</div>
-      </div>
-      <button class="btn btn-sm btn-a" onclick="event.stopPropagation();loadTemplate(${i})" style="flex-shrink:0">Use</button>
-    </div>`).join('');
-}
-function setTemplateType(t){activeTemplateType=t;renderTemplates();const sel=document.getElementById('ety');if(sel)sel.value=t;}
-function loadTemplate(idx){
-  const t=EMAIL_TEMPLATES[activeTemplateType]?.[idx];
-  if(!t)return;
-  const biz=document.getElementById('eb').value||'[Business]';
-  const name=document.getElementById('en').value||'[Name]';
-  const bill=parseInt((document.getElementById('ebi').value||'0').replace(/[^0-9]/g,''))||0;
-  const savings=Math.round(bill*.3).toLocaleString()||'X,XXX';
-  const annual=Math.round(bill*.3*12).toLocaleString()||'XX,XXX';
-  const rep=cfg.name||'Lauren Hatwan';
-  const repFull=`${rep} | AquaFlow — Long Beach/LA | ${cfg.phone||'(562) 555-0194'} | ${cfg.email||'lauren@aquaflowsales.com'}`;
-  const repl=s=>s.replace(/\[Name\]/g,name).replace(/\[Business\]/g,biz).replace(/\[Savings\]/g,savings).replace(/\[Annual\]/g,annual).replace(/\[Rep\]/g,repFull);
-  document.getElementById('eout').style.display='block';
-  document.getElementById('e-gen').style.display='none';
-  document.getElementById('e-content').style.display='block';
-  document.getElementById('esubj').textContent='Subject: '+repl(t.subj);
-  document.getElementById('ebody').textContent=repl(t.body);
-  flash('Template loaded — edit and send!');
-}
-function updateOpenRateBar(){
-  const tracked=queue.filter(q=>q.tracked);
-  const opened=tracked.filter(q=>q.opened);
-  const rate=tracked.length?Math.round((opened.length/tracked.length)*100):0;
-  const week=new Date();week.setDate(week.getDate()-7);
-  const sentWeek=queue.filter(q=>q.status==='sent').length;
-  const el=id=>document.getElementById(id);
-  if(el('or-rate'))el('or-rate').textContent=rate+'%';
-  if(el('or-opened'))el('or-opened').textContent=opened.length;
-  if(el('or-tracked'))el('or-tracked').textContent=tracked.length;
-  if(el('or-sent'))el('or-sent').textContent=sentWeek;
-}
-
 // ===== FEATURE: CALL PREP CARD =====
 const WATER_FACTS={
   'golf':'Golf courses use 50–150 million gallons per year. Irrigation accounts for 70–80% of water use.',
@@ -3160,11 +3737,14 @@ function endActiveCall(){
 // ===== POWER DIALER =====
 function togglePowerDialer(){
   powerDialerActive=!powerDialerActive;
+  powerDialerPaused=false;
   const btn=document.getElementById('pd-toggle');
+  const pauseBtn=document.getElementById('pd-pause-btn');
   if(powerDialerActive){
     powerDialerQueue=[...leads].filter(l=>l.phone&&l.phone.trim()).sort((a,b)=>b.size-a.size);
     powerDialerIdx=-1;
     if(btn){btn.style.background='var(--accent)';btn.style.color='var(--bg)';btn.textContent='⚡ Power Dialer ON';}
+    if(pauseBtn){pauseBtn.textContent='⏸ Pause';pauseBtn.style.color='var(--amber)';}
     flash('Power Dialer on — log a call outcome to auto-dial the next lead');
   }else{
     cancelPowerDialer();
@@ -3173,7 +3753,7 @@ function togglePowerDialer(){
   }
 }
 function powerDialerNext(){
-  if(!powerDialerActive)return;
+  if(!powerDialerActive||powerDialerPaused)return;
   powerDialerIdx++;
   if(powerDialerIdx>=powerDialerQueue.length){
     flash('Power Dialer: all leads called!');
@@ -3184,16 +3764,16 @@ function powerDialerNext(){
   const nameEl=document.getElementById('pd-next-name');
   const cdEl=document.getElementById('pd-countdown');
   const bar=document.getElementById('pd-bar');
-  if(nameEl)nameEl.textContent=next.biz;
+  if(nameEl)nameEl.textContent=next.biz+(powerDialerIdx+1<powerDialerQueue.length?' (next: '+powerDialerQueue[powerDialerIdx+1].biz+')':'');
   if(cdEl)cdEl.textContent=count;
   if(bar)bar.style.display='flex';
   powerDialerCountdownTimer=setInterval(()=>{
+    if(powerDialerPaused)return;
     count--;
     if(cdEl)cdEl.textContent=count;
     if(count<=0){
       clearInterval(powerDialerCountdownTimer);powerDialerCountdownTimer=null;
       if(bar)bar.style.display='none';
-      // Load into dialpad and call
       const raw=next.phone.replace(/\D/g,'');
       dialpadNum=raw.length===10?'+1'+raw:raw.length===11&&raw[0]==='1'?'+'+raw:next.phone;
       const el=document.getElementById('dialpad-display');if(el)el.textContent=dialpadNum;
@@ -3203,7 +3783,10 @@ function powerDialerNext(){
 }
 function cancelPowerDialer(){
   if(powerDialerCountdownTimer){clearInterval(powerDialerCountdownTimer);powerDialerCountdownTimer=null;}
+  powerDialerPaused=false;powerDialerActive=false;powerDialerIdx=-1;powerDialerQueue=[];
   const bar=document.getElementById('pd-bar');if(bar)bar.style.display='none';
+  const btn=document.getElementById('pd-toggle');
+  if(btn){btn.style.background='';btn.style.color='';btn.textContent='⚡ Power Dialer';}
 }
 
 // ===== FEATURE: COMPETITOR RESEARCH =====
@@ -3245,18 +3828,6 @@ function initAutosave(){
 }
 
 // ===== FEATURE: OPEN TRACKING =====
-function toggleTrack(idx){
-  if(!queue[idx])return;
-  queue[idx].tracked=!queue[idx].tracked;
-  if(!queue[idx].tracked)queue[idx].opened=false;
-  save();renderQueue();updateOpenRateBar();
-}
-function markOpened(idx){
-  if(!queue[idx])return;
-  queue[idx].opened=true;queue[idx].openedAt=new Date().toLocaleDateString();
-  save();renderQueue();updateOpenRateBar();flash('Marked as opened ✓');
-}
-
 // ===== FEATURE: TERRITORY MAP =====
 function renderMap(){
   const c=document.getElementById('map-leads-grid');if(!c)return;
@@ -3500,20 +4071,38 @@ function showLogin(){
 }
 function logout(){
   clearSession();
-  currentUser=null;leads=[];queue=[];cfg={};
+  if(gmailRefreshTimer){clearInterval(gmailRefreshTimer);gmailRefreshTimer=null;}
+  currentUser=null;leads=[];queue=[];cfg={};lists=[];archive=[];gmailTokens=null;gmailMessages=[];
   showLogin();
 }
 
 // ── Page load entry point ────────────────────────────────────────────────────
 window.addEventListener('load',async function(){
-  // 1. Check URL hash for identity tokens (invite or recovery link)
+  // 1. Check URL hash for identity tokens (invite, recovery, confirmation, or direct access_token)
   const inviteToken=parseHashParam('invite_token');
   const recoveryToken=parseHashParam('recovery_token');
+  const confirmToken=parseHashParam('confirmation_token');
+  const hashAccessToken=parseHashParam('access_token');
+  const hashRefreshToken=parseHashParam('refresh_token');
   if(inviteToken){
     showSetPassword('invite',inviteToken);return;
   }
   if(recoveryToken){
     showSetPassword('recovery',recoveryToken);return;
+  }
+  if(confirmToken){
+    // Email confirmation — verify then auto-login
+    try{
+      const resp=await fetch(IDENTITY_URL+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:confirmToken,type:'signup'})});
+      if(resp.ok){const td=await resp.json();await loginWithToken(td);history.replaceState(null,'',window.location.pathname);return;}
+    }catch(e){}
+    showLogin();return;
+  }
+  if(hashAccessToken){
+    // Direct token in hash (e.g. after OAuth or magic link)
+    const td={access_token:hashAccessToken,refresh_token:hashRefreshToken||'',token_type:'bearer',expires_in:3600};
+    history.replaceState(null,'',window.location.pathname);
+    try{await loginWithToken(td);return;}catch(e){}
   }
   // 2. Try to restore an existing session
   const user=await verifySession();
