@@ -388,9 +388,11 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 <div class="nav">
   <div class="tab active" onclick="go('scraper',this)">Lead Scraper</div>
   <div class="tab" onclick="go('email',this)">Email Composer</div>
+  <div class="tab" onclick="go('campaigns',this)">Campaigns</div>
   <div class="tab" onclick="go('dialer',this)">Dialer</div>
   <div class="tab" onclick="go('pipeline',this)">Pipeline</div>
   <div class="tab" onclick="go('lists',this)">Lists</div>
+  <div class="tab" onclick="go('import',this)">Import</div>
   <div class="tab" onclick="go('calculator',this)">Calculator</div>
   <div class="tab" onclick="go('map',this)">🗺 Map</div>
   <div class="tab" onclick="go('settings',this)">Settings</div>
@@ -463,8 +465,43 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
     </div>
   </div>
 
-  <div class="card" id="auto-email-card">
-    <div class="ctitle">Auto-Email Campaign</div>
+  <div id="scr-load"><div class="big-spin"></div><div style="color:var(--txt2);font-size:13px;font-family:'DM Mono',monospace" id="scr-msg">Searching...</div></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <span style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.07em">Quality:</span>
+    <button class="quality-btn" id="qbtn-all" onclick="setLeadQuality('all')">All Leads</button>
+    <button class="quality-btn" id="qbtn-has_contact" onclick="setLeadQuality('has_contact')">Has Contact</button>
+    <button class="quality-btn" id="qbtn-complete" onclick="setLeadQuality('complete')">Complete Leads</button>
+  </div>
+  <div class="filter-bar" id="filter-bar">
+    <input id="lead-search" placeholder="Search business or contact..." style="min-width:200px" oninput="renderLeads()">
+    <select id="f-status" onchange="renderLeads()"><option value="">All Statuses</option><option value="cold">Cold</option><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="callback">Callback</option><option value="voicemail">Voicemail</option><option value="no_answer">No Answer</option><option value="not_interested">Not Interested</option><option value="audit">Audit Booked</option><option value="closed">Closed</option></select>
+    <select id="f-type" onchange="renderLeads()"><option value="">All Types</option></select>
+    <select id="f-city" onchange="renderLeads()"><option value="">All Cities</option></select>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace">Min Bill:</span>
+      <input type="range" id="f-minbill" min="0" max="30000" step="500" value="0" oninput="document.getElementById('f-minbill-val').textContent='$'+parseInt(this.value).toLocaleString();renderLeads()" style="width:100px;padding:0;border:none;background:transparent">
+      <span id="f-minbill-val" style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace;min-width:55px">$0</span>
+    </div>
+    <button class="btn btn-sm" onclick="clearFilters()">Clear Filters</button>
+  </div>
+  <div id="bulk-bar" style="display:none">
+    <span id="bulk-count" style="font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace">0 selected</span>
+    <select id="bulk-stage" style="background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);padding:5px 8px;border-radius:6px;font-size:12px"><option value="cold">Cold</option><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="audit">Audit Scheduled</option><option value="closed">Closed Won</option><option value="not_interested">Closed Lost</option></select>
+    <button class="btn btn-sm btn-a" onclick="bulkMove(document.getElementById('bulk-stage').value)">Apply Stage</button>
+    <button class="btn btn-sm" onclick="bulkExport()">Export CSV</button>
+    <button class="btn btn-sm btn-b" onclick="bulkEmail()">Send Auto-Email</button>
+    <select id="bulk-list-sel" style="background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);padding:5px 8px;border-radius:6px;font-size:12px"></select>
+    <button class="btn btn-sm" onclick="bulkAddToList()">+ Add to List</button>
+  </div>
+  <div id="leads-wrap"></div>
+</div>
+
+<!-- CAMPAIGNS -->
+<div id="pane-campaigns" class="pane">
+  <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">Auto-Email Campaigns</div>
+  <div style="font-size:12px;color:var(--txt2);margin-bottom:20px">AI-personalized outreach sent automatically to qualifying leads</div>
+  <div class="card">
+    <div class="ctitle">Launch Campaign</div>
     <div class="tip"><strong>How it works:</strong> Filters leads by your criteria, generates a personalized AI email for each, and sends from your professional email address. Only sends to leads with a known email address and "Cold" status.</div>
     <div class="fr c4">
       <div class="fld"><label>Min Water Bill</label>
@@ -495,10 +532,19 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <div id="ae-result" style="font-size:12px;font-family:'DM Mono',monospace;align-self:center;color:var(--green)"></div>
     </div>
   </div>
+  <div class="card" style="margin-top:20px">
+    <div class="ctitle">Campaign History</div>
+    <div id="campaign-history-list">
+      <div style="color:var(--txt3);font-size:13px;font-family:'DM Mono',monospace;padding:12px 0">No campaigns run yet. Launch your first campaign above.</div>
+    </div>
+  </div>
+</div>
 
-  <!-- Import Leads card -->
-  <div class="card" id="import-card">
-    <div class="ctitle">Import Leads</div>
+<!-- IMPORT -->
+<div id="pane-import" class="pane">
+  <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">Import Leads</div>
+  <div style="font-size:12px;color:var(--txt2);margin-bottom:20px">Add leads from a spreadsheet or enter them manually</div>
+  <div class="card">
     <div class="import-tabs">
       <div class="import-tab active" id="itab-batch" onclick="switchImportTab('batch')">📂 Batch Import (Excel / CSV)</div>
       <div class="import-tab" id="itab-manual" onclick="switchImportTab('manual')">✏️ Manual Entry</div>
@@ -567,36 +613,6 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       </div>
     </div>
   </div>
-
-  <div id="scr-load"><div class="big-spin"></div><div style="color:var(--txt2);font-size:13px;font-family:'DM Mono',monospace" id="scr-msg">Searching...</div></div>
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-    <span style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.07em">Quality:</span>
-    <button class="quality-btn" id="qbtn-all" onclick="setLeadQuality('all')">All Leads</button>
-    <button class="quality-btn" id="qbtn-has_contact" onclick="setLeadQuality('has_contact')">Has Contact</button>
-    <button class="quality-btn" id="qbtn-complete" onclick="setLeadQuality('complete')">Complete Leads</button>
-  </div>
-  <div class="filter-bar" id="filter-bar">
-    <input id="lead-search" placeholder="Search business or contact..." style="min-width:200px" oninput="renderLeads()">
-    <select id="f-status" onchange="renderLeads()"><option value="">All Statuses</option><option value="cold">Cold</option><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="callback">Callback</option><option value="voicemail">Voicemail</option><option value="no_answer">No Answer</option><option value="not_interested">Not Interested</option><option value="audit">Audit Booked</option><option value="closed">Closed</option></select>
-    <select id="f-type" onchange="renderLeads()"><option value="">All Types</option></select>
-    <select id="f-city" onchange="renderLeads()"><option value="">All Cities</option></select>
-    <div style="display:flex;align-items:center;gap:6px">
-      <span style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace">Min Bill:</span>
-      <input type="range" id="f-minbill" min="0" max="30000" step="500" value="0" oninput="document.getElementById('f-minbill-val').textContent='$'+parseInt(this.value).toLocaleString();renderLeads()" style="width:100px;padding:0;border:none;background:transparent">
-      <span id="f-minbill-val" style="font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace;min-width:55px">$0</span>
-    </div>
-    <button class="btn btn-sm" onclick="clearFilters()">Clear Filters</button>
-  </div>
-  <div id="bulk-bar" style="display:none">
-    <span id="bulk-count" style="font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace">0 selected</span>
-    <select id="bulk-stage" style="background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);padding:5px 8px;border-radius:6px;font-size:12px"><option value="cold">Cold</option><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="audit">Audit Scheduled</option><option value="closed">Closed Won</option><option value="not_interested">Closed Lost</option></select>
-    <button class="btn btn-sm btn-a" onclick="bulkMove(document.getElementById('bulk-stage').value)">Apply Stage</button>
-    <button class="btn btn-sm" onclick="bulkExport()">Export CSV</button>
-    <button class="btn btn-sm btn-b" onclick="bulkEmail()">Send Auto-Email</button>
-    <select id="bulk-list-sel" style="background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);padding:5px 8px;border-radius:6px;font-size:12px"></select>
-    <button class="btn btn-sm" onclick="bulkAddToList()">+ Add to List</button>
-  </div>
-  <div id="leads-wrap"></div>
 </div>
 
 <!-- EMAIL -->
@@ -790,7 +806,10 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
               <div id="sms-conv-name" style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
               <div id="sms-conv-biz" style="font-size:10px;color:var(--txt3);margin-top:1px"></div>
             </div>
-            <button id="sms-call-btn" onclick="smsCallActiveLead()" style="background:rgba(48,209,88,0.1);border:none;cursor:pointer;color:#30d158;font-size:11px;font-weight:600;padding:5px 9px;border-radius:8px">📞 Call</button>
+            <div style="display:flex;gap:5px;align-items:center;flex-shrink:0">
+              <button id="sms-add-lead-btn" style="display:none;background:rgba(0,212,170,0.12);border:none;cursor:pointer;color:var(--accent);font-size:11px;font-weight:600;padding:5px 9px;border-radius:8px">➕ Add as Lead</button>
+              <button id="sms-call-btn" onclick="smsCallActiveLead()" style="background:rgba(48,209,88,0.1);border:none;cursor:pointer;color:#30d158;font-size:11px;font-weight:600;padding:5px 9px;border-radius:8px">📞 Call</button>
+            </div>
           </div>
         </div>
 
@@ -1333,9 +1352,10 @@ function go(id,el){
   if(id==='map')renderMap();
   if(id==='email'){initEmailPane();}
   if(id==='lists'){renderLists();}
+  if(id==='import'){updateImportListSelects();}
 }
 function goById(id){
-  const tabs=['scraper','email','dialer','pipeline','lists','calculator','map','settings','admin'];
+  const tabs=['scraper','email','campaigns','dialer','pipeline','lists','import','calculator','map','settings','admin'];
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
   document.getElementById('pane-'+id).classList.add('active');
@@ -1345,6 +1365,7 @@ function goById(id){
   if(id==='map')renderMap();
   if(id==='email'){initEmailPane();}
   if(id==='lists'){renderLists();}
+  if(id==='import'){updateImportListSelects();}
 }
 
 function flash(msg){
@@ -1800,8 +1821,10 @@ function openSmsThread(phone){
   document.getElementById('sms-hdr-conv').style.display='block';
   document.getElementById('sms-conversation').style.display='flex';
   const lead=getLeadByPhone(phone);
-  document.getElementById('sms-conv-name').textContent=lead?lead.contact:phone;
+  document.getElementById('sms-conv-name').textContent=lead?lead.contact:'Unknown — '+phone;
   document.getElementById('sms-conv-biz').textContent=lead?lead.biz:'';
+  const addBtn=document.getElementById('sms-add-lead-btn');
+  if(addBtn){addBtn.style.display=lead?'none':'inline-flex';addBtn.onclick=()=>addUnknownSmsAsLead(phone);}
   renderSmsConversation(phone);
   renderSmsThreads(); // refresh unread count
 }
@@ -1916,11 +1939,32 @@ function filterSmsRecipients(q){
   if(!q.trim()){el.innerHTML='';return;}
   const ql=q.toLowerCase();
   const matches=leads.filter(l=>(l.contact&&l.contact.toLowerCase().includes(ql))||(l.biz&&l.biz.toLowerCase().includes(ql))||(l.phone&&l.phone.includes(q))).slice(0,6);
-  if(!matches.length){el.innerHTML='<div style="font-size:12px;color:var(--txt3);padding:6px 2px">No leads match</div>';return;}
-  el.innerHTML=matches.map(l=>`<div onclick="selectSmsRecipient('${l.phone.replace(/'/g,"\\'")}','${(l.contact).replace(/'/g,"\\'")}','${(l.biz).replace(/'/g,"\\'")}' )" style="padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--surf2)'" onmouseout="this.style.background=''">
+  let html=matches.map(l=>`<div onclick="selectSmsRecipient('${l.phone.replace(/'/g,"\\'")}','${(l.contact).replace(/'/g,"\\'")}','${(l.biz).replace(/'/g,"\\'")}' )" style="padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--surf2)'" onmouseout="this.style.background=''">
     <div class="sms-avatar" style="width:30px;height:30px;font-size:11px;background:${smsAvatarBg(l.phone)}">${smsInitials(l.contact)}</div>
     <div><div style="font-size:13px;font-weight:500">${l.contact}</div><div style="font-size:11px;color:var(--txt3)">${l.biz} · ${l.phone}</div></div>
   </div>`).join('');
+  // Raw number option
+  const digits=q.replace(/\D/g,'');
+  if(digits.length>=3&&digits.length<10){
+    html+=`<div onclick="selectSmsRawNumber('${digits}')" style="padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;border-top:1px solid var(--bdr);margin-top:4px" onmouseover="this.style.background='var(--surf2)'" onmouseout="this.style.background=''">
+      <div class="sms-avatar" style="width:30px;height:30px;font-size:11px;background:#444">📱</div>
+      <div style="font-size:12px;color:var(--txt2)">Keep typing: <span style="color:var(--txt);font-family:'DM Mono',monospace">${digits}...</span></div>
+    </div>`;
+  }else if(digits.length>=10){
+    const formatted='+1'+digits.slice(-10);
+    html+=`<div onclick="selectSmsRawNumber('${digits.slice(-10)}')" style="padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;border-top:1px solid var(--bdr);margin-top:4px" onmouseover="this.style.background='var(--surf2)'" onmouseout="this.style.background=''">
+      <div class="sms-avatar" style="width:30px;height:30px;font-size:14px;background:#444">📱</div>
+      <div><div style="font-size:13px;font-weight:500">Text ${formatted}</div><div style="font-size:11px;color:var(--txt3)">Send to any number</div></div>
+    </div>`;
+  }
+  if(!html){el.innerHTML='<div style="font-size:12px;color:var(--txt3);padding:6px 2px">Type a name or phone number</div>';return;}
+  el.innerHTML=html;
+}
+function selectSmsRawNumber(digits){
+  const raw=digits.replace(/\D/g,'').slice(-10);
+  if(raw.length<10){flash('Enter a complete 10-digit number');return;}
+  const phone='('+raw.slice(0,3)+') '+raw.slice(3,6)+'-'+raw.slice(6);
+  selectSmsRecipient(phone,'Unknown — '+phone,'');
 }
 
 function selectSmsRecipient(phone,name,biz){
@@ -1933,8 +1977,10 @@ function selectSmsRecipient(phone,name,biz){
   document.getElementById('sms-compose-view').style.display='none';
   document.getElementById('sms-hdr-conv').style.display='block';
   document.getElementById('sms-conversation').style.display='flex';
-  document.getElementById('sms-conv-name').textContent=name;
+  document.getElementById('sms-conv-name').textContent=name||'Unknown — '+phone;
   document.getElementById('sms-conv-biz').textContent=biz;
+  const addBtn=document.getElementById('sms-add-lead-btn');
+  if(addBtn){const isUnknown=!name||name.startsWith('Unknown');addBtn.style.display=isUnknown?'inline-flex':'none';if(isUnknown)addBtn.onclick=()=>addUnknownSmsAsLead(phone);}
   document.getElementById('sms-messages').innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--txt3)">Start the conversation</div>';
   const ta=document.getElementById('sms-compose');if(ta){ta.value='';ta.focus();}
   updateSmsSendBtn();
@@ -1951,6 +1997,20 @@ async function sendNewSms(){
     if(data.success){body.value='';await loadSmsInbox(false);openSmsThread(phone);}
     else flash('SMS failed: '+(data.error||'Unknown error'));
   }catch(e){flash('SMS error: '+e.message);}
+}
+
+function addUnknownSmsAsLead(phone){
+  // Pre-fill the manual entry form and switch to Import > Manual tab
+  const manBiz=document.getElementById('man-biz');
+  const manPhone=document.getElementById('man-phone');
+  if(manBiz)manBiz.value='';
+  if(manPhone)manPhone.value=phone;
+  // Navigate to Import tab, Manual Entry sub-tab
+  const importTab=Array.from(document.querySelectorAll('.tab')).find(t=>t.textContent.trim()==='Import');
+  go('import',importTab||null);
+  switchImportTab('manual');
+  setTimeout(()=>{if(manBiz)manBiz.focus();},100);
+  flash('Phone pre-filled — complete the lead details');
 }
 
 function openSmsForLead(id){
@@ -2972,11 +3032,32 @@ async function runAutoEmail(){
     document.getElementById('ae-status').style.color='var(--green)';
     document.getElementById('ae-result').textContent='✓ Sent: '+data.sent+' | Failed: '+data.failed+' | Skipped: '+data.skipped;
     flash('Campaign complete — '+data.sent+' emails sent!');
+    // Save campaign history
+    const history=JSON.parse(localStorage.getItem(userKey('af_campaigns'))||'[]');
+    history.unshift({date:new Date().toLocaleString(),leadsTargeted:qualified.length,sent:data.sent,failed:data.failed,skipped:data.skipped});
+    localStorage.setItem(userKey('af_campaigns'),JSON.stringify(history.slice(0,50)));
+    renderCampaignHistory();
   }catch(e){
     document.getElementById('ae-status').textContent='Error';
     document.getElementById('ae-status').style.color='var(--red)';
     flash('Error: '+e.message);
   }
+}
+function renderCampaignHistory(){
+  const el=document.getElementById('campaign-history-list');
+  if(!el)return;
+  const history=JSON.parse(localStorage.getItem(userKey('af_campaigns'))||'[]');
+  if(!history.length){el.innerHTML='<div style="color:var(--txt3);font-size:13px;font-family:\'DM Mono\',monospace;padding:12px 0">No campaigns run yet. Launch your first campaign above.</div>';return;}
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Date</th><th>Leads Targeted</th><th>Sent</th><th>Failed</th><th>Skipped</th><th>Open Rate</th></tr></thead><tbody>
+  ${history.map(h=>`<tr>
+    <td style="font-family:'DM Mono',monospace;font-size:11px">${h.date}</td>
+    <td>${h.leadsTargeted}</td>
+    <td style="color:var(--green)">${h.sent}</td>
+    <td style="color:var(--red)">${h.failed||0}</td>
+    <td style="color:var(--txt3)">${h.skipped||0}</td>
+    <td style="color:var(--txt3);font-family:'DM Mono',monospace;font-size:11px">— (coming soon)</td>
+  </tr>`).join('')}
+  </tbody></table>`;
 }
 
 // FEATURE 1 — TODAY'S CALLBACKS
@@ -3371,6 +3452,7 @@ function initApp(user){
   loadLocCache();
   updateImportListSelects();
   applyAdminTabVisibility();
+  renderCampaignHistory();
   stats();renderLeads();renderDailyStats();populateFilterDropdowns();
   initTheme();initKeyboard();initAutosave();
   startGmailAutoRefresh();
