@@ -84,14 +84,84 @@ Subject: [subject line]
   };
 }
 
-async function sendEmail(resendKey, fromEmail, fromName, to, subject, body) {
+async function sendEmail(resendKey, fromEmail, fromName, to, subject, body, trackingId) {
+  const trackingPixel = trackingId
+    ? `<img src="https://aquaflowsales.com/.netlify/functions/email-track?id=${trackingId}" width="1" height="1" style="display:none" alt="">`
+    : '';
   const emailPayload = JSON.stringify({
     from: `${fromName} <${fromEmail}>`,
     to: [to],
     subject,
     text: body,
-    html: body.split('\n').map(l => l ? `<p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#333">${l}</p>` : '<br>').join('')
+    html: body.split('\n').map(l => l ? `<p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#333">${l}</p>` : '<br>').join('') + trackingPixel,
   });
 
   const options = {
-    hostn
+    hostname: 'api.resend.com',
+    path: '/emails',
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${resendKey}`,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(emailPayload)
+    }
+  };
+
+  return httpsPost(options, emailPayload);
+}
+
+exports.handler = async (event) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
+  const RESEND_KEY    = process.env.RESEND_API_KEY;
+  const FROM_EMAIL    = process.env.FROM_EMAIL || 'lauren@aquaflowsales.com';
+  const FROM_NAME     = process.env.FROM_NAME  || 'Lauren Hatwan';
+
+  if (!ANTHROPIC_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: 'ANTHROPIC_KEY not set' }) };
+  if (!RESEND_KEY)    return { statusCode: 500, headers, body: JSON.stringify({ error: 'RESEND_API_KEY not set' }) };
+
+  let leads, repName, repPhone, repEmail;
+  try {
+    ({ leads, repName, repPhone, repEmail } = JSON.parse(event.body));
+  } catch (e) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON body' }) };
+  }
+
+  if (!leads || !leads.length) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'leads array required' }) };
+  }
+
+  const results = [];
+
+  for (const lead of leads) {
+    try {
+      const { subject, body } = await generateEmail(ANTHROPIC_KEY, lead, repName || FROM_NAME, repPhone || '', repEmail || FROM_EMAIL);
+      const trackingId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      const sendResult = await sendEmail(RESEND_KEY, FROM_EMAIL, FROM_NAME, lead.email, subject, body, trackingId);
+      if (sendResult.status === 200 || sendResult.status === 201) {
+        results.push({ leadId: lead.id, success: true, subject, trackingId });
+      } else {
+        results.push({ leadId: lead.id, success: false, error: sendResult.body?.message || 'Send failed' });
+      }
+    } catch (e) {
+      results.push({ leadId: lead.id, success: false, error: e.message });
+    }
+  }
+
+  const sent    = results.filter(r => r.success).length;
+  const failed  = results.filter(r => !r.success).length;
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ sent, failed, results }),
+  };
+};

@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#00d4aa">
 <link rel="manifest" href="/manifest.json">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <title>AquaFlow Sales OS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script>/* Twilio Voice SDK 2.10.0 - self-hosted */
@@ -247,6 +248,11 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 .avail-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:10px 0}
 .avail-day-btn{background:var(--surf2);border:1px solid var(--bdr);border-radius:6px;padding:6px 2px;font-size:10px;font-family:'DM Mono',monospace;color:var(--txt3);cursor:pointer;text-align:center;transition:all 0.15s}
 .avail-day-btn.on{background:rgba(0,212,170,0.12);border-color:var(--accent);color:var(--accent)}
+/* CALCULATOR ROI */
+#pane-calculator .calc-result-row.highlight td{color:var(--accent);font-weight:600}
+@media(max-width:700px){#calc-form-grid{grid-template-columns:1fr!important}#calc-roi-results .card:nth-child(1){grid-template-columns:1fr!important}}
+/* ANALYTICS */
+@media(max-width:768px){#an-metrics{grid-template-columns:1fr 1fr!important}#pane-analytics .card canvas{max-height:180px}#pane-analytics>div:nth-child(3),#pane-analytics>div:nth-child(4){grid-template-columns:1fr!important}}
 /* MAP */
 .map-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--txt2)}
@@ -299,8 +305,6 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 .proj-col .pv{font-family:'DM Mono',monospace;font-size:18px;color:var(--green);font-weight:700}
 .proj-col .pl{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px}
 .proj-col .pc2{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace}
-/* Calculator */
-#pane-calculator .calc-result-row.highlight td{color:var(--accent);font-weight:600}
 #login-screen,#setpassword-screen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:none;align-items:center;justify-content:center}
 #app{display:none}
 .login-box{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;padding:36px 32px;width:100%;max-width:360px;text-align:center}
@@ -429,10 +433,11 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 
 <div class="nav">
   <div class="tab active" onclick="go('scraper',this)">Lead Scraper</div>
-  <div class="tab" onclick="go('campaigns',this)">AI Email</div>
+  <div class="tab" onclick="go('campaigns',this)">Auto Email</div>
   <div class="tab" onclick="go('email',this)">Email</div>
   <div class="tab" onclick="go('dialer',this)">Dialer</div>
   <div class="tab" onclick="go('pipeline',this)">Pipeline</div>
+  <div class="tab" onclick="go('analytics',this)">Analytics</div>
   <div class="tab" onclick="go('lists',this)">Lists</div>
   <div class="tab" onclick="go('import',this)">Import Leads</div>
   <div class="tab" onclick="go('calculator',this)">Calculator</div>
@@ -971,6 +976,56 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   <div class="pipe" id="pipe-board"></div>
 </div>
 
+<!-- ANALYTICS -->
+<div id="pane-analytics" class="pane">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Analytics</div>
+    <button class="btn btn-sm" onclick="renderAnalytics()">↻ Refresh</button>
+  </div>
+  <!-- ROW 1: Key metrics -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px" id="an-metrics"></div>
+  <!-- ROW 2: Calls by day + Lead status donut -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+    <div class="card" style="padding:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">Calls by Day of Week</div>
+      <canvas id="an-calls-day" height="180"></canvas>
+    </div>
+    <div class="card" style="padding:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">Lead Status Breakdown</div>
+      <canvas id="an-status-donut" height="180"></canvas>
+    </div>
+  </div>
+  <!-- ROW 3: Best types + Pipeline value -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+    <div class="card" style="padding:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">Best Business Types (Conversion Rate)</div>
+      <canvas id="an-types-bar" height="220"></canvas>
+    </div>
+    <div class="card" style="padding:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">Pipeline Value by Stage</div>
+      <canvas id="an-pipeline-bar" height="220"></canvas>
+    </div>
+  </div>
+  <!-- ROW 4: Top leads table -->
+  <div class="card" style="padding:16px;margin-bottom:18px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px">Top Performing Leads</div>
+    <div id="an-top-leads" style="overflow-x:auto"></div>
+  </div>
+  <!-- ROW 5: Activity heatmap -->
+  <div class="card" style="padding:16px;margin-bottom:18px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px">Outreach Activity — Last 12 Weeks</div>
+    <div id="an-heatmap" style="overflow-x:auto"></div>
+  </div>
+  <!-- ROW 6: AI Insights -->
+  <div class="card" style="padding:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:13px;font-weight:700">AI Insights</div>
+      <button class="btn btn-sm" onclick="refreshAiInsights()">↻ Regenerate</button>
+    </div>
+    <div id="an-insights"><div style="font-size:12px;color:var(--txt3);font-family:'DM Mono',monospace">Click Refresh to generate insights</div></div>
+  </div>
+</div>
+
 <!-- LISTS -->
 <div id="pane-lists" class="pane">
   <div id="lists-grid">
@@ -991,24 +1046,149 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
 
 <!-- CALCULATOR -->
 <div id="pane-calculator" class="pane">
-  <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px">Water Savings Calculator</div>
-  <div style="font-size:12px;color:var(--txt2);margin-bottom:18px">Show prospects their exact savings potential</div>
-  <div class="card" style="max-width:560px">
-    <div class="ctitle">Monthly Water Bill</div>
-    <div class="fld" style="margin-bottom:16px">
-      <input type="number" id="calc-bill" placeholder="Enter monthly water bill amount..." style="font-size:22px;padding:14px 16px;font-family:'DM Mono',monospace" oninput="renderCalc()">
-    </div>
-    <div id="calc-results" style="display:none;margin-bottom:16px">
-      <table class="tbl" style="margin-bottom:0">
-        <thead><tr><th>Reduction</th><th>Monthly Savings</th><th>Annual Savings</th><th>5-Year Savings</th></tr></thead>
-        <tbody id="calc-tbody"></tbody>
-      </table>
-    </div>
-    <div id="calc-empty" style="font-size:12px;color:var(--txt3);font-family:'DM Mono',monospace;padding:12px 0">Enter a monthly water bill to see savings</div>
-    <div class="brow">
-      <button class="btn btn-sm" onclick="copyCalcLink()">Copy Shareable Link</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">ROI Proposal Generator</div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:3px">Build a complete water savings analysis for any prospect</div>
     </div>
   </div>
+
+  <!-- SECTION 1: INPUT FORM -->
+  <div class="card" style="margin-bottom:18px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="calc-form-grid">
+      <!-- LEFT -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="fld"><label>Customer Business Name</label><input id="ci-biz" type="text" placeholder="e.g. Coyote Hills Golf Course"></div>
+        <div class="fld"><label>Contact Name</label><input id="ci-contact" type="text" placeholder="e.g. Gary Johnson"></div>
+        <div class="fld"><label>Contact Email</label><input id="ci-email" type="email" placeholder="e.g. gary@coyotehills.com"></div>
+        <div class="fld"><label>Monthly Water Bill ($)</label><input id="ci-bill" type="number" min="0" placeholder="e.g. 8000" style="font-family:'DM Mono',monospace;font-size:16px"></div>
+        <div class="fld"><label>Valve Cost ($)</label><input id="ci-valve" type="number" min="0" value="5500" style="font-family:'DM Mono',monospace"></div>
+      </div>
+      <!-- RIGHT -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="fld"><label>Valve Size</label>
+          <select id="ci-valve-size">
+            <option value='3/4"'>3/4"</option><option value='1"' selected>1"</option>
+            <option value='1.5"'>1.5"</option><option value='2"'>2"</option>
+            <option value='3"'>3"</option><option value='4"'>4"</option>
+          </select>
+        </div>
+        <div class="fld"><label>Business Type</label>
+          <select id="ci-type">
+            <option value="">Select type...</option>
+            <option>golf course</option><option>hotel</option><option>resort</option>
+            <option>restaurant</option><option>car wash</option><option>laundromat</option>
+            <option>manufacturing</option><option>hospital</option><option>university</option>
+            <option>stadium</option><option>grocery</option><option>apartment</option>
+            <option>commercial real estate</option><option>office building</option>
+            <option>retail</option><option>spa</option><option>brewery</option>
+          </select>
+        </div>
+        <div class="fld"><label>City / Location</label><input id="ci-city" type="text" placeholder="e.g. Long Beach, CA"></div>
+        <div class="fld"><label>Annual Water Rate Increase (%)</label><input id="ci-rate" type="number" value="5" min="0" max="20" style="font-family:'DM Mono',monospace"></div>
+        <div class="fld">
+          <label>Trial Period</label>
+          <div style="background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.25);border-radius:8px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)">90-Day Free Trial</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:18px">
+      <button class="btn btn-a" style="width:100%;justify-content:center;padding:14px;font-size:15px;display:flex;gap:8px" onclick="generateROI()">📊 Generate ROI Analysis</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: ROI RESULTS -->
+  <div id="calc-roi-results" style="display:none">
+
+    <!-- Header stat cards -->
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px">
+      <div class="card" style="text-align:center;padding:18px">
+        <div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px">Current Bill</div>
+        <div id="cr-bill" style="font-family:'DM Mono',monospace;font-size:26px;font-weight:800;color:var(--green)"></div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:3px">per month</div>
+      </div>
+      <div class="card" style="text-align:center;padding:18px">
+        <div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px">Valve Cost</div>
+        <div id="cr-valve" style="font-family:'DM Mono',monospace;font-size:26px;font-weight:800;color:var(--blue)"></div>
+        <div id="cr-valve-size" style="font-size:11px;color:var(--txt3);margin-top:3px"></div>
+      </div>
+      <div class="card" style="text-align:center;padding:18px">
+        <div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px">Install Time</div>
+        <div style="font-family:'DM Mono',monospace;font-size:26px;font-weight:800;color:var(--accent)">~32 min</div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:3px">minimal disruption</div>
+      </div>
+    </div>
+
+    <!-- Savings table -->
+    <div class="card" style="margin-bottom:16px;padding:18px">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;margin-bottom:12px">Water Savings Analysis — 90-Day Free Trial</div>
+      <div style="overflow-x:auto">
+        <table class="tbl" style="margin-bottom:0;min-width:500px">
+          <thead><tr><th>Savings %</th><th>Monthly Savings</th><th>Annual Savings</th><th>ROI (months)</th><th>90-Day % Paid</th></tr></thead>
+          <tbody id="cr-savings-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3-Year Forecast -->
+    <div class="card" style="margin-bottom:16px;padding:18px">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;margin-bottom:4px">3-Year Savings Forecast</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px">Includes <span id="cr-rate-label"></span>% annual water rate increase</div>
+      <div style="overflow-x:auto"><table class="tbl" style="margin-bottom:0;min-width:480px"><thead><tr><th>Year</th><th>Bill (inflated)</th><th>Savings @ 10%</th><th>Savings @ 20%</th><th>Savings @ 30%</th></tr></thead><tbody id="cr-3yr-tbody"></tbody></table></div>
+    </div>
+
+    <!-- 5-Year Forecast -->
+    <div class="card" style="margin-bottom:16px;padding:18px">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;margin-bottom:4px">5-Year Savings Forecast</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px">Cumulative totals with utility rate inflation applied</div>
+      <div style="overflow-x:auto"><table class="tbl" style="margin-bottom:0;min-width:480px"><thead><tr><th>Year</th><th>Bill (inflated)</th><th>Savings @ 10%</th><th>Savings @ 20%</th><th>Savings @ 30%</th></tr></thead><tbody id="cr-5yr-tbody"></tbody></table></div>
+      <div id="cr-5yr-total" style="margin-top:12px;background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.25);border-radius:8px;padding:12px 16px;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)"></div>
+    </div>
+
+    <!-- Property Value Impact -->
+    <div id="cr-propval-card" class="card" style="margin-bottom:16px;padding:18px;display:none;border-color:rgba(168,85,247,0.3)">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;margin-bottom:8px;color:var(--purple)">🏢 Property Value Impact</div>
+      <div id="cr-propval-body" style="font-size:13px;color:var(--txt);line-height:1.6"></div>
+    </div>
+
+    <!-- SECTION 3: EMAIL GENERATOR -->
+    <div class="card" style="margin-bottom:16px;padding:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800">📧 Proposal Email</div>
+        <button class="btn btn-a" onclick="generateCalcEmail()" style="gap:6px;display:flex">Generate Email</button>
+      </div>
+      <div id="calc-email-area" style="display:none">
+        <!-- Subject -->
+        <div style="background:var(--surf2);border:1px solid var(--bdr2);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px">
+          <span style="color:var(--txt3);font-weight:600;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.07em">Subject: </span>
+          <span id="calc-email-subject" style="color:var(--txt);font-weight:600"></span>
+        </div>
+        <!-- Preview box -->
+        <div id="calc-email-preview" style="background:#fff;color:#1a1a1a;border-radius:10px;padding:24px 28px;font-family:Arial,sans-serif;font-size:13px;line-height:1.7;white-space:pre-wrap;max-height:520px;overflow-y:auto;border:1px solid #e0e0e0;margin-bottom:12px"></div>
+        <!-- Action buttons -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-a" onclick="copyCalcEmail()">📋 Copy Email</button>
+          <button class="btn" onclick="sendCalcEmailViaGmail()" style="color:var(--blue);border-color:rgba(59,130,246,0.3)">📨 Send via Gmail</button>
+          <button class="btn" onclick="copyCalcEmailHtml()" style="color:var(--purple);border-color:rgba(168,85,247,0.3)">📄 Copy as HTML</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: SHAREABLE LINK -->
+    <div class="card" style="padding:18px">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;margin-bottom:8px">🔗 Shareable Prospect Link</div>
+      <div style="font-size:12px;color:var(--txt2);margin-bottom:10px">Send this link to the prospect — they'll see a personalized ROI analysis with a "Book a Water Audit" CTA.</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div id="calc-share-url" style="flex:1;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:9px 12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);word-break:break-all;min-width:0"></div>
+        <button class="btn btn-sm" onclick="copyCalcLink()">Copy Link</button>
+      </div>
+    </div>
+
+  </div><!-- /calc-roi-results -->
+
+  <!-- Lead Panel ROI Section (collapsible) -->
+  <div id="calc-lp-section" style="display:none"></div>
+
 </div>
 
 <!-- CALENDAR -->
@@ -1075,6 +1255,56 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
           <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px">Booking Requests</div>
           <div id="cal-bookings-list"></div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROPOSAL MODAL -->
+<div id="proposal-ov" class="modal-ov" onclick="if(event.target===this)closeProposal()">
+  <div class="modal" style="max-width:720px;width:100%;max-height:90vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;position:sticky;top:0;background:var(--surf);padding-bottom:12px;border-bottom:1px solid var(--bdr);z-index:1">
+      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800">Water Savings Proposal</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="copyProposal()">📋 Copy</button>
+        <button class="btn btn-sm" onclick="sendProposalEmail()">📧 Send via Email</button>
+        <button onclick="closeProposal()" style="background:none;border:none;color:var(--txt2);font-size:20px;cursor:pointer">×</button>
+      </div>
+    </div>
+    <div id="proposal-loading" style="display:none;text-align:center;padding:40px 0">
+      <div style="font-size:28px;margin-bottom:10px">⏳</div>
+      <div style="font-size:13px;color:var(--txt2)">Generating proposal with AI…</div>
+    </div>
+    <div id="proposal-body">
+      <!-- Header -->
+      <div style="text-align:center;padding:20px 0 16px;border-bottom:2px solid var(--accent)">
+        <div style="font-size:32px;margin-bottom:6px">💧</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent)">AquaFlow Technologies</div>
+        <div style="font-size:14px;color:var(--txt2);margin-top:4px">Water Savings Proposal</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--bdr);flex-wrap:wrap;gap:8px">
+        <div><div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.06em">Prepared For</div><div id="prop-prepared-for" style="font-size:14px;font-weight:600;margin-top:2px"></div></div>
+        <div><div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.06em">Date</div><div id="prop-date" style="font-size:14px;font-weight:600;margin-top:2px"></div></div>
+      </div>
+      <!-- Savings table -->
+      <div style="margin:14px 0;background:rgba(0,212,170,0.06);border:1px solid rgba(0,212,170,0.2);border-radius:10px;padding:14px">
+        <div style="font-weight:700;font-size:13px;margin-bottom:10px">Projected Savings Summary</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="color:var(--txt3);text-transform:uppercase;font-size:10px;letter-spacing:0.06em">
+            <th style="text-align:left;padding:4px 8px">Scenario</th>
+            <th style="text-align:right;padding:4px 8px">Monthly</th>
+            <th style="text-align:right;padding:4px 8px">Annual</th>
+            <th style="text-align:right;padding:4px 8px">5-Year</th>
+          </tr></thead>
+          <tbody id="prop-savings-table"></tbody>
+        </table>
+      </div>
+      <!-- Sections -->
+      <div id="prop-sections"></div>
+      <!-- Signature -->
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--bdr);font-size:12px;color:var(--txt2)">
+        Prepared by <strong>Lauren Hatwan</strong> | AquaFlow Technologies | lauren@aquaflowsales.com<br>
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--txt3)">aquaflowsales.com · Long Beach / LA South Bay</span>
       </div>
     </div>
   </div>
@@ -1175,6 +1405,19 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
     <div class="fr c2">
       <div class="fld"><label>From Name</label><input id="cfg-from-name" placeholder="Lauren Hatwan"></div>
       <div class="fld"><label>From Email</label><input id="cfg-from-email" placeholder="lauren@aquaflowsales.com"></div>
+    </div>
+  </div>
+  <div class="set-sec">
+    <h3>Voicemail Recording</h3>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:10px;line-height:1.6">
+      <strong>Default script:</strong> "Hi, this is Lauren from AquaFlow. I'm reaching out because we help businesses like yours cut water and sewer bills by up to 30% with no disruption and a lifetime warranty. I'd love to show you how much you could save. Please give me a call back or visit aquaflowsales.com. Have a great day."
+    </div>
+    <div style="font-size:11px;color:var(--txt3);margin-bottom:10px;line-height:1.5;background:rgba(0,212,170,0.06);border:1px solid rgba(0,212,170,0.15);border-radius:8px;padding:10px">
+      💡 To use a custom recording: call your Twilio number and leave yourself a message, then copy the .mp3 recording URL from <strong>Twilio Console → Recordings</strong>.
+    </div>
+    <div class="fld">
+      <label>Custom Voicemail URL (optional)</label>
+      <input id="cfg-vm-url" placeholder="https://api.twilio.com/2010-04-01/Accounts/.../Recordings/....mp3">
     </div>
   </div>
   <div class="brow"><button class="btn btn-a" onclick="saveSettings()">Save Settings</button></div>
@@ -1285,6 +1528,10 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
         <span class="cp-btn-icon">📝</span>
         <span>notes</span>
       </button>
+      <button class="cp-btn" id="cp-vm-btn" onclick="dropVoicemail()">
+        <span class="cp-btn-icon">📱</span>
+        <span>voicemail</span>
+      </button>
     </div>
     <button class="cp-end" onclick="endActiveCall()" title="End Call">📵</button>
   </div>
@@ -1357,6 +1604,34 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   <div style="margin-top:20px;margin-bottom:10px">
     <div class="ctitle">Activity Timeline</div>
     <div id="lp-timeline"></div>
+  </div>
+  <!-- ROI Calculator (collapsible) -->
+  <div style="margin-top:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="ctitle" style="margin-bottom:0">📊 ROI Calculator</div>
+      <button class="btn btn-sm" onclick="openCalcForLead(lpLeadId)" style="font-size:10px;color:var(--accent)">Open Full Calculator</button>
+    </div>
+    <div id="lp-roi-mini" style="font-size:12px;color:var(--txt3)">Click "Open Full Calculator" to generate ROI analysis for this lead.</div>
+  </div>
+  <!-- Proposal button (shown for interested/audit leads) -->
+  <div id="lp-proposal-section" style="display:none;margin-top:14px">
+    <button class="btn btn-a" style="width:100%;justify-content:center" onclick="openProposalModal(lpLeadId)">📄 Generate Proposal</button>
+  </div>
+  <!-- Sales Intelligence -->
+  <div style="margin-top:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="ctitle" style="margin-bottom:0">🏆 Sales Intelligence</div>
+      <button class="btn btn-sm" id="lp-intel-btn" onclick="fetchIntel(lpLeadId)">Get Intel</button>
+    </div>
+    <div id="lp-intel-body"><div style="font-size:12px;color:var(--txt3)">Click "Get Intel" to fetch AI sales intelligence for this lead.</div></div>
+  </div>
+  <!-- Talking Points -->
+  <div style="margin-top:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="ctitle" style="margin-bottom:0">📰 Talking Points</div>
+      <button class="btn btn-sm" id="lp-news-btn" onclick="fetchTalkingPoints(lpLeadId)" style="font-size:10px">Refresh</button>
+    </div>
+    <div id="lp-news-body"><div style="font-size:12px;color:var(--txt3)">Loading…</div></div>
   </div>
 </div>
 
@@ -1510,12 +1785,13 @@ function go(id,el){
   if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
   if(id==='calculator')renderCalc();
   if(id==='calendar')renderCalendar();
+  if(id==='analytics')renderAnalytics();
   if(id==='email'){initEmailPane();}
   if(id==='lists'){renderLists();}
   if(id==='import'){updateImportListSelects();}
 }
 function goById(id){
-  const tabs=['scraper','campaigns','email','dialer','pipeline','lists','import','calculator','calendar','settings','admin'];
+  const tabs=['scraper','campaigns','email','dialer','pipeline','analytics','lists','import','calculator','calendar','settings','admin'];
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
   document.getElementById('pane-'+id).classList.add('active');
@@ -1523,6 +1799,7 @@ function goById(id){
   if(id==='dialer'){renderDialer();renderCallbacks();if(window.innerWidth<=600)renderMobileDialer();setupTwilioDevice();startSmsRefresh();}
   if(id==='scraper'){renderDailyStats();populateFilterDropdowns();}
   if(id==='calendar')renderCalendar();
+  if(id==='analytics')renderAnalytics();
   if(id==='email'){initEmailPane();}
   if(id==='lists'){renderLists();}
   if(id==='import'){updateImportListSelects();}
@@ -1597,7 +1874,7 @@ async function scrape(){
             if(det.result&&det.result.formatted_phone_number)phone=det.result.formatted_phone_number;
             if(det.result&&det.result.website)placeWebsite=det.result.website;
           }catch(e){}
-          newLeads.push({id:Date.now()+Math.random(),biz:place.name,type:cat,contact:'Owner / Manager',title:'Decision Maker',phone,email:'',website:placeWebsite||'',source:'Google Maps',city:place.vicinity||loc,size:estBill(cat),status:'cold',notes:'',callLog:[],rating:place.rating||null,created:new Date().toLocaleDateString()});
+          newLeads.push({id:Date.now()+Math.random(),biz:place.name,type:cat,contact:'Owner / Manager',title:'Decision Maker',phone,email:'',website:placeWebsite||'',source:'Google Maps',city:place.vicinity||loc,size:estBill(cat),status:'cold',notes:'',callLog:[],rating:place.rating||null,created:new Date().toLocaleDateString(),_needsBillEstimate:true});
         }
       }
       await sleep(200);
@@ -1617,6 +1894,25 @@ async function scrape(){
     flash('Error: '+err.message);
   }
   document.getElementById('prog').style.display='none';
+  // Run AI bill estimates in parallel
+  if(leads.length){
+    document.getElementById('scr-msg').textContent='Running AI water bill estimates...';
+    await Promise.all(leads.filter(l=>l._needsBillEstimate).map(async l=>{
+      try{
+        const r=await fetch('/.netlify/functions/estimate-bill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bizName:l.biz,bizType:l.type,city:l.city})});
+        const d=await r.json();
+        if(d.estimatedMonthlyBill){
+          l.size=d.estimatedMonthlyBill;
+          l.billLow=d.lowEstimate;
+          l.billHigh=d.highEstimate;
+          l.billConfidence=d.confidence;
+          l.billReasoning=d.reasoning;
+        }
+      }catch(e){}
+      delete l._needsBillEstimate;
+    }));
+    save();
+  }
   // Run website enrichment before showing leads — leads appear in table after enrichment
   if(leads.length){
     document.getElementById('scr-msg').textContent='Scanning websites for '+leads.length+' leads...';
@@ -1682,7 +1978,12 @@ function renderLeads(){
       <td><div style="font-weight:500">${l.biz}</div><div style="font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace">${l.city} · ${l.type}${l.rating?' · ⭐'+l.rating:''}</div><div style="margin-top:2px">${sourceBadge(l)}</div></td>
       <td class="contact-cell">${contactCellHTML(l)}</td>
       <td class="phone-cell">${phoneCellHTML(l)}</td>
-      <td><div style="font-family:'DM Mono',monospace;font-weight:500;color:var(--green)">$${l.size.toLocaleString()}/mo</div></td>
+      <td title="${l.billReasoning||''}">
+        ${l.billLow&&l.billHigh
+          ?`<div style="font-family:'DM Mono',monospace;font-weight:500;color:var(--green);font-size:11px">$${l.billLow.toLocaleString()}–$${l.billHigh.toLocaleString()}/mo</div><div style="display:flex;align-items:center;gap:3px;margin-top:2px"><div style="width:7px;height:7px;border-radius:50%;background:${l.billConfidence==='high'?'var(--green)':l.billConfidence==='medium'?'var(--amber)':'var(--txt3)'}"></div><span style="font-size:9px;color:var(--txt3)">${l.billConfidence||'low'}</span></div>`
+          :`<div style="font-family:'DM Mono',monospace;font-weight:500;color:var(--green)">$${l.size.toLocaleString()}/mo</div>`
+        }
+      </td>
       <td>
         <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)">$${Math.round(l.size*.3).toLocaleString()}/mo</div>
         <div style="font-size:10px;color:var(--txt3)">$${Math.round(l.size*.3*12).toLocaleString()}/yr</div>
@@ -1691,8 +1992,10 @@ function renderLeads(){
       <td><div style="display:flex;gap:5px;flex-wrap:wrap">
         <button class="btn btn-call btn-sm" onclick="showCallPrep(${l.id})">📞</button>
         <button class="btn btn-sm" onclick="prefillEmail(${l.id})">✉</button>
+        <button class="btn btn-sm" onclick="openCalcForLead(${l.id})" style="color:var(--accent)" title="ROI Calculator">📊</button>
         <button class="btn btn-sm" onclick="showResearch(${l.id})" style="color:var(--txt2)" title="Research">🔍</button>
         <button class="btn btn-sm" onclick="addLeadToListPrompt(${l.id})" style="color:var(--txt2)" title="Add to list">☰</button>
+        ${(l.status==='interested'||l.status==='audit')?`<button class="btn btn-sm" onclick="openProposalModal(${l.id})" style="color:var(--purple)" title="Generate Proposal">📄</button>`:''}
         <button class="btn btn-sm" onclick="editLead(${l.id})" style="color:var(--txt2)">✏</button>
         <button class="btn btn-sm" onclick="rmLead(${l.id})" style="color:var(--txt3)">✕</button>
       </div></td>
@@ -1724,6 +2027,7 @@ function phoneCellHTML(l){
     :'';
   return`<div style="font-family:'DM Mono',monospace;font-size:12px">${l.phone}</div>
     <div style="font-size:11px;color:var(--txt2);margin-top:2px">${l.email||'<span style="color:var(--txt3)">no email yet</span>'}</div>
+    ${l.emailTrackingIds&&l.emailTrackingIds.length?`<div style="margin-top:3px">${emailOpenBadgeHTML(l)}</div>`:''}
     ${findEmailBtn}`;
 }
 
@@ -2548,6 +2852,11 @@ async function sendGmailMessage(){
     const data=await gmailApiCall(action,'',{to,subject,body:body,from,threadId:threadId||undefined,inReplyTo:inReplyTo||undefined,references:references||undefined},'POST');
     if(data.error){flash('Error: '+data.error);btn.textContent='Send →';btn.disabled=false;return;}
     flash('Email sent ✓');
+    // Store tracking ID on lead
+    if(data.trackingId){
+      const matchedForTracking=leads.find(l=>l.email&&l.email.toLowerCase()===to.toLowerCase());
+      if(matchedForTracking)storeEmailTracking(matchedForTracking.id,data.trackingId,subject);
+    }
     // Mark lead contacted if email matches
     const matchedLead=leads.find(l=>l.email&&l.email.toLowerCase()===to.toLowerCase());
     if(matchedLead&&curEmailId===matchedLead.id){matchedLead.status='contacted';save();}
@@ -3055,6 +3364,7 @@ function saveSettings(){
   cfg.defaultRadius=document.getElementById('cfg-radius').value;
   cfg.defaultResults=document.getElementById('cfg-results').value;
   cfg.defaultQuality=document.getElementById('cfg-quality').value;
+  cfg.voicemailUrl=document.getElementById('cfg-vm-url').value.trim();
   saveCfg();
   const displayName=cfg.name||(currentUser&&currentUser.user_metadata&&currentUser.user_metadata.full_name)||(currentUser&&currentUser.email)||'Rep';
   document.getElementById('rep-name').textContent=displayName;
@@ -3174,7 +3484,7 @@ async function runAutoEmail(){
       body:JSON.stringify({leads:qualified,minBill,dailyLimit:limit,fromEmail})});
     const data=await resp.json();
     if(data.error){throw new Error(data.error);}
-    // Update lead statuses
+    // Update lead statuses and store tracking IDs
     if(data.results){
       data.results.forEach(r=>{
         if(r.success){
@@ -3183,6 +3493,7 @@ async function runAutoEmail(){
             l.status='contacted';
             if(!l.callLog)l.callLog=[];
             l.callLog.push({date:new Date().toLocaleDateString(),outcome:'emailed',notes:'Auto-email sent: '+r.subject,cb:''});
+            if(r.trackingId)storeEmailTracking(l.id,r.trackingId,r.subject);
           }
         }
       });
@@ -3315,6 +3626,21 @@ function editLead(id){
       </div>`;
     }).join('');
   }
+  // Show/hide proposal button
+  const propSec=document.getElementById('lp-proposal-section');
+  if(propSec)propSec.style.display=(l.status==='interested'||l.status==='audit')?'block':'none';
+  // Load cached intel
+  const intelBody=document.getElementById('lp-intel-body');
+  if(intelBody){
+    if(l.salesIntel){renderIntelCard(l.salesIntel,intelBody);}
+    else{intelBody.innerHTML='<div style="font-size:12px;color:var(--txt3)">Click "Get Intel" to fetch AI sales intelligence for this lead.</div>';}
+  }
+  // Load talking points (auto-load if not cached)
+  const newsBody=document.getElementById('lp-news-body');
+  if(newsBody){
+    if(l.talkingPoints&&l.talkingPoints.length){renderTalkingPoints(l.talkingPoints,newsBody);}
+    else{newsBody.innerHTML='<div style="font-size:12px;color:var(--txt3)">Loading…</div>';fetchTalkingPoints(id);}
+  }
   document.getElementById('lead-panel').style.transform='translateX(0)';
   document.getElementById('lead-panel-overlay').style.display='block';
 }
@@ -3343,30 +3669,8 @@ function saveLeadPanel(){
 
 // FEATURE 4 — CALCULATOR
 function renderCalc(){
-  const val=parseFloat(document.getElementById('calc-bill').value);
-  const empty=document.getElementById('calc-empty');
-  const results=document.getElementById('calc-results');
-  if(!val||val<=0){empty.style.display='block';results.style.display='none';return;}
-  empty.style.display='none';results.style.display='block';
-  const fmt=n=>'$'+Math.round(n).toLocaleString();
-  const tiers=[{pct:10,label:'10%'},{pct:20,label:'20%'},{pct:30,label:'30% (Recommended)'}];
-  document.getElementById('calc-tbody').innerHTML=tiers.map(t=>{
-    const mo=val*(t.pct/100);
-    const yr=mo*12;
-    const f5=yr*5;
-    const hi=t.pct===30;
-    return`<tr class="calc-result-row${hi?' highlight':''}">
-      <td>${t.label}</td>
-      <td>${fmt(mo)}/mo</td>
-      <td>${fmt(yr)}/yr</td>
-      <td>${fmt(f5)}</td>
-    </tr>`;
-  }).join('');
-}
-function copyCalcLink(){
-  const val=document.getElementById('calc-bill').value;
-  const url=window.location.href.split('?')[0]+(val?'?bill='+val:'');
-  navigator.clipboard.writeText(url).then(()=>flash('Link copied!'));
+  // Legacy no-op — ROI tab now uses generateROI()
+  checkCalcShareUrl();
 }
 
 // FEATURE 5 — SEARCH & FILTER
@@ -3473,7 +3777,7 @@ async function bulkEmail(){
   try{
     const resp=await fetch('/.netlify/functions/autoemail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leads:sel,minBill:0,dailyLimit:sel.length,fromEmail:cfg.email||''})});
     const data=await resp.json();
-    if(data.results){data.results.forEach(r=>{if(r.success){const l=leads.find(x=>x.id===r.leadId);if(l){l.status='contacted';if(!l.callLog)l.callLog=[];l.callLog.push({date:new Date().toLocaleDateString(),outcome:'emailed',notes:'Bulk auto-email sent',cb:''});}}});}
+    if(data.results){data.results.forEach(r=>{if(r.success){const l=leads.find(x=>x.id===r.leadId);if(l){l.status='contacted';if(!l.callLog)l.callLog=[];l.callLog.push({date:new Date().toLocaleDateString(),outcome:'emailed',notes:'Bulk auto-email sent',cb:''});if(r.trackingId)storeEmailTracking(l.id,r.trackingId,'Bulk auto-email');}}});}
     save();renderLeads();flash('Bulk emails sent: '+(data.sent||0));
   }catch(e){flash('Error: '+e.message);}
 }
@@ -3608,6 +3912,7 @@ function initApp(user){
   if(cfg.defaultRadius)document.getElementById('cfg-radius').value=cfg.defaultRadius;
   if(cfg.defaultResults)document.getElementById('cfg-results').value=cfg.defaultResults;
   if(cfg.defaultQuality)document.getElementById('cfg-quality').value=cfg.defaultQuality;
+  if(cfg.voicemailUrl)document.getElementById('cfg-vm-url').value=cfg.voicemailUrl;
   leadQuality=localStorage.getItem(userKey('af_lead_quality'))||'has_contact';
   loadLocCache();
   updateImportListSelects();
@@ -3616,6 +3921,7 @@ function initApp(user){
   stats();renderLeads();renderDailyStats();populateFilterDropdowns();
   initTheme();initKeyboard();initAutosave();
   startGmailAutoRefresh();
+  startEmailOpenTracking();
   setTimeout(()=>showBriefing(),800);
   // Check for Gmail OAuth callback (?code=...&state=gmail)
   const urlParams=new URLSearchParams(window.location.search);
@@ -3636,13 +3942,12 @@ function initApp(user){
       }catch(e){flash('Gmail auth error: '+e.message);}
     })();
   }
-  // Check for calculator bill param
-  const billParam=urlParams.get('bill');
+  // Check for calculator bill param (legacy ?bill= or new ?roi=)
+  const billParam=urlParams.get('bill')||urlParams.get('roi');
   if(billParam){
-    document.getElementById('calc-bill').value=billParam;
     const calcTab=Array.from(document.querySelectorAll('.tab')).find(t=>t.textContent.trim()==='Calculator');
     go('calculator',calcTab||null);
-    renderCalc();
+    checkCalcShareUrl();
   }
 }
 
@@ -4780,10 +5085,763 @@ function submitSchedule(){
 <\/script></body></html>`;
 }
 
+// ===== ROI PROPOSAL GENERATOR =====
+let calcEmailPlainText='';
+let calcEmailHtmlText='';
+let calcEmailSubject='';
+
+function generateROI(){
+  const bill=parseFloat(document.getElementById('ci-bill').value);
+  const valve=parseFloat(document.getElementById('ci-valve').value)||5500;
+  const biz=document.getElementById('ci-biz').value.trim()||'Your Business';
+  const contact=document.getElementById('ci-contact').value.trim()||'Decision Maker';
+  const city=document.getElementById('ci-city').value.trim()||'';
+  const rate=parseFloat(document.getElementById('ci-rate').value)||5;
+  const valveSize=document.getElementById('ci-valve-size').value;
+  const bizType=(document.getElementById('ci-type').value||'').toLowerCase();
+
+  if(!bill||bill<=0){flash('Enter a monthly water bill amount');return;}
+
+  const fmt=n=>'$'+Math.round(n).toLocaleString();
+  const pct=n=>Math.round(n)+'%';
+
+  // Header cards
+  document.getElementById('cr-bill').textContent=fmt(bill)+'/mo';
+  document.getElementById('cr-valve').textContent=fmt(valve);
+  document.getElementById('cr-valve-size').textContent='Size: '+valveSize;
+  document.getElementById('cr-rate-label').textContent=rate;
+
+  // Savings table
+  const tiers=[10,20,30];
+  document.getElementById('cr-savings-tbody').innerHTML=tiers.map(t=>{
+    const mo=bill*(t/100);
+    const yr=mo*12;
+    const roi=valve/mo;
+    const trial90=(mo*3/valve)*100;
+    const hi=t===30;
+    return`<tr class="calc-result-row${hi?' highlight':''}">
+      <td><strong>${t}%</strong>${hi?' <span style="font-size:10px;color:var(--accent)">(Recommended)</span>':''}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--green)">${fmt(mo)}/mo</td>
+      <td style="font-family:'DM Mono',monospace">${fmt(yr)}/yr</td>
+      <td style="font-family:'DM Mono',monospace">${roi.toFixed(1)} months</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--accent)">${pct(trial90)}</td>
+    </tr>`;
+  }).join('');
+
+  // Forecast builder
+  function buildForecastRows(years){
+    let cum10=0,cum20=0,cum30=0;
+    const rows=[];
+    for(let y=0;y<=years;y++){
+      const inflated=bill*Math.pow(1+rate/100,y);
+      const s10=inflated*.1;const s20=inflated*.2;const s30=inflated*.3;
+      if(y>0){cum10+=s10*12;cum20+=s20*12;cum30+=s30*12;}
+      rows.push({y,inflated,s10:s10*12,s20:s20*12,s30:s30*12,cum10,cum20,cum30});
+    }
+    return rows;
+  }
+
+  const rows3=buildForecastRows(3);
+  document.getElementById('cr-3yr-tbody').innerHTML=rows3.map(r=>`
+    <tr${r.y===0?' style="color:var(--txt3)"':''}>
+      <td>${r.y===0?'Current':'Year '+r.y}</td>
+      <td style="font-family:'DM Mono',monospace">${fmt(r.inflated)}/mo</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--txt2)">${r.y===0?'—':fmt(r.s10)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--txt2)">${r.y===0?'—':fmt(r.s20)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--accent);font-weight:${r.y===3?700:400}">${r.y===0?'—':fmt(r.s30)}</td>
+    </tr>`).join('');
+
+  const rows5=buildForecastRows(5);
+  document.getElementById('cr-5yr-tbody').innerHTML=rows5.map(r=>`
+    <tr${r.y===0?' style="color:var(--txt3)"':''}>
+      <td>${r.y===0?'Current':'Year '+r.y}</td>
+      <td style="font-family:'DM Mono',monospace">${fmt(r.inflated)}/mo</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--txt2)">${r.y===0?'—':fmt(r.s10)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--txt2)">${r.y===0?'—':fmt(r.s20)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--accent);font-weight:${r.y===5?700:400}">${r.y===0?'—':fmt(r.s30)}</td>
+    </tr>`).join('');
+
+  const last5=rows5[5];
+  document.getElementById('cr-5yr-total').textContent=
+    `Total 5-Year Savings: ${fmt(last5.cum10)} (10%) | ${fmt(last5.cum20)} (20%) | ${fmt(last5.cum30)} (30%)`;
+
+  // Property value impact
+  const propCard=document.getElementById('cr-propval-card');
+  const propBody=document.getElementById('cr-propval-body');
+  const cre=['apartment','commercial real estate','hotel','resort','office building'];
+  if(cre.some(t=>bizType.includes(t))){
+    propCard.style.display='block';
+    const ann10=bill*.1*12;const ann30=bill*.3*12;
+    const pv10=ann10/0.06;const pv30=ann30/0.06;
+    propBody.innerHTML=`At a standard <strong>6% cap rate</strong>, your projected annual water savings would translate to an estimated <strong style="color:var(--purple)">${fmt(pv10)} – ${fmt(pv30)}</strong> increase in property value. This directly improves your NOI and asset valuation — a compelling argument for ownership and investors alike.`;
+  }else{
+    propCard.style.display='none';
+  }
+
+  // Shareable link
+  const shareUrl=window.location.origin+window.location.pathname+'?roi=1'+
+    '&bill='+encodeURIComponent(bill)+
+    '&valve='+encodeURIComponent(valve)+
+    '&rate='+encodeURIComponent(rate)+
+    '&biz='+encodeURIComponent(biz)+
+    '&contact='+encodeURIComponent(contact)+
+    '&city='+encodeURIComponent(city)+
+    '&type='+encodeURIComponent(bizType);
+  document.getElementById('calc-share-url').textContent=shareUrl;
+
+  // Reset email area
+  document.getElementById('calc-email-area').style.display='none';
+
+  document.getElementById('calc-roi-results').style.display='block';
+  document.getElementById('calc-roi-results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function openCalcForLead(leadId){
+  const l=leads.find(x=>x.id===leadId);
+  if(!l)return;
+  go('calculator',document.querySelector('.tab[onclick*="calculator"]'));
+  setTimeout(()=>{
+    if(l.biz)document.getElementById('ci-biz').value=l.biz;
+    if(l.contact&&l.contact!=='Owner / Manager')document.getElementById('ci-contact').value=l.contact;
+    if(l.email)document.getElementById('ci-email').value=l.email;
+    if(l.size)document.getElementById('ci-bill').value=l.size;
+    if(l.city)document.getElementById('ci-city').value=l.city;
+    if(l.type){const sel=document.getElementById('ci-type');for(const o of sel.options){if(o.value===l.type||o.text===l.type){sel.value=o.value;break;}}}
+    generateROI();
+  },50);
+}
+
+// ── Email generation ──────────────────────────────────────────────────────────
+function buildPlainTable(headers,rows){
+  const colWidths=headers.map((h,i)=>Math.max(h.length,...rows.map(r=>(r[i]||'').toString().length)));
+  const sep='+'+colWidths.map(w=>'-'.repeat(w+2)).join('+')+'+';
+  const fmtRow=cells=>cells.map((c,i)=>' '+(c||'').toString().padEnd(colWidths[i])+' ').join('|');
+  return[sep,'|'+fmtRow(headers)+'|',sep,...rows.map(r=>'|'+fmtRow(r)+'|'),sep].join('\n');
+}
+
+function generateCalcEmail(){
+  const bill=parseFloat(document.getElementById('ci-bill').value);
+  if(!bill||bill<=0){flash('Run the ROI analysis first');return;}
+  const valve=parseFloat(document.getElementById('ci-valve').value)||5500;
+  const biz=document.getElementById('ci-biz').value.trim()||'Your Business';
+  const contact=document.getElementById('ci-contact').value.trim()||'Decision Maker';
+  const city=document.getElementById('ci-city').value.trim()||'';
+  const rate=parseFloat(document.getElementById('ci-rate').value)||5;
+  const bizType=(document.getElementById('ci-type').value||'').toLowerCase();
+  const valveSize=document.getElementById('ci-valve-size').value;
+  const repName=cfg.name||'Lauren Hatwan';
+  const repPhone=cfg.phone||'(562) 555-0194';
+  const fmt=n=>'$'+Math.round(n).toLocaleString();
+
+  const subject=`Free 90-Day Trial Offer — Water Savings Analysis for ${biz}`;
+  calcEmailSubject=subject;
+
+  // Build savings table rows
+  const savingsRows=[[10,20,30].map(t=>{
+    const mo=bill*(t/100);const yr=mo*12;const roi=valve/mo;const t90=(mo*3/valve)*100;
+    return[t+'%',fmt(mo)+'/mo',fmt(yr)+'/yr',roi.toFixed(1)+' months',Math.round(t90)+'%'];
+  })];
+  const savingsTbl=buildPlainTable(['Savings %','Monthly','Annual','ROI','90-Day %'],savingsRows[0]);
+
+  // 3-year forecast
+  const yr3rows=[];let cum10_3=0,cum20_3=0,cum30_3=0;
+  for(let y=0;y<=3;y++){
+    const inf=bill*Math.pow(1+rate/100,y);
+    const s10=inf*.1*12;const s20=inf*.2*12;const s30=inf*.3*12;
+    if(y>0){cum10_3+=s10;cum20_3+=s20;cum30_3+=s30;}
+    yr3rows.push([y===0?'Current':'Year '+y,fmt(inf)+'/mo',y===0?'—':fmt(s10),y===0?'—':fmt(s20),y===0?'—':fmt(s30)]);
+  }
+  yr3rows.push(['CUMULATIVE','','',fmt(cum10_3),fmt(cum20_3),fmt(cum30_3)].slice(0,5));
+  const tbl3=buildPlainTable(['Year','Bill (inflated)','Savings 10%','Savings 20%','Savings 30%'],yr3rows);
+
+  // 5-year forecast
+  const yr5rows=[];let cum10_5=0,cum20_5=0,cum30_5=0;
+  for(let y=0;y<=5;y++){
+    const inf=bill*Math.pow(1+rate/100,y);
+    const s10=inf*.1*12;const s20=inf*.2*12;const s30=inf*.3*12;
+    if(y>0){cum10_5+=s10;cum20_5+=s20;cum30_5+=s30;}
+    yr5rows.push([y===0?'Current':'Year '+y,fmt(inf)+'/mo',y===0?'—':fmt(s10),y===0?'—':fmt(s20),y===0?'—':fmt(s30)]);
+  }
+  const tbl5=buildPlainTable(['Year','Bill (inflated)','Savings 10%','Savings 20%','Savings 30%'],yr5rows);
+
+  // CRE property value section
+  const cre=['apartment','commercial real estate','hotel','resort','office building'];
+  const hasCre=cre.some(t=>bizType.includes(t));
+  const creSection=hasCre?`\nAdditionally, based on a standard 6% cap rate, your projected annual savings would increase your property value by an estimated ${fmt(bill*.1*12/0.06)} to ${fmt(bill*.3*12/0.06)}.\n`:'\n';
+
+  const body=`Dear ${contact},
+
+Thank you for sending over the photos and water bills — we've reviewed your current setup and valve size, and we're pleased to offer ${biz} a complimentary 90-day free trial of the AquaFlow Valve at no cost or obligation.
+
+Based on your average monthly water and sewer bill of ${fmt(bill)}, here is what you can expect:
+
+
+WATER SAVINGS ANALYSIS
+${savingsTbl}
+
+
+3-YEAR SAVINGS FORECAST (with ${rate}% annual utility rate increase)
+${tbl3}
+
+
+5-YEAR SAVINGS FORECAST
+${tbl5}
+
+Total 5-Year Savings: ${fmt(cum10_5)} (10%) | ${fmt(cum20_5)} (20%) | ${fmt(cum30_5)} (30%)
+${creSection}
+WHY AQUAFLOW:
+✓ 90-Day Free Trial — zero risk, zero cost to start
+✓ 6-Month Money-Back Guarantee — if you don't save, you don't pay
+✓ Lifetime Warranty on the valve
+✓ Average installation: 32 minutes with minimal disruption
+✓ Most customers recover their full investment within 12 months
+✓ 100% Tax Deductible — qualifies as a business expense write-off
+
+
+CERTIFICATIONS & TESTING:
+- NSF International Certified — independently tested, air flow reduced 27% average
+- IAPMO Listed & Certified
+- CAN/ANSI 61 Compliant
+- ANSI Certified
+- Tested by MARS Company engineering lab
+
+
+REAL RESULTS FROM REAL CUSTOMERS:
+Businesses just like yours have seen 15-33% savings across hotels, car washes, restaurants, apartment complexes, and hospitals. You can review our full case studies and letters of recommendation here:
+https://drive.google.com/file/d/1R1OXt6zsNB9fvdOOBU0UpAYxhAtGkLtI/view
+
+Please review this analysis and let me know if you have any questions. Once you're ready, I can send over the final agreement to get your free trial started.
+
+Looking forward to helping ${biz} reduce its water costs.
+
+Warm regards,
+${repName}
+AquaFlow Technologies
+${repPhone}
+lauren@aquaflowsales.com
+aquaflowsales.com`;
+
+  calcEmailPlainText=body;
+
+  // HTML version for copy-as-HTML
+  const htmlTbl=rows=>rows.map(r=>'<tr>'+r.map((c,i)=>`<td style="padding:6px 10px;border:1px solid #ddd;font-family:monospace;font-size:12px${i===0?';font-weight:600':''}">${c}</td>`).join('')+'</tr>').join('');
+  const makeHtmlTable=(headers,rows)=>`<table style="border-collapse:collapse;width:100%;margin:8px 0"><thead><tr>${headers.map(h=>`<th style="padding:6px 10px;border:1px solid #bbb;background:#f4f4f4;font-size:12px;text-align:left">${h}</th>`).join('')}</tr></thead><tbody>${htmlTbl(rows)}</tbody></table>`;
+
+  const savingsHtmlRows=[10,20,30].map(t=>{const mo=bill*(t/100);const yr=mo*12;const roi=valve/mo;const t90=(mo*3/valve)*100;return[t+'%',fmt(mo)+'/mo',fmt(yr)+'/yr',roi.toFixed(1)+' months',Math.round(t90)+'%'];});
+  const yr3HtmlRows=[];let c10_3=0,c20_3=0,c30_3=0;
+  for(let y=0;y<=3;y++){const inf=bill*Math.pow(1+rate/100,y);const s10=inf*.1*12;const s20=inf*.2*12;const s30=inf*.3*12;if(y>0){c10_3+=s10;c20_3+=s20;c30_3+=s30;}yr3HtmlRows.push([y===0?'Current':'Year '+y,fmt(inf)+'/mo',y===0?'—':fmt(s10),y===0?'—':fmt(s20),y===0?'—':fmt(s30)]);}
+  const yr5HtmlRows=[];let c10_5=0,c20_5=0,c30_5=0;
+  for(let y=0;y<=5;y++){const inf=bill*Math.pow(1+rate/100,y);const s10=inf*.1*12;const s20=inf*.2*12;const s30=inf*.3*12;if(y>0){c10_5+=s10;c20_5+=s20;c30_5+=s30;}yr5HtmlRows.push([y===0?'Current':'Year '+y,fmt(inf)+'/mo',y===0?'—':fmt(s10),y===0?'—':fmt(s20),y===0?'—':fmt(s30)]);}
+
+  calcEmailHtmlText=`<div style="font-family:Arial,sans-serif;font-size:13px;line-height:1.7;color:#1a1a1a;max-width:700px">
+<p>Dear ${contact},</p>
+<p>Thank you for sending over the photos and water bills — we've reviewed your current setup and valve size, and we're pleased to offer <strong>${biz}</strong> a complimentary <strong>90-day free trial</strong> of the AquaFlow Valve at no cost or obligation.</p>
+<p>Based on your average monthly water and sewer bill of <strong>${fmt(bill)}</strong>, here is what you can expect:</p>
+<h3 style="color:#00d4aa;margin:20px 0 6px">WATER SAVINGS ANALYSIS</h3>
+${makeHtmlTable(['Savings %','Monthly Savings','Annual Savings','ROI (months)','90-Day % Paid'],savingsHtmlRows)}
+<h3 style="color:#00d4aa;margin:20px 0 6px">3-YEAR SAVINGS FORECAST (with ${rate}% annual utility rate increase)</h3>
+${makeHtmlTable(['Year','Bill (inflated)','Savings 10%','Savings 20%','Savings 30%'],yr3HtmlRows)}
+<h3 style="color:#00d4aa;margin:20px 0 6px">5-YEAR SAVINGS FORECAST</h3>
+${makeHtmlTable(['Year','Bill (inflated)','Savings 10%','Savings 20%','Savings 30%'],yr5HtmlRows)}
+<p style="font-weight:700">Total 5-Year Savings: ${fmt(c10_5)} (10%) | ${fmt(c20_5)} (20%) | ${fmt(c30_5)} (30%)</p>
+${hasCre?`<p>Additionally, based on a standard 6% cap rate, your projected annual savings would increase your property value by an estimated <strong>${fmt(bill*.1*12/0.06)}</strong> to <strong>${fmt(bill*.3*12/0.06)}</strong>.</p>`:''}
+<h3 style="color:#00d4aa;margin:20px 0 6px">WHY AQUAFLOW</h3>
+<p>✓ 90-Day Free Trial — zero risk, zero cost to start<br>✓ 6-Month Money-Back Guarantee — if you don't save, you don't pay<br>✓ Lifetime Warranty on the valve<br>✓ Average installation: 32 minutes with minimal disruption<br>✓ Most customers recover their full investment within 12 months<br>✓ 100% Tax Deductible — qualifies as a business expense write-off</p>
+<h3 style="color:#00d4aa;margin:20px 0 6px">CERTIFICATIONS &amp; TESTING</h3>
+<p>NSF International Certified · IAPMO Listed · CAN/ANSI 61 · ANSI Certified · MARS Company Lab Tested<br>Air flow reduced 27% average in independent testing</p>
+<h3 style="color:#00d4aa;margin:20px 0 6px">REAL RESULTS FROM REAL CUSTOMERS</h3>
+<p>Businesses just like yours have seen 15-33% savings across hotels, car washes, restaurants, apartment complexes, and hospitals. <a href="https://drive.google.com/file/d/1R1OXt6zsNB9fvdOOBU0UpAYxhAtGkLtI/view">View our case studies and letters of recommendation →</a></p>
+<p>Please review this analysis and let me know if you have any questions. Once you're ready, I can send over the final agreement to get your free trial started.</p>
+<p>Looking forward to helping ${biz} reduce its water costs.</p>
+<p>Warm regards,<br><strong>${repName}</strong><br>AquaFlow Technologies<br>${repPhone}<br>lauren@aquaflowsales.com<br>aquaflowsales.com</p>
+</div>`;
+
+  // Show subject + preview
+  document.getElementById('calc-email-subject').textContent=subject;
+  document.getElementById('calc-email-preview').textContent=body;
+  document.getElementById('calc-email-area').style.display='block';
+  document.getElementById('calc-email-area').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function copyCalcEmail(){
+  navigator.clipboard.writeText(calcEmailPlainText).then(()=>flash('Email copied to clipboard')).catch(()=>flash('Copy failed'));
+}
+function copyCalcEmailHtml(){
+  const blob=new Blob([calcEmailHtmlText],{type:'text/html'});
+  const item=new ClipboardItem({'text/html':blob,'text/plain':new Blob([calcEmailPlainText],{type:'text/plain'})});
+  navigator.clipboard.write([item]).then(()=>flash('HTML email copied — paste directly into Gmail')).catch(()=>{
+    navigator.clipboard.writeText(calcEmailHtmlText).then(()=>flash('HTML copied as text'));
+  });
+}
+function sendCalcEmailViaGmail(){
+  const toEl=document.getElementById('gc-to');
+  const subEl=document.getElementById('gc-subject');
+  const bodyEl=document.getElementById('gc-body');
+  if(toEl)toEl.value=document.getElementById('ci-email').value||'';
+  if(subEl)subEl.value=calcEmailSubject;
+  if(bodyEl)bodyEl.value=calcEmailPlainText;
+  go('email',document.querySelector('.tab[onclick*="\'email\'"]'));
+  flash('Proposal email loaded into Email composer');
+}
+function copyCalcLink(){
+  const url=document.getElementById('calc-share-url').textContent||window.location.href;
+  navigator.clipboard.writeText(url).then(()=>flash('Shareable link copied!')).catch(()=>flash('Copy failed'));
+}
+
+// Public ROI share page (?roi=1)
+function checkCalcShareUrl(){
+  const params=new URLSearchParams(window.location.search);
+  if(!params.get('roi'))return false;
+  const bill=parseFloat(params.get('bill'))||0;
+  const valve=parseFloat(params.get('valve'))||5500;
+  const rate=parseFloat(params.get('rate'))||5;
+  const biz=params.get('biz')||'Your Business';
+  const contact=params.get('contact')||'';
+  const city=params.get('city')||'';
+  if(!bill)return false;
+  // Pre-fill and generate
+  setTimeout(()=>{
+    const b=document.getElementById('ci-bill');const v=document.getElementById('ci-valve');
+    const bi=document.getElementById('ci-biz');const co=document.getElementById('ci-contact');
+    const ci=document.getElementById('ci-city');const ri=document.getElementById('ci-rate');
+    if(b)b.value=bill;if(v)v.value=valve;if(bi)bi.value=biz;if(co)co.value=contact;
+    if(ci)ci.value=city;if(ri)ri.value=rate;
+    generateROI();
+  },200);
+  return false; // don't take over page — show within app
+}
+
 function initSchedulePage(){
   // Set min date to today
   const df=document.getElementById('sf-date');
   if(df)df.min=new Date().toISOString().slice(0,10);
+}
+
+// ===== TASK 1: VOICEMAIL DROP =====
+let activeCallSidForVm=null;
+async function dropVoicemail(){
+  // Get current call SID from Twilio connection
+  const callSid=twilioConn&&twilioConn.parameters&&twilioConn.parameters.CallSid;
+  if(!callSid){flash('No active call to drop voicemail on');return;}
+  const btn=document.getElementById('cp-vm-btn');
+  if(btn){btn.style.opacity='0.5';btn.style.pointerEvents='none';}
+  try{
+    const r=await fetch('/.netlify/functions/voicemail-drop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({callSid})});
+    const d=await r.json();
+    if(d.success){
+      flash('Voicemail dropped ✓');
+      // Auto-log as voicemail outcome on current lead
+      if(activeCall&&activeCall.leadId){
+        const l=leads.find(x=>x.id===activeCall.leadId);
+        if(l){
+          if(!l.callLog)l.callLog=[];
+          l.callLog.push({date:new Date().toLocaleDateString(),outcome:'voicemail',notes:'Voicemail drop',ts:Date.now()});
+          l.status='voicemail';
+          save();renderLeads();
+        }
+      }
+      // Hang up Lauren's end after 1.5s
+      setTimeout(()=>endActiveCall(),1500);
+    }else{
+      flash('Voicemail drop failed: '+(d.error||'Unknown error'));
+      if(btn){btn.style.opacity='';btn.style.pointerEvents='';}
+    }
+  }catch(e){
+    flash('Voicemail drop error: '+e.message);
+    if(btn){btn.style.opacity='';btn.style.pointerEvents='';}
+  }
+}
+
+// ===== TASK 2: EMAIL OPEN TRACKING =====
+let emailOpenCheckInterval=null;
+function startEmailOpenTracking(){
+  if(emailOpenCheckInterval)return;
+  emailOpenCheckInterval=setInterval(checkEmailOpens,120000);// every 2 min
+}
+async function checkEmailOpens(){
+  const pending=[];
+  leads.forEach(l=>{
+    if(!l.emailTrackingIds)return;
+    l.emailTrackingIds.forEach(t=>{
+      if(!t.opened)pending.push({leadId:l.id,trackingId:t.trackingId});
+    });
+  });
+  if(!pending.length)return;
+  const ids=pending.map(p=>p.trackingId).join(',');
+  try{
+    const r=await fetch('/.netlify/functions/check-opens?ids='+encodeURIComponent(ids));
+    const opens=await r.json();
+    let changed=false;
+    pending.forEach(p=>{
+      const o=opens[p.trackingId];
+      if(!o||!o.opened)return;
+      const l=leads.find(x=>x.id===p.leadId);
+      if(!l)return;
+      const t=l.emailTrackingIds.find(x=>x.trackingId===p.trackingId);
+      if(t&&!t.opened){
+        t.opened=true;t.openedAt=o.openedAt;t.openCount=o.count;
+        l.lastEmailOpenedAt=o.openedAt;
+        if(l.status==='cold')l.score=(l.score||0)+2;
+        changed=true;
+        flash('📧 '+l.biz+' just opened your email!');
+        renderLeads();
+      }
+    });
+    if(changed)save();
+  }catch(e){}
+}
+function emailOpenBadgeHTML(l){
+  if(!l.emailTrackingIds||!l.emailTrackingIds.length)return'';
+  const openedEntries=l.emailTrackingIds.filter(t=>t.opened);
+  if(openedEntries.length){
+    const totalOpens=openedEntries.reduce((s,t)=>s+(t.openCount||1),0);
+    const lastAt=new Date(openedEntries[openedEntries.length-1].openedAt);
+    const minsAgo=Math.round((Date.now()-lastAt.getTime())/60000);
+    const label=totalOpens>1?`📧 Opened ${totalOpens}x`:(minsAgo<60?`📧 Opened ${minsAgo}m ago`:`📧 Opened`);
+    return`<span style="font-size:9px;background:rgba(34,197,94,0.15);color:var(--green);border-radius:4px;padding:1px 5px;font-family:'DM Mono',monospace">${label}</span>`;
+  }
+  return`<span style="font-size:9px;background:rgba(139,145,158,0.12);color:var(--txt3);border-radius:4px;padding:1px 5px;font-family:'DM Mono',monospace">📧 Sent</span>`;
+}
+// Called after a successful email send to store trackingId on lead
+function storeEmailTracking(leadId,trackingId,subject){
+  if(!leadId||!trackingId)return;
+  const l=leads.find(x=>x.id===leadId);
+  if(!l)return;
+  if(!l.emailTrackingIds)l.emailTrackingIds=[];
+  l.emailTrackingIds.push({trackingId,sentAt:new Date().toISOString(),subject:subject||'',opened:false});
+  save();
+  startEmailOpenTracking();
+}
+
+// ===== TASK 3: AI BILL ESTIMATOR (helpers) =====
+// Main estimation logic is in scrape() above. This helper re-estimates a single lead.
+async function reEstimateBill(leadId){
+  const l=leads.find(x=>x.id===leadId);if(!l)return;
+  try{
+    const r=await fetch('/.netlify/functions/estimate-bill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bizName:l.biz,bizType:l.type,city:l.city})});
+    const d=await r.json();
+    if(d.estimatedMonthlyBill){l.size=d.estimatedMonthlyBill;l.billLow=d.lowEstimate;l.billHigh=d.highEstimate;l.billConfidence=d.confidence;l.billReasoning=d.reasoning;save();renderLeads();}
+  }catch(e){}
+}
+
+// ===== TASK 4: COMPETITOR INTEL =====
+async function fetchIntel(leadId){
+  const l=leads.find(x=>x.id===leadId);if(!l)return;
+  const btn=document.getElementById('lp-intel-btn');
+  const body=document.getElementById('lp-intel-body');
+  if(!body)return;
+  if(btn){btn.textContent='Loading…';btn.disabled=true;}
+  body.innerHTML='<div style="font-size:12px;color:var(--txt3)">Fetching intelligence…</div>';
+  try{
+    const r=await fetch('/.netlify/functions/competitor-intel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bizName:l.biz,bizType:l.type,city:l.city,website:l.website||''})});
+    const d=await r.json();
+    if(d.error)throw new Error(d.error);
+    l.salesIntel=d;save();
+    renderIntelCard(d,body);
+  }catch(e){body.innerHTML=`<div style="font-size:12px;color:var(--red)">Error: ${e.message}</div>`;}
+  if(btn){btn.textContent='Refresh';btn.disabled=false;}
+}
+function renderIntelCard(intel,el){
+  const compColor=intel.likelyHasCompetitor?'var(--amber)':'var(--green)';
+  el.innerHTML=`
+    <div style="background:var(--surf2);border-radius:10px;padding:12px;font-size:12px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${compColor}"></div>
+        <span style="color:var(--txt2)">${intel.likelyHasCompetitor?'Likely has competing service':'No competitor likely'}</span>
+      </div>
+      ${intel.competitorNotes?`<div style="color:var(--txt3);font-size:11px;margin-bottom:8px">${intel.competitorNotes}</div>`:''}
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${intel.keyChallenge?`<div><span style="color:var(--txt3);font-size:10px;text-transform:uppercase;letter-spacing:0.05em">Key Challenge</span><div style="color:var(--txt);margin-top:2px">${intel.keyChallenge}</div></div>`:''}
+        ${intel.topObjection?`<div><span style="color:var(--txt3);font-size:10px;text-transform:uppercase;letter-spacing:0.05em">Top Objection</span><div style="color:var(--txt);margin-top:2px">${intel.topObjection}</div></div>`:''}
+        ${intel.bestAngle?`<div style="background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);border-radius:6px;padding:8px"><span style="color:var(--txt3);font-size:10px;text-transform:uppercase;letter-spacing:0.05em">Best Angle</span><div style="color:var(--accent);margin-top:2px;font-weight:500">${intel.bestAngle}</div></div>`:''}
+        ${intel.localPrograms&&intel.localPrograms!=='None'?`<div><span style="color:var(--txt3);font-size:10px;text-transform:uppercase;letter-spacing:0.05em">Local Programs</span><div style="color:var(--txt);margin-top:2px">${intel.localPrograms}</div></div>`:''}
+      </div>
+    </div>`;
+}
+
+// ===== TASK 5: TALKING POINTS =====
+async function fetchTalkingPoints(leadId){
+  const l=leads.find(x=>x.id===leadId);if(!l)return;
+  const body=document.getElementById('lp-news-body');if(!body)return;
+  if(l.talkingPoints&&l.talkingPoints.length){renderTalkingPoints(l.talkingPoints,body);return;}
+  body.innerHTML='<div style="font-size:12px;color:var(--txt3)">Generating talking points…</div>';
+  try{
+    const r=await fetch('/.netlify/functions/business-news',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bizName:l.biz,bizType:l.type,city:l.city})});
+    const d=await r.json();
+    if(!Array.isArray(d))throw new Error(d.error||'Invalid response');
+    l.talkingPoints=d;save();
+    renderTalkingPoints(d,body);
+  }catch(e){body.innerHTML=`<div style="font-size:12px;color:var(--red)">Error: ${e.message}</div>`;}
+}
+function renderTalkingPoints(points,el){
+  const relColors={'Expansion':'var(--blue)','Sustainability':'var(--green)','Regulatory':'var(--amber)','Seasonal':'var(--purple)','Cost Pressure':'var(--red)'};
+  el.innerHTML=points.map(p=>`
+    <div style="background:var(--surf2);border-radius:8px;padding:10px 12px;margin-bottom:8px;border-left:3px solid ${relColors[p.relevance]||'var(--accent)'}">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px">
+        <div style="font-size:12px;font-weight:600;color:var(--txt)">${p.headline}</div>
+        <span style="font-size:9px;background:rgba(139,145,158,0.15);color:var(--txt2);border-radius:4px;padding:1px 6px;white-space:nowrap">${p.relevance}</span>
+      </div>
+      <div style="font-size:11px;color:var(--accent);line-height:1.5;background:rgba(0,212,170,0.06);border-radius:5px;padding:6px 8px;font-style:italic">"${p.talkingPoint}"</div>
+      <button class="btn btn-sm" style="margin-top:6px;font-size:10px;padding:2px 8px" onclick="useTalkingPoint(${JSON.stringify(p.talkingPoint).replace(/'/g,"&#39;")})">Use in Email</button>
+    </div>`).join('');
+}
+function useTalkingPoint(text){
+  const notesEl=document.getElementById('email-notes')||document.getElementById('lp-notes');
+  if(notesEl){notesEl.value=(notesEl.value?notesEl.value+'\n':'')+text;flash('Talking point added to notes');}
+  else flash('Talking point: '+text.slice(0,60)+'…');
+}
+
+// ===== TASK 6: ANALYTICS =====
+let anCharts={};
+function destroyCharts(){Object.values(anCharts).forEach(c=>{try{c.destroy();}catch(e){}});anCharts={};}
+
+function renderAnalytics(){
+  if(!window.Chart){flash('Chart.js not loaded — refresh');return;}
+  destroyCharts();
+  renderAnMetrics();
+  renderAnCallsByDay();
+  renderAnStatusDonut();
+  renderAnTypeBar();
+  renderAnPipelineBar();
+  renderAnTopLeads();
+  renderAnHeatmap();
+  // AI insights auto-generate on first visit if empty
+  const ins=document.getElementById('an-insights');
+  if(ins&&ins.children.length<=1&&ins.textContent.includes('Click Refresh'))refreshAiInsights();
+}
+
+function renderAnMetrics(){
+  const el=document.getElementById('an-metrics');if(!el)return;
+  const allCalls=leads.flatMap(l=>l.callLog||[]);
+  const now=new Date();const weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay());
+  const callsTotal=allCalls.length;
+  const callsWeek=allCalls.filter(c=>{const d=new Date(c.date);return d>=weekStart;}).length;
+  const emailsTotal=leads.flatMap(l=>l.emailTrackingIds||[]).length;
+  const emailsWeek=leads.flatMap(l=>(l.emailTrackingIds||[]).filter(t=>{const d=new Date(t.sentAt);return d>=weekStart;})).length;
+  const interested=leads.filter(l=>['interested','audit','closed'].includes(l.status)).length;
+  const convRate=leads.length?Math.round((interested/leads.length)*100):0;
+  const pipeVal=leads.reduce((s,l)=>s+Math.round(l.size*.3),0);
+  el.innerHTML=[
+    {label:'Calls Made',val:callsTotal,sub:'This week: '+callsWeek,color:'var(--accent)'},
+    {label:'Emails Sent',val:emailsTotal,sub:'This week: '+emailsWeek,color:'var(--blue)'},
+    {label:'Conversion Rate',val:convRate+'%',sub:interested+' of '+leads.length+' leads',color:'var(--green)'},
+    {label:'Pipeline Value',val:'$'+(pipeVal>=1000?Math.round(pipeVal/1000)+'K':pipeVal.toLocaleString())+'/mo',sub:'30% savings potential',color:'var(--amber)'},
+  ].map(m=>`<div class="card" style="padding:14px;text-align:center">
+    <div style="font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:${m.color}">${m.val}</div>
+    <div style="font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.06em;margin-top:3px">${m.label}</div>
+    <div style="font-size:10px;color:var(--txt3);margin-top:2px;font-family:'DM Mono',monospace">${m.sub}</div>
+  </div>`).join('');
+}
+
+function renderAnCallsByDay(){
+  const ctx=document.getElementById('an-calls-day');if(!ctx)return;
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const counts=[0,0,0,0,0,0,0];
+  leads.forEach(l=>(l.callLog||[]).forEach(c=>{
+    const d=new Date(c.date);if(!isNaN(d))counts[d.getDay()]++;
+  }));
+  anCharts.callsDay=new Chart(ctx,{type:'bar',data:{labels:days,datasets:[{label:'Calls',data:counts,backgroundColor:'rgba(0,212,170,0.5)',borderColor:'rgba(0,212,170,0.9)',borderWidth:1,borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:'#8b919e',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}},x:{ticks:{color:'#8b919e',font:{size:10}},grid:{display:false}}}}});
+}
+
+function renderAnStatusDonut(){
+  const ctx=document.getElementById('an-status-donut');if(!ctx)return;
+  const statuses=['cold','contacted','interested','callback','voicemail','audit','closed','not_interested'];
+  const labels=['Cold','Contacted','Interested','Callback','Voicemail','Audit','Closed','Not Interested'];
+  const colors=['#555b66','#3b82f6','#22c55e','#f59e0b','#8b919e','#a855f7','#00d4aa','#ef4444'];
+  const counts=statuses.map(s=>leads.filter(l=>l.status===s).length);
+  const active=statuses.map((s,i)=>({s,l:labels[i],c:colors[i],v:counts[i]})).filter(x=>x.v>0);
+  anCharts.donut=new Chart(ctx,{type:'doughnut',data:{labels:active.map(x=>x.l),datasets:[{data:active.map(x=>x.v),backgroundColor:active.map(x=>x.c),borderWidth:2,borderColor:'#111318'}]},options:{plugins:{legend:{position:'right',labels:{color:'#8b919e',font:{size:10},boxWidth:10}}},cutout:'62%'}});
+}
+
+function renderAnTypeBar(){
+  const ctx=document.getElementById('an-types-bar');if(!ctx)return;
+  const typeMap={};
+  leads.forEach(l=>{
+    const t=l.type||'other';
+    if(!typeMap[t])typeMap[t]={total:0,converted:0};
+    typeMap[t].total++;
+    if(['interested','audit','closed'].includes(l.status))typeMap[t].converted++;
+  });
+  const sorted=Object.entries(typeMap).map(([t,v])=>({t,rate:v.total?Math.round((v.converted/v.total)*100):0})).sort((a,b)=>b.rate-a.rate).slice(0,8);
+  anCharts.types=new Chart(ctx,{type:'bar',data:{labels:sorted.map(x=>x.t),datasets:[{label:'Conversion %',data:sorted.map(x=>x.rate),backgroundColor:'rgba(59,130,246,0.6)',borderColor:'rgba(59,130,246,0.9)',borderWidth:1,borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,max:100,ticks:{color:'#8b919e',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#8b919e',font:{size:10}},grid:{display:false}}}}});
+}
+
+function renderAnPipelineBar(){
+  const ctx=document.getElementById('an-pipeline-bar');if(!ctx)return;
+  const stages=['cold','contacted','interested','audit','closed'];
+  const labels=['Cold','Contacted','Interested','Audit','Closed'];
+  const colors=['rgba(85,91,102,0.6)','rgba(59,130,246,0.6)','rgba(34,197,94,0.6)','rgba(168,85,247,0.6)','rgba(0,212,170,0.6)'];
+  const vals=stages.map(s=>leads.filter(l=>l.status===s).reduce((sum,l)=>sum+Math.round(l.size*.3),0));
+  anCharts.pipeline=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'30% Savings Value',data:vals,backgroundColor:colors,borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:'#8b919e',font:{size:10},callback:v=>'$'+(v>=1000?Math.round(v/1000)+'K':v)},grid:{color:'rgba(255,255,255,0.05)'}},x:{ticks:{color:'#8b919e',font:{size:10}},grid:{display:false}}}}});
+}
+
+function renderAnTopLeads(){
+  const el=document.getElementById('an-top-leads');if(!el)return;
+  const scored=leads.map(l=>({...l,oppScore:scoreLead(l)})).sort((a,b)=>b.oppScore-a.oppScore).slice(0,10);
+  if(!scored.length){el.innerHTML='<div style="font-size:12px;color:var(--txt3)">No leads yet</div>';return;}
+  el.innerHTML=`<table class="tbl" style="font-size:12px"><thead><tr><th>Business</th><th>Score</th><th>Status</th><th>Bill Est.</th><th>30% Savings</th><th>Last Contact</th></tr></thead><tbody>${
+    scored.map(l=>{
+      const last=(l.callLog&&l.callLog.length)?l.callLog[l.callLog.length-1].date:'—';
+      const scoreCls=l.oppScore>=8?'bdg-g':l.oppScore>=5?'bdg-am':'bdg-r';
+      return`<tr><td><div style="font-weight:500">${l.biz}</div><div style="font-size:10px;color:var(--txt3)">${l.city}</div></td><td><span class="bdg ${scoreCls}">${l.oppScore}</span></td><td>${sbadge(l.status)}</td><td style="font-family:'DM Mono',monospace">$${l.size.toLocaleString()}/mo</td><td style="font-family:'DM Mono',monospace;color:var(--accent)">$${Math.round(l.size*.3).toLocaleString()}/mo</td><td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--txt3)">${last}</td></tr>`;
+    }).join('')
+  }</tbody></table>`;
+}
+
+function renderAnHeatmap(){
+  const el=document.getElementById('an-heatmap');if(!el)return;
+  // Build 84-day activity map (12 weeks)
+  const actMap={};
+  const now=new Date();
+  leads.forEach(l=>{
+    (l.callLog||[]).forEach(c=>{if(c.date)actMap[c.date]=(actMap[c.date]||0)+1;});
+    (l.emailTrackingIds||[]).forEach(t=>{const d=t.sentAt?t.sentAt.slice(0,10):'';if(d)actMap[d]=(actMap[d]||0)+1;});
+  });
+  const maxAct=Math.max(1,...Object.values(actMap));
+  const weeks=[];
+  // Align to Sunday of 12 weeks ago
+  const start=new Date(now);start.setDate(now.getDate()-now.getDay()-83);
+  for(let w=0;w<12;w++){
+    const week=[];
+    for(let d=0;d<7;d++){
+      const date=new Date(start);date.setDate(start.getDate()+w*7+d);
+      const key=date.toLocaleDateString('en-CA');
+      const act=actMap[key]||0;
+      const opacity=act?Math.max(0.15,act/maxAct):0;
+      week.push({key,act,opacity,future:date>now});
+    }
+    weeks.push(week);
+  }
+  const dows=['S','M','T','W','T','F','S'];
+  el.innerHTML=`<div style="display:flex;gap:3px;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:3px;margin-top:18px">${dows.map(d=>`<div style="width:10px;height:10px;font-size:8px;color:var(--txt3);display:flex;align-items:center;justify-content:center">${d}</div>`).join('')}</div>
+    <div style="display:flex;gap:3px;overflow-x:auto">${weeks.map((week,wi)=>{
+      const label=wi===0?new Date(start).toLocaleDateString('en-US',{month:'short'}):'';
+      return`<div style="display:flex;flex-direction:column;gap:1px">
+        <div style="height:14px;font-size:8px;color:var(--txt3);display:flex;align-items:flex-end;padding-bottom:2px">${label}</div>
+        ${week.map(day=>`<div title="${day.key}: ${day.act} actions" style="width:10px;height:10px;border-radius:2px;background:${day.future?'transparent':day.act?`rgba(0,212,170,${day.opacity})`:'rgba(255,255,255,0.04)'};border:${day.future?'none':'1px solid rgba(255,255,255,0.04)'}"></div>`).join('')}
+      </div>`;
+    }).join('')}</div>
+  </div>`;
+}
+
+async function refreshAiInsights(){
+  const el=document.getElementById('an-insights');if(!el)return;
+  el.innerHTML='<div style="font-size:12px;color:var(--txt3)">Generating insights…</div>';
+  // Build summary data for Claude
+  const typeMap={};
+  leads.forEach(l=>{
+    const t=l.type||'other';if(!typeMap[t])typeMap[t]={total:0,converted:0};
+    typeMap[t].total++;
+    if(['interested','audit','closed'].includes(l.status))typeMap[t].converted++;
+  });
+  const typeRates=Object.entries(typeMap).map(([t,v])=>t+': '+Math.round((v.converted/v.total)*100)+'% ('+v.total+' leads)').join(', ');
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const callsByDay=[0,0,0,0,0,0,0];
+  leads.forEach(l=>(l.callLog||[]).forEach(c=>{const d=new Date(c.date);if(!isNaN(d))callsByDay[d.getDay()]++;}));
+  const bestDay=days[callsByDay.indexOf(Math.max(...callsByDay))];
+  const openRate=leads.flatMap(l=>l.emailTrackingIds||[]).length?Math.round((leads.flatMap(l=>l.emailTrackingIds||[]).filter(t=>t.opened).length/leads.flatMap(l=>l.emailTrackingIds||[]).length)*100):0;
+  const prompt=`Based on Lauren's AquaFlow sales activity data, generate 3 specific, actionable insights:
+Business type conversion rates: ${typeRates||'insufficient data'}
+Best call day: ${bestDay}
+Email open rate: ${openRate}%
+Total leads: ${leads.length}
+Pipeline value: $${leads.reduce((s,l)=>s+Math.round(l.size*.3),0).toLocaleString()}/mo
+
+Generate exactly 3 insights as a JSON array: [{"insight":"string","action":"string","priority":"high"|"medium"|"low"}]
+Each insight should be specific and actionable, like: "Hotels convert at 3x the rate of restaurants — consider focusing more scrapes on hotels this week."`;
+  try{
+    const r=await fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,maxTokens:400})});
+    const d=await r.json();
+    const text=d.text||d.content||'';
+    const match=text.match(/\[[\s\S]*\]/);
+    if(!match)throw new Error('No JSON');
+    const insights=JSON.parse(match[0]);
+    el.innerHTML=insights.map(ins=>{
+      const pColor=ins.priority==='high'?'var(--red)':ins.priority==='medium'?'var(--amber)':'var(--green)';
+      return`<div style="background:var(--surf2);border-radius:8px;padding:12px;margin-bottom:8px;border-left:3px solid ${pColor}">
+        <div style="font-size:12px;font-weight:600;color:var(--txt);margin-bottom:4px">${ins.insight}</div>
+        <div style="font-size:11px;color:var(--accent)">→ ${ins.action}</div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:3px;text-transform:uppercase;letter-spacing:0.05em">${ins.priority} priority</div>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML=`<div style="font-size:12px;color:var(--red)">Could not generate insights: ${e.message}</div>`;}
+}
+
+// ===== TASK 7: PROPOSAL GENERATOR =====
+let proposalLeadId=null;
+function openProposalModal(leadId){
+  proposalLeadId=leadId;
+  const l=leads.find(x=>x.id===leadId);if(!l)return;
+  const ov=document.getElementById('proposal-ov');
+  const loading=document.getElementById('proposal-loading');
+  const body=document.getElementById('proposal-body');
+  if(!ov||!loading||!body)return;
+  // Set header info
+  document.getElementById('prop-prepared-for').textContent=l.biz+(l.contact&&l.contact!=='Owner / Manager'?' — '+l.contact:'');
+  document.getElementById('prop-date').textContent=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  // Build savings table
+  const rows=[['10% Reduction',l.size*.1,l.size*.1*12,l.size*.1*60],['20% Reduction',l.size*.2,l.size*.2*12,l.size*.2*60],['30% Reduction',l.size*.3,l.size*.3*12,l.size*.3*60]];
+  document.getElementById('prop-savings-table').innerHTML=rows.map(([label,mo,yr,five])=>`<tr><td style="padding:5px 8px">${label}</td><td style="text-align:right;padding:5px 8px;font-family:'DM Mono',monospace;color:var(--accent)">$${Math.round(mo).toLocaleString()}/mo</td><td style="text-align:right;padding:5px 8px;font-family:'DM Mono',monospace">$${Math.round(yr).toLocaleString()}/yr</td><td style="text-align:right;padding:5px 8px;font-family:'DM Mono',monospace;color:var(--green)">$${Math.round(five).toLocaleString()}</td></tr>`).join('');
+  ov.classList.add('show');
+  // Use cached proposal if available
+  if(l.proposal){renderProposalSections(l.proposal);return;}
+  // Generate new proposal
+  loading.style.display='block';
+  document.getElementById('prop-sections').innerHTML='';
+  generateProposal(l);
+}
+async function generateProposal(l){
+  const loading=document.getElementById('proposal-loading');
+  const sectEl=document.getElementById('prop-sections');
+  try{
+    const r=await fetch('/.netlify/functions/generate-proposal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lead:{biz:l.biz,contact:l.contact,title:l.title,size:l.size,city:l.city,type:l.type}})});
+    const d=await r.json();
+    if(d.error)throw new Error(d.error);
+    l.proposal=d;save();
+    if(loading)loading.style.display='none';
+    renderProposalSections(d);
+  }catch(e){
+    if(loading)loading.style.display='none';
+    if(sectEl)sectEl.innerHTML=`<div style="color:var(--red);font-size:13px;padding:20px 0">Error generating proposal: ${e.message}</div>`;
+  }
+}
+function renderProposalSections(p){
+  const el=document.getElementById('prop-sections');if(!el)return;
+  const sections=[
+    {title:'Executive Summary',content:p.executiveSummary},
+    {title:'Current Situation',content:p.currentSituation},
+    {title:'Proposed Solution',content:p.proposedSolution},
+    {title:'Financial Analysis',content:p.financialAnalysis},
+    {title:'Why AquaFlow',content:p.whyAquaFlow},
+    {title:'Next Steps',content:p.nextSteps},
+  ];
+  el.innerHTML=sections.map(s=>`<div style="margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--bdr)">${s.title}</div>
+    <div style="font-size:12px;color:var(--txt);line-height:1.7;white-space:pre-wrap">${s.content||''}</div>
+  </div>`).join('');
+}
+function closeProposal(){document.getElementById('proposal-ov').classList.remove('show');}
+function copyProposal(){
+  const l=leads.find(x=>x.id===proposalLeadId);
+  if(!l||!l.proposal)return;
+  const p=l.proposal;
+  const text=`WATER SAVINGS PROPOSAL\nAquaFlow Technologies\n\nPrepared for: ${l.biz}\nDate: ${new Date().toLocaleDateString()}\n\nEXECUTIVE SUMMARY\n${p.executiveSummary}\n\nCURRENT SITUATION\n${p.currentSituation}\n\nPROPOSED SOLUTION\n${p.proposedSolution}\n\nFINANCIAL ANALYSIS\n${p.financialAnalysis}\n\nWHY AQUAFLOW\n${p.whyAquaFlow}\n\nNEXT STEPS\n${p.nextSteps}\n\n---\nPrepared by Lauren Hatwan | AquaFlow Technologies | lauren@aquaflowsales.com`;
+  navigator.clipboard.writeText(text).then(()=>flash('Proposal copied to clipboard')).catch(()=>flash('Copy failed'));
+}
+function sendProposalEmail(){
+  const l=leads.find(x=>x.id===proposalLeadId);if(!l||!l.proposal)return;
+  const p=l.proposal;
+  const subject=`Water Savings Proposal — ${l.biz}`;
+  const body=`${p.executiveSummary}\n\n${p.currentSituation}\n\n${p.proposedSolution}\n\n${p.financialAnalysis}\n\n${p.whyAquaFlow}\n\n${p.nextSteps}`;
+  // Pre-fill email composer
+  const subEl=document.getElementById('email-subject');
+  const bodyEl=document.getElementById('email-body');
+  if(subEl)subEl.value=subject;
+  if(bodyEl)bodyEl.value=body;
+  closeProposal();
+  goById('email');
+  flash('Proposal loaded into Email composer');
 }
 </script>
 </body>

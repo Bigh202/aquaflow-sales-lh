@@ -41,12 +41,16 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields: to, subject, body' }) };
     }
 
+    const trackingId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const trackingPixel = `<img src="https://aquaflowsales.com/.netlify/functions/email-track?id=${trackingId}" width="1" height="1" style="display:none" alt="">`;
+    const htmlBody = body.split('\n').map(line => line ? `<p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#333">${line}</p>` : '<br>').join('') + trackingPixel;
+
     const emailPayload = JSON.stringify({
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: [to],
       subject: subject,
       text: body,
-      html: body.split('\n').map(line => line ? `<p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#333">${line}</p>` : '<br>').join('')
+      html: htmlBody,
     });
 
     const options = {
@@ -63,7 +67,7 @@ exports.handler = async (event) => {
     const result = await httpsPost(options, emailPayload);
 
     if (result.status === 200 || result.status === 201) {
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, id: result.body.id, leadId, leadBiz }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, id: result.body.id, leadId, leadBiz, trackingId }) };
     } else {
       return { statusCode: result.status, headers, body: JSON.stringify({ error: result.body.message || 'Send failed', details: result.body }) };
     }
