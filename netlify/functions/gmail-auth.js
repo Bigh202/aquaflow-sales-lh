@@ -8,10 +8,10 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
 
   const CLIENT_ID    = process.env.GOOGLE_CLIENT_ID;
-  const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+  const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://aquaflowsales.com/auth/google/callback';
 
-  if (!CLIENT_ID || !REDIRECT_URI) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Missing GOOGLE_CLIENT_ID or GOOGLE_REDIRECT_URI env vars' }) };
+  if (!CLIENT_ID) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Missing GOOGLE_CLIENT_ID env var' }) };
   }
 
   const params = new URLSearchParams({
