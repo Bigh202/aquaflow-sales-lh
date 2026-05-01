@@ -5,10 +5,10 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-# Gmail OAuth callback — Google redirects here, we bounce to the SPA with params preserved
+# Gmail OAuth callback — Google redirects here; Netlify forwards query params (?code=&state=) to /
 [[redirects]]
   from = "/auth/google/callback"
-  to = "/?code=:code&state=:state&scope=:scope"
+  to = "/"
   status = 302
   force = true
 

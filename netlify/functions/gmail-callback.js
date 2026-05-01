@@ -16,7 +16,7 @@ function postForm(hostname, path, params) {
       res.on('data', c => d += c);
       res.on('end', () => {
         try { resolve({ status: res.statusCode, data: JSON.parse(d) }); }
-        catch (e) { reject(new Error('Parse error')); }
+        catch (e) { reject(new Error('Parse error: ' + d.substring(0, 200))); }
       });
     });
     req.on('error', reject);
@@ -37,10 +37,12 @@ exports.handler = async (event) => {
 
   const CLIENT_ID     = process.env.GOOGLE_CLIENT_ID;
   const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-  const REDIRECT_URI  = process.env.GOOGLE_REDIRECT_URI;
+  const REDIRECT_URI  = process.env.GOOGLE_REDIRECT_URI || 'https://aquaflowsales.com/auth/google/callback';
 
-  if (!CLIENT_ID || !CLIENT_SECRET || !REDIRECT_URI) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Missing Google OAuth env vars' }) };
+  console.log('[gmail-callback] CLIENT_ID present:', !!CLIENT_ID, '| CLIENT_SECRET present:', !!CLIENT_SECRET, '| REDIRECT_URI:', REDIRECT_URI);
+
+  if (!CLIENT_ID || !CLIENT_SECRET) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET env vars' }) };
   }
 
   let code;
@@ -48,6 +50,8 @@ exports.handler = async (event) => {
   catch (e) { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON body' }) }; }
 
   if (!code) return { statusCode: 400, headers, body: JSON.stringify({ error: 'code required' }) };
+
+  console.log('[gmail-callback] Exchanging code (first 20 chars):', code.substring(0, 20), '...');
 
   try {
     const { status, data } = await postForm('oauth2.googleapis.com', '/token', {
@@ -58,8 +62,22 @@ exports.handler = async (event) => {
       grant_type:    'authorization_code',
     });
 
+    console.log('[gmail-callback] Google token endpoint status:', status, '| error:', data.error || 'none', '| access_token present:', !!data.access_token, '| refresh_token present:', !!data.refresh_token);
+
     if (status !== 200 || data.error) {
-      return { statusCode: 200, headers, body: JSON.stringify({ error: data.error_description || data.error || 'Token exchange failed' }) };
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          error: data.error_description || data.error || 'Token exchange failed',
+          google_status: status,
+          google_error: data.error,
+        }),
+      };
+    }
+
+    if (!data.access_token) {
+      return { statusCode: 200, headers, body: JSON.stringify({ error: 'Google returned no access_token', google_response: data }) };
     }
 
     return {
@@ -67,11 +85,12 @@ exports.handler = async (event) => {
       headers,
       body: JSON.stringify({
         access_token:  data.access_token,
-        refresh_token: data.refresh_token,
-        expiry:        Date.now() + (data.expires_in * 1000),
+        refresh_token: data.refresh_token || null,
+        expiry:        Date.now() + ((data.expires_in || 3600) * 1000),
       }),
     };
   } catch (e) {
+    console.error('[gmail-callback] Error:', e.message);
     return { statusCode: 500, headers, body: JSON.stringify({ error: e.message }) };
   }
 };

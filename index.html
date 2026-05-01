@@ -1461,6 +1461,7 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
       <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="checkEnvVars()">Check Env Vars</button>
       <button class="btn" style="color:var(--blue);border-color:rgba(59,130,246,0.35)" onclick="checkGoogleOAuth()">Check Google OAuth</button>
       <button class="btn" style="color:var(--green);border-color:rgba(34,197,94,0.35)" onclick="testGmailSend()">Test Gmail Send</button>
+      <button class="btn" style="color:var(--purple);border-color:rgba(168,85,247,0.35)" onclick="debugGmailTokens()">Debug Gmail Tokens</button>
     </div>
     <div id="debug-out" style="display:none;margin-top:12px;background:var(--surf3);border:1px solid var(--bdr);border-radius:8px;padding:12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
   </div>
@@ -2584,6 +2585,41 @@ async function testGmailSend(){
     debugOut('Error: '+e.message);
   }
 }
+function debugGmailTokens(){
+  const userEmail=currentUser&&currentUser.email||null;
+  const key=gmailStorageKey(userEmail);
+  const raw=localStorage.getItem(key);
+  let lines=['=== Gmail Token Debug ===',''];
+  lines.push('currentUser email: '+(userEmail||'null (not logged in!)'));
+  lines.push('Storage key used: '+key);
+  lines.push('Token in localStorage: '+(raw?'YES':'NO'));
+  if(raw){
+    try{
+      const t=JSON.parse(raw);
+      lines.push('access_token: '+(t.access_token?t.access_token.substring(0,30)+'...':'MISSING'));
+      lines.push('refresh_token: '+(t.refresh_token?t.refresh_token.substring(0,20)+'...':'MISSING'));
+      lines.push('expiry: '+new Date(t.expiry).toLocaleString()+' ('+(t.expiry>Date.now()?'valid':'EXPIRED')+')');
+    }catch(e){lines.push('Parse error: '+e.message);}
+  }
+  lines.push('');
+  lines.push('gmailTokens in memory: '+(gmailTokens?'YES':'NO'));
+  if(gmailTokens)lines.push('gmailConnected(): '+gmailConnected());
+  lines.push('');
+  // Scan ALL gmail-related keys in localStorage
+  lines.push('All Gmail-related localStorage keys:');
+  let found=0;
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.includes('gmail')){lines.push('  '+k);found++;}
+  }
+  if(!found)lines.push('  (none found)');
+  if(window._lastGmailDebug){
+    lines.push('');
+    lines.push('Last OAuth callback result:');
+    lines.push(JSON.stringify(window._lastGmailDebug,null,2));
+  }
+  debugOut(lines.join('\n'));
+}
 async function debugCheckHunterKey(){
   debugOut('Sending test request to check if HUNTER_KEY is set...');
   try{
@@ -2713,18 +2749,20 @@ function markContacted(){if(curEmailId){const l=leads.find(x=>x.id===curEmailId)
 
 // ===== GMAIL CLIENT =====
 function gmailConnected(){return!!(gmailTokens&&gmailTokens.access_token);}
+function gmailStorageKey(email){return 'af_gmail_tokens_'+(email||currentUser&&currentUser.email||'shared');}
 function loadGmailTokens(){
-  if(!currentUser)return;
-  const stored=localStorage.getItem('af_gmail_'+currentUser.email);
+  const key=gmailStorageKey();
+  const stored=localStorage.getItem(key);
   if(stored)try{gmailTokens=JSON.parse(stored);}catch(e){}
 }
-function saveGmailTokens(t){
+function saveGmailTokens(t,email){
   gmailTokens=t;
-  if(currentUser)localStorage.setItem('af_gmail_'+currentUser.email,JSON.stringify(t));
+  localStorage.setItem(gmailStorageKey(email),JSON.stringify(t));
+  console.log('[Gmail] tokens saved to key:',gmailStorageKey(email),'access_token present:',!!t.access_token);
 }
 function disconnectGmail(){
   gmailTokens=null;
-  if(currentUser)localStorage.removeItem('af_gmail_'+currentUser.email);
+  localStorage.removeItem(gmailStorageKey());
   if(gmailRefreshTimer){clearInterval(gmailRefreshTimer);gmailRefreshTimer=null;}
   renderEmailConnectState();flash('Gmail disconnected');
 }
@@ -3961,22 +3999,30 @@ function initApp(user){
   setTimeout(()=>showBriefing(),800);
   // Check for Gmail OAuth callback (?code=...&state=gmail)
   const urlParams=new URLSearchParams(window.location.search);
+  console.log('[Gmail OAuth] URL params on load — state:',urlParams.get('state'),'code present:',!!urlParams.get('code'));
   if(urlParams.get('state')==='gmail'&&urlParams.get('code')){
     const code=urlParams.get('code');
+    const userEmail=user&&user.email||null;
+    console.log('[Gmail OAuth] Code found, exchanging. userEmail:',userEmail);
     history.replaceState({},'',window.location.pathname);
     (async()=>{
       try{
+        console.log('[Gmail OAuth] Calling gmail-callback...');
         const resp=await fetch('/.netlify/functions/gmail-callback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
         const data=await resp.json();
+        console.log('[Gmail OAuth] gmail-callback response:',JSON.stringify({access_token:data.access_token?'[present]':'[missing]',refresh_token:data.refresh_token?'[present]':'[missing]',expiry:data.expiry,error:data.error}));
         if(data.error){flash('Gmail auth error: '+data.error);return;}
-        saveGmailTokens(data);
+        if(!data.access_token){flash('Gmail auth failed: no access token returned');return;}
+        const tokens={access_token:data.access_token,refresh_token:data.refresh_token,expiry:data.expiry||Date.now()+3600000};
+        saveGmailTokens(tokens,userEmail);
+        window._lastGmailDebug={ts:new Date().toISOString(),userEmail,tokenKey:gmailStorageKey(userEmail),hasAccessToken:!!tokens.access_token,hasRefreshToken:!!tokens.refresh_token};
         flash('Gmail connected! ✓');
         renderEmailConnectState();
         const emailTab=Array.from(document.querySelectorAll('.tab')).find(t=>t.textContent.trim()==='Email');
         go('email',emailTab||null);
         initEmailPane();
         fetchGmailFolder('inbox');
-      }catch(e){flash('Gmail auth error: '+e.message);}
+      }catch(e){console.error('[Gmail OAuth] Error:',e.message);flash('Gmail auth error: '+e.message);}
     })();
   }
   // Check for calculator bill param (legacy ?bill= or new ?roi=)
@@ -5029,7 +5075,7 @@ function openGCalSync(){
   if(el)el.classList.add('show');
   const status=document.getElementById('gcal-status');
   const btn=document.getElementById('gcal-connect-btn');
-  const gmailToken=localStorage.getItem(userKey('af_gmail_token'));
+  const gmailToken=localStorage.getItem(gmailStorageKey());
   if(gmailToken){
     if(status)status.textContent='Google account connected. Calendar events will appear alongside your leads.';
     if(btn)btn.textContent='Re-connect Google Calendar';
