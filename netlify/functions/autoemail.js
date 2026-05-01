@@ -1,5 +1,8 @@
 const https = require('https');
 
+const DAILY_SEND_LIMIT = 50;
+const SEND_DELAY_MS = 2000;
+
 function httpsPost(options, body) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
@@ -14,6 +17,10 @@ function httpsPost(options, body) {
     req.write(body);
     req.end();
   });
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function generateEmail(anthropicKey, lead, repName, repPhone, repEmail) {
@@ -84,49 +91,85 @@ Subject: [subject line]
   };
 }
 
-async function sendEmail(resendKey, fromEmail, fromName, to, subject, body, trackingId) {
+function encodeB64Url(s) {
+  return Buffer.from(s).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+function buildRfc2822(to, subject, textBody, htmlBody) {
+  const boundary = 'boundary_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+  const lines = [
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset=utf-8',
+    'Content-Transfer-Encoding: quoted-printable',
+    '',
+    textBody,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset=utf-8',
+    'Content-Transfer-Encoding: quoted-printable',
+    '',
+    htmlBody,
+    '',
+    `--${boundary}--`,
+  ];
+  return lines.join('\r\n');
+}
+
+async function sendViaGmail(gmailToken, to, subject, body, trackingId) {
   const trackingPixel = trackingId
     ? `<img src="https://aquaflowsales.com/.netlify/functions/email-track?id=${trackingId}" width="1" height="1" style="display:none" alt="">`
     : '';
-  const emailPayload = JSON.stringify({
-    from: `${fromName} <${fromEmail}>`,
-    to: [to],
-    subject,
-    text: body,
-    html: body.split('\n').map(l => l ? `<p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#333">${l}</p>` : '<br>').join('') + trackingPixel,
+  const htmlBody = body.split('\n').map(l => l ? `<p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#333">${l}</p>` : '<br>').join('') + trackingPixel;
+  const raw = encodeB64Url(buildRfc2822(to, subject, body, htmlBody));
+
+  const bodyStr = JSON.stringify({ raw });
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'gmail.googleapis.com',
+      path: '/gmail/v1/users/me/messages/send',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${gmailToken}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(bodyStr),
+      },
+    }, (res) => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(d) }); }
+        catch (e) { resolve({ status: res.statusCode, body: d }); }
+      });
+    });
+    req.on('error', reject);
+    req.write(bodyStr);
+    req.end();
   });
-
-  const options = {
-    hostname: 'api.resend.com',
-    path: '/emails',
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${resendKey}`,
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(emailPayload)
-    }
-  };
-
-  return httpsPost(options, emailPayload);
 }
 
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
 
-  const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
-  const RESEND_KEY    = process.env.RESEND_API_KEY;
-  const FROM_EMAIL    = process.env.FROM_EMAIL || 'lauren@aquaflowsales.com';
-  const FROM_NAME     = process.env.FROM_NAME  || 'Lauren Hatwan';
+  const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
+  const gmailToken = authHeader.replace(/^Bearer\s+/i, '');
+  if (!gmailToken) {
+    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Connect Gmail first in the Email tab' }) };
+  }
 
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
   if (!ANTHROPIC_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: 'ANTHROPIC_KEY not set' }) };
-  if (!RESEND_KEY)    return { statusCode: 500, headers, body: JSON.stringify({ error: 'RESEND_API_KEY not set' }) };
 
   let leads, repName, repPhone, repEmail;
   try {
@@ -139,29 +182,39 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'leads array required' }) };
   }
 
+  // Enforce daily Gmail send limit
+  const capped = leads.slice(0, DAILY_SEND_LIMIT);
+  const skipped = leads.length - capped.length;
+
   const results = [];
 
-  for (const lead of leads) {
+  for (const lead of capped) {
     try {
-      const { subject, body } = await generateEmail(ANTHROPIC_KEY, lead, repName || FROM_NAME, repPhone || '', repEmail || FROM_EMAIL);
+      const { subject, body } = await generateEmail(ANTHROPIC_KEY, lead, repName || 'Lauren Hatwan', repPhone || '', repEmail || '');
       const trackingId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      const sendResult = await sendEmail(RESEND_KEY, FROM_EMAIL, FROM_NAME, lead.email, subject, body, trackingId);
-      if (sendResult.status === 200 || sendResult.status === 201) {
+      const sendResult = await sendViaGmail(gmailToken, lead.email, subject, body, trackingId);
+      if (sendResult.status === 200 || sendResult.status === 202) {
         results.push({ leadId: lead.id, success: true, subject, trackingId });
       } else {
-        results.push({ leadId: lead.id, success: false, error: sendResult.body?.message || 'Send failed' });
+        const errMsg = sendResult.body?.error?.message || 'Send failed';
+        results.push({ leadId: lead.id, success: false, error: errMsg });
       }
     } catch (e) {
       results.push({ leadId: lead.id, success: false, error: e.message });
     }
+
+    // Rate limit: 1 email per 2 seconds to avoid Gmail throttling
+    if (capped.indexOf(lead) < capped.length - 1) {
+      await sleep(SEND_DELAY_MS);
+    }
   }
 
-  const sent    = results.filter(r => r.success).length;
-  const failed  = results.filter(r => !r.success).length;
+  const sent   = results.filter(r => r.success).length;
+  const failed = results.filter(r => !r.success).length;
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ sent, failed, results }),
+    body: JSON.stringify({ sent, failed, skipped, results }),
   };
 };

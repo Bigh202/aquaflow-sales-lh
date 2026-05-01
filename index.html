@@ -563,10 +563,11 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
         <select id="ae-limit">
           <option value="10">10 emails/day</option>
           <option value="20" selected>20 emails/day</option>
-          <option value="30">30 emails/day (max)</option>
+          <option value="30">30 emails/day</option>
+          <option value="50">50 emails/day (Gmail max)</option>
         </select>
       </div>
-      <div class="fld"><label>From Email</label><input id="ae-from" placeholder="lauren@yourdomain.com"></div>
+      <div class="fld"><label>Gmail Account</label><div id="ae-gmail-status" style="font-size:12px;font-family:'DM Mono',monospace;padding:8px 0;color:var(--green)">Checking...</div></div>
       <div class="fld"><label>Status</label><div id="ae-status" style="font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace;padding:8px 0">Ready</div></div>
     </div>
     <div id="ae-preview" style="display:none;margin-bottom:12px">
@@ -1402,10 +1403,7 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
   </div>
   <div class="set-sec">
     <h3>Email</h3>
-    <div class="fr c2">
-      <div class="fld"><label>From Name</label><input id="cfg-from-name" placeholder="Lauren Hatwan"></div>
-      <div class="fld"><label>From Email</label><input id="cfg-from-email" placeholder="lauren@aquaflowsales.com"></div>
-    </div>
+    <div id="cfg-gmail-status" style="font-size:13px;font-family:'DM Mono',monospace;padding:8px 0;color:var(--green)">Checking Gmail connection...</div>
   </div>
   <div class="set-sec">
     <h3>Voicemail Recording</h3>
@@ -1461,6 +1459,8 @@ body.light .hdr{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
     <div class="brow" style="margin-bottom:10px">
       <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="debugTestWebscrapeFirstLead()">Test Website Scraper (1st Lead)</button>
       <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,0.35)" onclick="checkEnvVars()">Check Env Vars</button>
+      <button class="btn" style="color:var(--blue);border-color:rgba(59,130,246,0.35)" onclick="checkGoogleOAuth()">Check Google OAuth</button>
+      <button class="btn" style="color:var(--green);border-color:rgba(34,197,94,0.35)" onclick="testGmailSend()">Test Gmail Send</button>
     </div>
     <div id="debug-out" style="display:none;margin-top:12px;background:var(--surf3);border:1px solid var(--bdr);border-radius:8px;padding:12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--txt2);white-space:pre-wrap;max-height:260px;overflow-y:auto"></div>
   </div>
@@ -1874,7 +1874,7 @@ async function scrape(){
             if(det.result&&det.result.formatted_phone_number)phone=det.result.formatted_phone_number;
             if(det.result&&det.result.website)placeWebsite=det.result.website;
           }catch(e){}
-          newLeads.push({id:Date.now()+Math.random(),biz:place.name,type:cat,contact:'Owner / Manager',title:'Decision Maker',phone,email:'',website:placeWebsite||'',source:'Google Maps',city:place.vicinity||loc,size:estBill(cat),status:'cold',notes:'',callLog:[],rating:place.rating||null,created:new Date().toLocaleDateString(),_needsBillEstimate:true});
+          newLeads.push({id:Date.now()+Math.random(),biz:place.name,type:cat,contact:'Owner / Manager',title:cat.charAt(0).toUpperCase()+cat.slice(1)+' Manager',phone,email:'',website:placeWebsite||'',source:'Google Maps',city:place.vicinity||loc,size:estBill(cat),status:'cold',notes:'',callLog:[],rating:place.rating||null,created:new Date().toLocaleDateString(),_needsBillEstimate:true});
         }
       }
       await sleep(200);
@@ -2551,6 +2551,39 @@ async function debugCheckProspeoKey(){
 async function checkEnvVars(){
   debugOut('Checking environment variables...\n\nANTHROPIC_KEY, GOOGLE_MAPS_KEY, TWILIO_* — check Netlify dashboard\n\nUse "Test Website Scraper" to verify ANTHROPIC_KEY is working.');
 }
+async function checkGoogleOAuth(){
+  debugOut('Checking Google OAuth configuration...');
+  try{
+    const resp=await fetch('/.netlify/functions/gmail-auth');
+    const data=await resp.json();
+    if(data.error){
+      debugOut('❌ Google OAuth NOT configured:\n'+data.error+'\n\nFix: Add GOOGLE_CLIENT_ID and GOOGLE_REDIRECT_URI to Netlify environment variables.');
+    }else{
+      debugOut('✓ Google OAuth is configured.\n\nOAuth URL generated successfully:\n'+data.url.substring(0,120)+'...\n\nGOOGLE_CLIENT_ID ✓\nGOOGLE_REDIRECT_URI ✓');
+    }
+  }catch(e){
+    debugOut('Network error: '+e.message);
+  }
+}
+async function testGmailSend(){
+  if(!gmailConnected()){debugOut('❌ Gmail not connected — connect Gmail first in the Email tab.');return;}
+  debugOut('Sending test email to lauren@aquaflowsales.com...');
+  try{
+    const resp=await fetch('/.netlify/functions/sendemail',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+gmailTokens.access_token},
+      body:JSON.stringify({to:'lauren@aquaflowsales.com',subject:'AquaFlow Sales OS — Test Email',body:'This is a test email from the AquaFlow Sales OS.\n\nIf you received this, Gmail sending is working correctly.\n\n— AquaFlow Sales OS'})
+    });
+    const data=await resp.json();
+    if(data.success){
+      debugOut('✓ Test email sent successfully!\n\nMessage ID: '+data.id+'\nCheck lauren@aquaflowsales.com inbox.');
+    }else{
+      debugOut('❌ Send failed:\n'+JSON.stringify(data,null,2));
+    }
+  }catch(e){
+    debugOut('Error: '+e.message);
+  }
+}
 async function debugCheckHunterKey(){
   debugOut('Sending test request to check if HUNTER_KEY is set...');
   try{
@@ -2729,14 +2762,25 @@ function renderEmailConnectState(){
   const connect=document.getElementById('gmail-connect');
   const client=document.getElementById('gmail-client');
   if(!connect||!client)return;
+  const email=currentUser?currentUser.email:'';
   if(gmailConnected()){
     connect.style.display='none';client.style.display='flex';
-    const email=currentUser?currentUser.email:'';
     const init=email?email[0].toUpperCase():'G';
     const av=document.getElementById('gmail-avatar');if(av){av.textContent=init;}
     const ac=document.getElementById('gmail-account');if(ac){ac.textContent=email;}
   }else{
     connect.style.display='flex';client.style.display='none';
+  }
+  // Update Gmail status badges in Auto Email tab and Settings tab
+  const aeStatus=document.getElementById('ae-gmail-status');
+  if(aeStatus){
+    if(gmailConnected()&&email){aeStatus.textContent='Gmail Connected: '+email+' ✓';aeStatus.style.color='var(--green)';}
+    else{aeStatus.textContent='Not connected — connect Gmail in the Email tab';aeStatus.style.color='var(--red)';}
+  }
+  const cfgStatus=document.getElementById('cfg-gmail-status');
+  if(cfgStatus){
+    if(gmailConnected()&&email){cfgStatus.textContent='Gmail Connected: '+email+' ✓';cfgStatus.style.color='var(--green)';}
+    else{cfgStatus.textContent='Gmail not connected — go to the Email tab to connect';cfgStatus.style.color='var(--red)';}
   }
 }
 async function fetchGmailFolder(folder){
@@ -3359,8 +3403,6 @@ function saveSettings(){
   cfg.email=document.getElementById('cfg-email').value;
   cfg.terr=document.getElementById('cfg-terr').value;
   cfg.co=document.getElementById('cfg-co').value;
-  cfg.fromName=document.getElementById('cfg-from-name').value;
-  cfg.fromEmail=document.getElementById('cfg-from-email').value;
   cfg.defaultRadius=document.getElementById('cfg-radius').value;
   cfg.defaultResults=document.getElementById('cfg-results').value;
   cfg.defaultQuality=document.getElementById('cfg-quality').value;
@@ -3418,7 +3460,7 @@ function importLeads(){
         const cols=line.split(',').map(v=>v.replace(/^"|"$/g,'').trim());
         const biz=colMap.biz!==undefined?cols[colMap.biz]:'';
         if(!biz){skipped.push(rowIdx);return;}
-        toImport.push({id:Date.now()+rowIdx+Math.random(),biz,type:colMap.type!==undefined?cols[colMap.type]:'',contact:colMap.contact!==undefined?cols[colMap.contact]:'Owner / Manager',title:colMap.title!==undefined?cols[colMap.title]:'Decision Maker',phone:colMap.phone!==undefined?cols[colMap.phone]:'',email:colMap.email!==undefined?cols[colMap.email]:'',city:colMap.city!==undefined?cols[colMap.city]:'',size:parseInt((colMap.size!==undefined?cols[colMap.size]:'0').replace(/[^0-9]/g,''))||3000,status:'cold',notes:'',callLog:[],source:'Import',created:new Date().toLocaleDateString()});
+        toImport.push({id:Date.now()+rowIdx+Math.random(),biz,type:colMap.type!==undefined?cols[colMap.type]:'',contact:colMap.contact!==undefined?cols[colMap.contact]:'Owner / Manager',title:colMap.title!==undefined?cols[colMap.title]:'Facilities Manager',phone:colMap.phone!==undefined?cols[colMap.phone]:'',email:colMap.email!==undefined?cols[colMap.email]:'',city:colMap.city!==undefined?cols[colMap.city]:'',size:parseInt((colMap.size!==undefined?cols[colMap.size]:'0').replace(/[^0-9]/g,''))||3000,status:'cold',notes:'',callLog:[],source:'Import',created:new Date().toLocaleDateString()});
       });
       let dupeCount=0;
       const noDupes=toImport.filter(l=>{if(isDuplicate(l,leads)){dupeCount++;return false;}return true;});
@@ -3470,18 +3512,19 @@ function previewAutoEmail(){
 }
 
 async function runAutoEmail(){
+  if(!gmailConnected()){flash('Connect Gmail first in the Email tab');return;}
   const minBill=parseInt(document.getElementById('ae-minbill').value);
-  const limit=parseInt(document.getElementById('ae-limit').value);
-  const fromEmail=document.getElementById('ae-from').value;
+  const limit=Math.min(parseInt(document.getElementById('ae-limit').value),50);
   const qualified=leads.filter(l=>l.email&&l.email.includes('@')&&l.size>=minBill&&l.status==='cold').slice(0,limit);
   if(!qualified.length){flash('No qualifying leads — add emails to leads first');return;}
-  if(!confirm('Send '+qualified.length+' personalized emails now?'))return;
+  if(!confirm('Send '+qualified.length+' personalized emails via Gmail now?'))return;
   document.getElementById('ae-status').textContent='Sending '+qualified.length+' emails...';
   document.getElementById('ae-status').style.color='var(--amber)';
   document.getElementById('ae-result').textContent='';
   try{
-    const resp=await fetch('/.netlify/functions/autoemail',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({leads:qualified,minBill,dailyLimit:limit,fromEmail})});
+    const resp=await fetch('/.netlify/functions/autoemail',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+gmailTokens.access_token},
+      body:JSON.stringify({leads:qualified,minBill,dailyLimit:limit,repName:cfg.name,repPhone:cfg.phone,repEmail:cfg.email})});
     const data=await resp.json();
     if(data.error){throw new Error(data.error);}
     // Update lead statuses and store tracking IDs
@@ -3696,25 +3739,17 @@ function populateFilterDropdowns(){
 
 // FEATURE 6 — LEAD SCORING
 function scoreLead(lead){
-  let s=0;
-  // Water bill score
-  if(lead.size>=20000)s+=4;else if(lead.size>=10000)s+=3;else if(lead.size>=5000)s+=2;else s+=1;
-  // Type score
-  const t=(lead.type||'').toLowerCase();
-  if(t.includes('manufactur')||t.includes('hospital')||t.includes('universit'))s+=3;
-  else if(t.includes('hotel')||t.includes('golf')||t.includes('restaurant'))s+=2;
-  else s+=1;
-  // Recency score
-  if(!lead.callLog||!lead.callLog.length){s+=1;}
-  else{
-    const last=lead.callLog[lead.callLog.length-1];
-    const lastDate=last.date?new Date(last.date):null;
-    if(!lastDate||isNaN(lastDate.getTime())){s+=1;}
-    else{
-      const days=Math.round((Date.now()-lastDate.getTime())/86400000);
-      if(days<7)s+=3;else if(days<30)s+=2;else s+=1;
-    }
-  }
+  // Base score from water bill
+  let s;
+  if(lead.size>=10000)s=9;
+  else if(lead.size>=5000)s=7;
+  else if(lead.size>=2000)s=5;
+  else s=3;
+  // Bonus points (max 3)
+  if(lead.email&&lead.email.includes('@'))s+=1;
+  const generic=['Owner / Manager','Decision Maker','Owner/Manager','','undefined','null'];
+  if(lead.contact&&!generic.includes(lead.contact.trim()))s+=1;
+  if(lead.rating&&lead.rating>4)s+=1;
   return Math.min(10,Math.max(1,s));
 }
 
@@ -3770,12 +3805,15 @@ function bulkExport(){
   dlCSV(rows,'selected_leads.csv');
 }
 async function bulkEmail(){
+  if(!gmailConnected()){flash('Connect Gmail first in the Email tab');return;}
   const ids=getSelectedIds();
-  const sel=leads.filter(l=>ids.includes(l.id)&&l.email&&l.email.includes('@')&&l.status==='cold');
+  const sel=leads.filter(l=>ids.includes(l.id)&&l.email&&l.email.includes('@')&&l.status==='cold').slice(0,50);
   if(!sel.length){flash('No qualifying leads (need email + cold status)');return;}
-  if(!confirm('Send auto-email to '+sel.length+' leads?'))return;
+  if(!confirm('Send auto-email to '+sel.length+' leads via Gmail?'))return;
   try{
-    const resp=await fetch('/.netlify/functions/autoemail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leads:sel,minBill:0,dailyLimit:sel.length,fromEmail:cfg.email||''})});
+    const resp=await fetch('/.netlify/functions/autoemail',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+gmailTokens.access_token},
+      body:JSON.stringify({leads:sel,minBill:0,dailyLimit:sel.length,repName:cfg.name,repPhone:cfg.phone,repEmail:cfg.email})});
     const data=await resp.json();
     if(data.results){data.results.forEach(r=>{if(r.success){const l=leads.find(x=>x.id===r.leadId);if(l){l.status='contacted';if(!l.callLog)l.callLog=[];l.callLog.push({date:new Date().toLocaleDateString(),outcome:'emailed',notes:'Bulk auto-email sent',cb:''});if(r.trackingId)storeEmailTracking(l.id,r.trackingId,'Bulk auto-email');}}});}
     save();renderLeads();flash('Bulk emails sent: '+(data.sent||0));
@@ -3907,8 +3945,6 @@ function initApp(user){
   if(cfg.email)document.getElementById('cfg-email').value=cfg.email;
   if(cfg.terr)document.getElementById('cfg-terr').value=cfg.terr;
   if(cfg.co)document.getElementById('cfg-co').value=cfg.co;
-  if(cfg.fromName)document.getElementById('cfg-from-name').value=cfg.fromName;
-  if(cfg.fromEmail)document.getElementById('cfg-from-email').value=cfg.fromEmail;
   if(cfg.defaultRadius)document.getElementById('cfg-radius').value=cfg.defaultRadius;
   if(cfg.defaultResults)document.getElementById('cfg-results').value=cfg.defaultResults;
   if(cfg.defaultQuality)document.getElementById('cfg-quality').value=cfg.defaultQuality;
@@ -3935,7 +3971,8 @@ function initApp(user){
         if(data.error){flash('Gmail auth error: '+data.error);return;}
         saveGmailTokens(data);
         flash('Gmail connected! ✓');
-        const emailTab=Array.from(document.querySelectorAll('.tab')).find(t=>t.textContent.trim()==='Email Composer');
+        renderEmailConnectState();
+        const emailTab=Array.from(document.querySelectorAll('.tab')).find(t=>t.textContent.trim()==='Email');
         go('email',emailTab||null);
         initEmailPane();
         fetchGmailFolder('inbox');
@@ -4541,7 +4578,7 @@ function showSetPassword(type,token){
   const sub=document.getElementById('setpw-sub');
   if(type==='invite'){
     heading.textContent='Set Your Password';
-    sub.textContent='Welcome! Choose a password to activate your account.';
+    sub.textContent='Welcome Lauren! Set your password to get started.';
   }else{
     heading.textContent='Reset Your Password';
     sub.textContent='Choose a new password for your account.';
@@ -4643,16 +4680,19 @@ function logout(){
 window.addEventListener('load',async function(){
   // 0. Check if this is the public scheduling page
   if(checkSchedulePage())return;
-  // 1. Check URL hash for identity tokens (invite, recovery, confirmation, or direct access_token)
-  const inviteToken=parseHashParam('invite_token');
-  const recoveryToken=parseHashParam('recovery_token');
-  const confirmToken=parseHashParam('confirmation_token');
-  const hashAccessToken=parseHashParam('access_token');
-  const hashRefreshToken=parseHashParam('refresh_token');
+  // 1. Check URL hash AND query params for identity tokens
+  const qp=new URLSearchParams(window.location.search);
+  const inviteToken=parseHashParam('invite_token')||qp.get('invite_token')||(qp.get('type')==='invite'?qp.get('token'):null);
+  const recoveryToken=parseHashParam('recovery_token')||qp.get('recovery_token')||(qp.get('type')==='recovery'?qp.get('token'):null);
+  const confirmToken=parseHashParam('confirmation_token')||qp.get('confirmation_token');
+  const hashAccessToken=parseHashParam('access_token')||qp.get('access_token');
+  const hashRefreshToken=parseHashParam('refresh_token')||qp.get('refresh_token');
   if(inviteToken){
+    history.replaceState(null,'',window.location.pathname);
     showSetPassword('invite',inviteToken);return;
   }
   if(recoveryToken){
+    history.replaceState(null,'',window.location.pathname);
     showSetPassword('recovery',recoveryToken);return;
   }
   if(confirmToken){
@@ -5094,7 +5134,7 @@ function generateROI(){
   const bill=parseFloat(document.getElementById('ci-bill').value);
   const valve=parseFloat(document.getElementById('ci-valve').value)||5500;
   const biz=document.getElementById('ci-biz').value.trim()||'Your Business';
-  const contact=document.getElementById('ci-contact').value.trim()||'Decision Maker';
+  const contact=document.getElementById('ci-contact').value.trim()||'the Facilities Manager';
   const city=document.getElementById('ci-city').value.trim()||'';
   const rate=parseFloat(document.getElementById('ci-rate').value)||5;
   const valveSize=document.getElementById('ci-valve-size').value;
@@ -5224,7 +5264,7 @@ function generateCalcEmail(){
   if(!bill||bill<=0){flash('Run the ROI analysis first');return;}
   const valve=parseFloat(document.getElementById('ci-valve').value)||5500;
   const biz=document.getElementById('ci-biz').value.trim()||'Your Business';
-  const contact=document.getElementById('ci-contact').value.trim()||'Decision Maker';
+  const contact=document.getElementById('ci-contact').value.trim()||'the Facilities Manager';
   const city=document.getElementById('ci-city').value.trim()||'';
   const rate=parseFloat(document.getElementById('ci-rate').value)||5;
   const bizType=(document.getElementById('ci-type').value||'').toLowerCase();
